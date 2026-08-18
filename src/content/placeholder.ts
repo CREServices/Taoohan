@@ -148,6 +148,19 @@ export const placeholderContent: SiteContent = {
   partners: [],
   certifications: [],
 
+  labels: {
+    testimonialsGeneral: "Placeholder Testimonials Heading",
+    testimonialsEmployers: "Placeholder Employer Testimonials Heading",
+    certifications: "Placeholder Certifications Heading",
+    partners: "Placeholder Partners Heading",
+    manpowerCategories: "Placeholder Manpower Categories Heading",
+    howToApply: "Placeholder How To Apply Heading",
+    viewAllServices: "Placeholder View All Link",
+    footerPages: "Pages",
+    footerContact: "Contact",
+    footerOffice: "Office",
+  },
+
   disclaimer:
     "Placeholder recruitment disclaimer sentence, sized to the length of the final approved statement.",
 

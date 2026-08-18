@@ -33,7 +33,7 @@ export function StatsBand() {
       ) : (
         <EmptySlot
           label="company statistics"
-          note="Client answered “TBD” on the intake form — no figures invented."
+          note="Not yet supplied by the client — no figures invented."
         />
       )}
     </Section>

@@ -11,7 +11,7 @@ export function PageHero({ eyebrow, heading, lead }: PageIntro) {
     <div className="border-b border-hairline bg-surface-muted">
       <Container>
         <div className="max-w-3xl py-14 sm:py-16 lg:py-20">
-          <p className="text-sm font-medium uppercase tracking-wide text-brand-600">
+          <p className="text-sm font-medium uppercase tracking-wide text-brand-700">
             {eyebrow}
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">

@@ -30,7 +30,7 @@ export default function HomePage() {
         <Container>
           <div className="grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
             <div>
-              <p className="text-sm font-medium uppercase tracking-wide text-brand-600">
+              <p className="text-sm font-medium uppercase tracking-wide text-brand-700">
                 {content.brand.tagline}
               </p>
               <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
@@ -50,7 +50,7 @@ export default function HomePage() {
             >
               <p className="px-6 text-center text-sm text-ink-muted">
                 Awaiting client content: hero photograph
-                <span className="mt-1 block text-xs text-ink-muted/80">
+                <span className="mt-1 block text-xs text-ink-muted">
                   Real workforce imagery — supplied separately by the client.
                 </span>
               </p>
@@ -62,7 +62,7 @@ export default function HomePage() {
       {/* -------------------------------------------------------- WHY CHOOSE US */}
       <Section>
         <div className="max-w-3xl">
-          <p className="text-sm font-medium uppercase tracking-wide text-brand-600">
+          <p className="text-sm font-medium uppercase tracking-wide text-brand-700">
             {content.home.intro.eyebrow}
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -106,7 +106,7 @@ export default function HomePage() {
             href="/services"
             className="text-sm font-medium text-brand-700 underline underline-offset-4"
           >
-            View all services
+            {content.labels.viewAllServices}
           </Link>
         </div>
         {/* Preview of the first six; the full list lives on /services. */}
@@ -179,7 +179,7 @@ export default function HomePage() {
       </Section>
 
       <StatsBand />
-      <TestimonialsBand heading="What people say" />
+      <TestimonialsBand heading={content.labels.testimonialsGeneral} />
 
       <CtaBand
         heading={content.home.intro.heading}

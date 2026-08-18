@@ -7,18 +7,24 @@
  * was missed.
  */
 
-/** A titled block of copy — used for value props, steps and service cards. */
+/**
+ * A titled block of copy — used for value props, steps and service cards.
+ *
+ * `body` is OPTIONAL on purpose. The client supplied service and value-prop
+ * NAMES only, with no descriptions. Rather than invent marketing copy for them,
+ * those cards render title-only until the client sends real descriptions.
+ */
 export type Feature = {
   key: string;
   title: string;
-  body: string;
+  body?: string;
 };
 
-/** A named industry with a one-line description. */
+/** A named industry. `blurb` is optional for the same reason as `Feature.body`. */
 export type Industry = {
   key: string;
   name: string;
-  blurb: string;
+  blurb?: string;
 };
 
 /**
@@ -129,6 +135,24 @@ export type SiteContent = {
 
   /** BLOCKED ON CLIENT — empty until certifications arrive. */
   certifications: readonly string[];
+
+  /**
+   * Standing UI labels — section headings and link text that are not tied to a
+   * single page. Kept here so that NO heading is hardcoded in JSX and the final
+   * wording is changed in one place.
+   */
+  labels: {
+    testimonialsGeneral: string;
+    testimonialsEmployers: string;
+    certifications: string;
+    partners: string;
+    manpowerCategories: string;
+    howToApply: string;
+    viewAllServices: string;
+    footerPages: string;
+    footerContact: string;
+    footerOffice: string;
+  };
 
   /** Recruitment disclaimer shown in the footer. */
   disclaimer: string;

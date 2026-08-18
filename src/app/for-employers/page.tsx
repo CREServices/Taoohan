@@ -50,7 +50,7 @@ export default function ForEmployersPage() {
 
       <Section spacing="tight">
         <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Manpower categories you can request
+          {content.labels.manpowerCategories}
         </h2>
         {/* BLOCKED ON CLIENT: the categories list is sent as a separate file.
             The employer selector that consumes it is Developer 2's scope. */}
@@ -61,7 +61,7 @@ export default function ForEmployersPage() {
         />
       </Section>
 
-      <TestimonialsBand heading="What employers say" />
+      <TestimonialsBand heading={content.labels.testimonialsEmployers} />
 
       <CtaBand
         heading={content.employers.heading}

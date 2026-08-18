@@ -228,6 +228,93 @@ if (milestone === 1) {
   });
 }
 
+if (milestone >= 2) {
+  check("M2 rule: the content layer serves real client content", () => {
+    const index = read("src/content/index.ts");
+    assert(
+      index.includes("taoohanContent"),
+      "src/content/index.ts is still serving placeholder content.",
+    );
+    return "content switch points at taoohan.ts";
+  });
+
+  check("M2 rule: brand colour is defined in exactly one file", () => {
+    const offenders = sourceFiles().filter(
+      (file) =>
+        file !== "src/app/globals.css" &&
+        // Tests may NAME the token in order to assert its value; that is not a
+        // second definition.
+        !file.startsWith("tests/") &&
+        /--color-brand-/.test(readFileSync(join(ROOT, file), "utf8")),
+    );
+    assert(
+      offenders.length === 0,
+      `Brand tokens redefined outside globals.css in: ${offenders.join(", ")}`,
+    );
+    return "src/app/globals.css is the only brand colour definition";
+  });
+
+  check("M2 rule: contact details live in exactly one file", () => {
+    const offenders = sourceFiles()
+      .filter((file) => file !== "src/config/contact.ts")
+      .filter((file) => !file.startsWith("tests/"))
+      .filter((file) => {
+        const text = readFileSync(join(ROOT, file), "utf8");
+        // A literal email, phone or wa.me link outside the contact config.
+        return (
+          /["'][\w.+-]+@[\w-]+\.[\w.]+["']/.test(text) ||
+          /wa\.me\/\d/.test(text) ||
+          /["']\+\d{7,}["']/.test(text)
+        );
+      });
+    assert(
+      offenders.length === 0,
+      `Contact details hardcoded outside src/config/contact.ts in: ${offenders.join(", ")}`,
+    );
+    return "src/config/contact.ts is the only source of contact details";
+  });
+
+  check("M2 rule: no heading text is hardcoded in JSX", () => {
+    const offenders = [];
+    for (const file of sourceFiles().filter((name) => name.endsWith(".tsx"))) {
+      const text = readFileSync(join(ROOT, file), "utf8");
+      for (const match of text.matchAll(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/g)) {
+        const inner = match[1].trim();
+        // Headings must interpolate from the content layer, not carry literals.
+        if (inner && !inner.startsWith("{")) {
+          offenders.push(`${file}: "${inner.slice(0, 40)}"`);
+        }
+      }
+    }
+    assert(
+      offenders.length === 0,
+      `Hardcoded heading text found:\n  ${offenders.join("\n  ")}`,
+    );
+    return "all headings interpolate from the content layer";
+  });
+
+  check("M2 rule: no invented data in blocked slots", () => {
+    const contentFile = read("src/content/taoohan.ts");
+    for (const [field, label] of [
+      ["stats", "statistics"],
+      ["testimonials", "testimonials"],
+      ["partners", "partners"],
+      ["certifications", "certifications"],
+    ]) {
+      assert(
+        new RegExp(`${field}:\\s*\\[\\]`).test(contentFile),
+        `${label} must stay an empty slot — the client answered "TBD".`,
+      );
+    }
+    const contact = read("src/config/contact.ts");
+    assert(
+      /email:\s*""/.test(contact) && /whatsapp:\s*""/.test(contact),
+      "Contact slots must stay empty until the client supplies real values.",
+    );
+    return "every TBD slot is still empty — nothing fabricated";
+  });
+}
+
 if (milestone >= 3) {
   check("M3 rule: apply route reads credentials from env only", () => {
     const route = read("src/app/api/apply/route.ts");

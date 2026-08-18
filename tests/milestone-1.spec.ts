@@ -1,5 +1,6 @@
 import { test, expect, type Page, type ConsoleMessage } from "@playwright/test";
 import { NAV, CTA } from "../src/config/site.config";
+import { content } from "../src/content";
 
 /**
  * MILESTONE 1 ACCEPTANCE CHECKLIST — AS EXECUTABLE TESTS.
@@ -285,8 +286,13 @@ test.describe("calls to action", () => {
 // CHECKLIST: "All copy is placeholder, sized to expected real length"
 // ---------------------------------------------------------------------------
 
-test.describe("placeholder copy", () => {
+test.describe("copy volume", () => {
   test("hero copy is placeholder and realistically sized", async ({ page }) => {
+    test.skip(
+      !content.isPlaceholder,
+      "Milestone 2 replaced the placeholders — milestone-2.spec.ts asserts the real copy instead.",
+    );
+
     await page.goto("/");
 
     const headline = (await page.locator("h1").first().innerText()).trim();

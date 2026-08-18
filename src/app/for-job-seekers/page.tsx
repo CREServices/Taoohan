@@ -46,7 +46,7 @@ export default function ForJobSeekersPage() {
           <aside className="lg:col-span-5">
             <div className="rounded-card border border-hairline bg-surface-muted p-8 lg:sticky lg:top-28">
               <h2 className="text-xl font-semibold tracking-tight">
-                How to apply
+                {content.labels.howToApply}
               </h2>
               <ol className="mt-5 space-y-4">
                 {content.jobSeekers.applyInstructions.map((instruction, index) => (

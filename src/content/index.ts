@@ -1,14 +1,15 @@
 import type { SiteContent } from "./types";
-import { placeholderContent } from "./placeholder";
+import { taoohanContent } from "./taoohan";
 
 /**
  * THE CONTENT SWITCH.
  *
- * Milestone 1 serves placeholder copy. In Milestone 2 the real Taoohan copy is
- * added as `./taoohan` and this single line changes to point at it — no page or
- * component needs editing, because everything imports `content` from here.
+ * Milestone 1 served `./placeholder`. Milestone 2 flipped this single line to
+ * the real Taoohan copy — no page or component needed editing, because
+ * everything imports `content` from here. `./placeholder` is kept in the tree
+ * as the layout stress-test fixture (it is sized to the real copy's length).
  */
-export const content: SiteContent = placeholderContent;
+export const content: SiteContent = taoohanContent;
 
 export type { SiteContent } from "./types";
 export * from "./types";

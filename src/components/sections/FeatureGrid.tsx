@@ -34,14 +34,20 @@ export function FeatureGrid({
           className="rounded-card border border-hairline bg-surface p-6 transition-colors hover:border-brand-300"
         >
           {numbered && (
-            <span className="text-sm font-semibold text-brand-600">
+            <span className="text-sm font-semibold text-brand-700">
               {String(index + 1).padStart(2, "0")}
             </span>
           )}
           <h3 className={cn("text-lg font-semibold", numbered && "mt-2")}>
             {item.title}
           </h3>
-          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{item.body}</p>
+          {/* Description is optional — cards stay title-only rather than
+              carrying invented copy. See the note on `Feature` in content/types. */}
+          {item.body && (
+            <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+              {item.body}
+            </p>
+          )}
         </li>
       ))}
     </ul>

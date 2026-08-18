@@ -25,9 +25,12 @@ export default function IndustriesPage() {
               className="rounded-card border border-hairline p-6 transition-colors hover:border-brand-300"
             >
               <h2 className="text-lg font-semibold">{industry.name}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-                {industry.blurb}
-              </p>
+              {/* Optional — the client supplied industry names only. */}
+              {industry.blurb && (
+                <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                  {industry.blurb}
+                </p>
+              )}
             </li>
           ))}
         </ul>
@@ -35,7 +38,7 @@ export default function IndustriesPage() {
 
       <Section tone="muted" spacing="tight">
         <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Partners and clients
+          {content.labels.partners}
         </h2>
         {content.partners.length > 0 ? (
           <ul className="mt-6 flex flex-wrap gap-3">
@@ -52,7 +55,7 @@ export default function IndustriesPage() {
           <EmptySlot
             className="mt-6 bg-surface"
             label="partner and client names"
-            note="Client answered “TBD, please remind me to send this.”"
+            note="Not yet supplied by the client."
           />
         )}
       </Section>

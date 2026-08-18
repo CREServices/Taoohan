@@ -57,7 +57,7 @@ export default function AboutPage() {
 
       <Section spacing="tight">
         <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Certifications and licences
+          {content.labels.certifications}
         </h2>
         {content.certifications.length > 0 ? (
           <ul className="mt-6 flex flex-wrap gap-3">
@@ -74,7 +74,7 @@ export default function AboutPage() {
           <EmptySlot
             className="mt-6"
             label="certifications and licences"
-            note="Client answered “TBD” on the intake form."
+            note="Not yet supplied by the client."
           />
         )}
       </Section>

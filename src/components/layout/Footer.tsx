@@ -19,7 +19,7 @@ function ContactRow({ label, value }: { label: string; value: string }) {
       ) : (
         <span
           data-empty-slot={label.toLowerCase()}
-          className="text-ink-inverse/40 italic"
+          className="text-ink-inverse/70 italic"
         >
           Awaiting client details
         </span>
@@ -49,7 +49,7 @@ export function Footer() {
 
           {/* Navigation — same NAV array, same order as the header */}
           <nav aria-label="Footer">
-            <h2 className="text-sm font-semibold">Pages</h2>
+            <h2 className="text-sm font-semibold">{content.labels.footerPages}</h2>
             <ul data-testid="footer-nav" className="mt-4 space-y-2">
               {NAV.map((item) => (
                 <li key={item.key}>
@@ -67,7 +67,7 @@ export function Footer() {
 
           {/* Contact — every value is currently an empty slot */}
           <div>
-            <h2 className="text-sm font-semibold">Contact</h2>
+            <h2 className="text-sm font-semibold">{content.labels.footerContact}</h2>
             <ul className="mt-4 space-y-3">
               <ContactRow label="Email" value={CONTACT.email} />
               <ContactRow label="Phone" value={CONTACT.phone} />
@@ -77,7 +77,7 @@ export function Footer() {
 
           {/* Office */}
           <div>
-            <h2 className="text-sm font-semibold">Office</h2>
+            <h2 className="text-sm font-semibold">{content.labels.footerOffice}</h2>
             <ul className="mt-4 space-y-3">
               <ContactRow label="Address" value={CONTACT.address} />
               <ContactRow label="Hours" value={CONTACT.hours} />

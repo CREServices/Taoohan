@@ -21,7 +21,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
         ) : (
           <span
             data-empty-slot={label.toLowerCase()}
-            className="italic text-ink-muted/70"
+            className="italic text-ink-muted"
           >
             Awaiting client details
           </span>
@@ -63,7 +63,7 @@ export default function ContactPage() {
               <EmptySlot
                 className="mt-8"
                 label="social media links"
-                note="Client answered “TBD” on the intake form."
+                note="Not yet supplied by the client."
               />
             )}
           </div>
