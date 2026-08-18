@@ -155,6 +155,8 @@ export const placeholderContent: SiteContent = {
     partners: "Placeholder Partners Heading",
     manpowerCategories: "Placeholder Manpower Categories Heading",
     howToApply: "Placeholder How To Apply Heading",
+    applyWhatsApp: "Placeholder WhatsApp Channel Heading",
+    applyEmail: "Placeholder Email Channel Heading",
     viewAllServices: "Placeholder View All Link",
     footerPages: "Pages",
     footerContact: "Contact",

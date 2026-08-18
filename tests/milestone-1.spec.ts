@@ -245,25 +245,26 @@ test.describe("calls to action", () => {
     }
   });
 
-  test("clicking a CTA runs a placeholder handler and does NOT navigate", async ({
+  test("the employer CTA stays a placeholder and does NOT navigate", async ({
     page,
   }) => {
+    // The employer request-manpower flow is Developer 2's scope, so this button
+    // must remain inert in Developer 1's work at every milestone.
     const errors = watchConsole(page);
-    await page.goto("/for-job-seekers");
+    await page.goto("/for-employers");
 
     const before = page.url();
 
     // Scope to one CTA group so the notice asserted below is the one this
     // button actually drives.
     const group = page.getByTestId("cta-group").filter({ visible: true }).first();
-    await group.getByTestId("cta-job-seeker").click();
+    await group.getByTestId("cta-employer").click();
 
-    // Placeholder feedback appears...
-    await expect(group.getByTestId("cta-notice")).toContainText("placeholder", {
-      ignoreCase: true,
-    });
+    await expect(group.getByTestId("cta-notice")).toContainText(
+      "still being built",
+    );
 
-    // ...and nothing real happened: no navigation, no console errors.
+    // Nothing real happened: no navigation, no console errors.
     expect(page.url()).toBe(before);
     expect(errors).toEqual([]);
   });

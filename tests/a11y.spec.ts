@@ -38,6 +38,37 @@ for (const item of NAV) {
   });
 }
 
+test("the open Apply Now dialog is accessible", async ({ page }) => {
+  await page.goto("/for-job-seekers");
+  await page
+    .getByTestId("cta-job-seeker")
+    .filter({ visible: true })
+    .first()
+    .click();
+  await expect(page.getByTestId("apply-modal")).toBeVisible();
+
+  // Step 1 — the form fields.
+  let result = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa"])
+    .analyze();
+  expect(
+    result.violations.map((violation) => `${violation.id}: ${violation.help}`),
+    "Apply Now step 1",
+  ).toEqual([]);
+
+  // Step 2 — the channel choice.
+  await page.getByLabel("Full name").fill("Maria Santos");
+  await page.getByLabel("Contact number").fill("09171234567");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByTestId("apply-step-2")).toBeVisible();
+
+  result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(
+    result.violations.map((violation) => `${violation.id}: ${violation.help}`),
+    "Apply Now step 2",
+  ).toEqual([]);
+});
+
 test("the open mobile menu is accessible", async ({ page }, testInfo) => {
   test.skip(
     testInfo.project.name === "desktop-1440",

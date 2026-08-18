@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CTA } from "@/config/site.config";
 import { Button } from "@/components/ui/Button";
+import { ApplyNowModal } from "@/components/flows/ApplyNowModal";
 import { cn } from "@/lib/cn";
 
 type CtaGroupProps = {
@@ -17,13 +18,13 @@ type CtaGroupProps = {
 /**
  * The two primary calls to action.
  *
- * ⚠️ MILESTONE 1: both buttons are wired to PLACEHOLDER HANDLERS ONLY.
- * - The job-seeker flow (Apply Now → WhatsApp / Nodemailer email) is built in
- *   Milestone 3 and is Developer 1 scope.
- * - The employer "Request Staffing & Manpower" flow logic is Developer 2 scope;
- *   Developer 1 only places the button here.
+ * - JOB SEEKER ("Submit Your CV") — Developer 1 scope. Milestone 3 wired this
+ *   to the real two-step Apply Now flow (WhatsApp deep link or Nodemailer
+ *   email). Nothing is stored; the modal hands off and forgets.
  *
- * Neither handler performs navigation, network calls or storage.
+ * - EMPLOYER ("Request Staffing & Manpower") — the request-manpower flow logic
+ *   is Developer 2's scope. Developer 1 places the button and leaves it on a
+ *   PLACEHOLDER HANDLER so the two workstreams do not collide.
  */
 export function CtaGroup({
   size = "md",
@@ -31,12 +32,8 @@ export function CtaGroup({
   tone = "default",
   only,
 }: CtaGroupProps) {
+  const [applyOpen, setApplyOpen] = useState(false);
   const [notice, setNotice] = useState("");
-
-  const placeholderHandler = (label: string) => () => {
-    // Placeholder only — no real flow, no network, no storage.
-    setNotice(`“${label}” is a placeholder in Milestone 1. The real flow is built in Milestone 3.`);
-  };
 
   const showJobSeeker = only !== "employer";
   const showEmployer = only !== "jobSeeker";
@@ -50,7 +47,8 @@ export function CtaGroup({
             variant={tone === "inverse" ? "inverse" : "primary"}
             data-testid="cta-job-seeker"
             data-cta={CTA.jobSeeker.key}
-            onClick={placeholderHandler(CTA.jobSeeker.label)}
+            aria-haspopup="dialog"
+            onClick={() => setApplyOpen(true)}
           >
             {CTA.jobSeeker.label}
           </Button>
@@ -62,7 +60,12 @@ export function CtaGroup({
             variant="secondary"
             data-testid="cta-employer"
             data-cta={CTA.employer.key}
-            onClick={placeholderHandler(CTA.employer.label)}
+            onClick={() =>
+              // Placeholder only — Developer 2 owns this flow.
+              setNotice(
+                `“${CTA.employer.label}” is handled by the employer request flow, which is still being built.`,
+              )
+            }
           >
             {CTA.employer.label}
           </Button>
@@ -75,12 +78,16 @@ export function CtaGroup({
         data-testid="cta-notice"
         className={cn(
           "text-sm",
-          tone === "inverse" ? "text-ink-inverse/80" : "text-ink-muted",
+          tone === "inverse" ? "text-ink-inverse" : "text-ink-muted",
           notice ? "block" : "sr-only",
         )}
       >
         {notice}
       </p>
+
+      {showJobSeeker && (
+        <ApplyNowModal open={applyOpen} onClose={() => setApplyOpen(false)} />
+      )}
     </div>
   );
 }

@@ -221,6 +221,8 @@ export const taoohanContent: SiteContent = {
     partners: "Partners and clients",
     manpowerCategories: "Manpower categories you can request",
     howToApply: "How to apply",
+    applyWhatsApp: "Continue on WhatsApp",
+    applyEmail: "Send by email",
     viewAllServices: "View all services",
     footerPages: "Pages",
     footerContact: "Contact",

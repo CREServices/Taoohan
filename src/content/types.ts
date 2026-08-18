@@ -148,6 +148,8 @@ export type SiteContent = {
     partners: string;
     manpowerCategories: string;
     howToApply: string;
+    applyWhatsApp: string;
+    applyEmail: string;
     viewAllServices: string;
     footerPages: string;
     footerContact: string;

@@ -318,13 +318,56 @@ if (milestone >= 2) {
 if (milestone >= 3) {
   check("M3 rule: apply route reads credentials from env only", () => {
     const route = read("src/app/api/apply/route.ts");
-    for (const key of ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS"]) {
+    for (const key of [
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USER",
+      "SMTP_PASS",
+      "SMTP_FROM",
+      "APPLY_TO_EMAIL",
+    ]) {
       assert(
         route.includes(`process.env.${key}`),
         `${key} is not read from process.env in the apply route.`,
       );
     }
-    return "all credentials read from process.env";
+    return "all six credentials read from process.env";
+  });
+
+  check("M3 rule: no applicant data is persisted (Phase 1)", () => {
+    const offenders = sourceFiles()
+      .filter((file) => file.startsWith("src/"))
+      .filter((file) =>
+        /\bwriteFileSync\b|\bappendFile\b|localStorage|sessionStorage|indexedDB/.test(
+          readFileSync(join(ROOT, file), "utf8"),
+        ),
+      );
+    assert(
+      offenders.length === 0,
+      `Applicant data could be persisted in: ${offenders.join(", ")}`,
+    );
+    return "handoff only — nothing written to storage";
+  });
+
+  check("M3 rule: an env example is committed with placeholders only", () => {
+    assert(exists(".env.local.example"), ".env.local.example is missing.");
+    const example = read(".env.local.example");
+    for (const key of ["SMTP_HOST", "SMTP_PASS", "APPLY_TO_EMAIL"]) {
+      assert(
+        new RegExp(`^${key}=\\s*$`, "m").test(example),
+        `${key} in .env.local.example must be left blank, not pre-filled.`,
+      );
+    }
+    return "example committed, every secret slot blank";
+  });
+
+  check("M3 rule: no custom domain is wired (Vercel preview only)", () => {
+    const config = read("next.config.ts");
+    assert(
+      !/taoohan\.com|domains?\s*:/i.test(config),
+      "next.config.ts references a custom domain — Phase 1 is Vercel-only.",
+    );
+    return "no custom domain configured";
   });
 }
 

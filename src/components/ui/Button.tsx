@@ -1,4 +1,8 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  ReactNode,
+} from "react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
@@ -34,7 +38,8 @@ type CommonProps = {
 type ButtonAsButton = CommonProps &
   ButtonHTMLAttributes<HTMLButtonElement> & { href?: never };
 
-type ButtonAsLink = CommonProps & { href: string };
+type ButtonAsLink = CommonProps &
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & { href: string };
 
 export function Button({
   children,
