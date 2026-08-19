@@ -245,26 +245,24 @@ test.describe("calls to action", () => {
     }
   });
 
-  test("the employer CTA stays a placeholder and does NOT navigate", async ({
+  test("the employer CTA opens the request dialog and does NOT navigate", async ({
     page,
   }) => {
-    // The employer request-manpower flow is Developer 2's scope, so this button
-    // must remain inert in Developer 1's work at every milestone.
+    // Updated by Developer 2 in Milestone 3. This asserted the placeholder
+    // handler ("still being built") that Developer 1 left in place while the
+    // employer flow was unbuilt. That flow now exists, so the button opens the
+    // Request Manpower dialog instead. The rest of the guarantee is unchanged
+    // and still worth asserting: opening it must not navigate or log errors.
     const errors = watchConsole(page);
     await page.goto("/for-employers");
 
     const before = page.url();
 
-    // Scope to one CTA group so the notice asserted below is the one this
-    // button actually drives.
     const group = page.getByTestId("cta-group").filter({ visible: true }).first();
     await group.getByTestId("cta-employer").click();
 
-    await expect(group.getByTestId("cta-notice")).toContainText(
-      "still being built",
-    );
+    await expect(page.getByTestId("request-modal")).toBeVisible();
 
-    // Nothing real happened: no navigation, no console errors.
     expect(page.url()).toBe(before);
     expect(errors).toEqual([]);
   });

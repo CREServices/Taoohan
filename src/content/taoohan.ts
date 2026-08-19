@@ -153,6 +153,14 @@ export const taoohanContent: SiteContent = {
         body: "You interview and select, and we support the placement and onboarding of the people you hire.",
       },
     ],
+    // [DRAFT] On-screen instructions for the Request Manpower flow — describes
+    // how the form itself works, makes no claims about response times.
+    requestInstructions: [
+      "Tell us who you are: company, contact name and a work email we can reply to.",
+      "Describe the roles you need — headcount, location, and whether the placement is temporary, contract or permanent.",
+      "Send the request to our team, or open it in your own email app if you would rather write it yourself.",
+      "We reply by email to confirm the requirements before we start sourcing.",
+    ],
   },
 
   jobSeekers: {
@@ -220,6 +228,7 @@ export const taoohanContent: SiteContent = {
     certifications: "Certifications and licences",
     partners: "Partners and clients",
     manpowerCategories: "Manpower categories you can request",
+    requestManpower: "Request staffing and manpower",
     howToApply: "How to apply",
     applyWhatsApp: "Continue on WhatsApp",
     applyEmail: "Send by email",

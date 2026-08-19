@@ -109,6 +109,12 @@ export const placeholderContent: SiteContent = {
       { key: "employer-step-3", title: "Placeholder Step Three", body: placeholderBody },
       { key: "employer-step-4", title: "Placeholder Step Four", body: placeholderBody },
     ],
+    requestInstructions: [
+      "Placeholder employer request instruction one, sized to the final copy.",
+      "Placeholder employer request instruction two, sized to the final copy.",
+      "Placeholder employer request instruction three, sized to the final copy.",
+      "Placeholder employer request instruction four, sized to the final copy.",
+    ],
   },
 
   jobSeekers: {
@@ -154,6 +160,7 @@ export const placeholderContent: SiteContent = {
     certifications: "Placeholder Certifications Heading",
     partners: "Placeholder Partners Heading",
     manpowerCategories: "Placeholder Manpower Categories Heading",
+    requestManpower: "Placeholder Request Manpower Heading",
     howToApply: "Placeholder How To Apply Heading",
     applyWhatsApp: "Placeholder WhatsApp Channel Heading",
     applyEmail: "Placeholder Email Channel Heading",

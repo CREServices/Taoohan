@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CTA } from "@/config/site.config";
 import { Button } from "@/components/ui/Button";
 import { ApplyNowModal } from "@/components/flows/ApplyNowModal";
+import { RequestManpowerModal } from "@/components/flows/RequestManpowerModal";
 import { cn } from "@/lib/cn";
 
 type CtaGroupProps = {
@@ -22,9 +23,10 @@ type CtaGroupProps = {
  *   to the real two-step Apply Now flow (WhatsApp deep link or Nodemailer
  *   email). Nothing is stored; the modal hands off and forgets.
  *
- * - EMPLOYER ("Request Staffing & Manpower") — the request-manpower flow logic
- *   is Developer 2's scope. Developer 1 places the button and leaves it on a
- *   PLACEHOLDER HANDLER so the two workstreams do not collide.
+ * - EMPLOYER ("Request Staffing & Manpower") — Developer 2 scope. Milestone 3
+ *   replaced Developer 1's placeholder handler with the real two-step employer
+ *   request flow (SMTP via /api/request-manpower, with a pre-filled mailto:
+ *   fallback). Email only, by agreement — no WhatsApp on the employer side.
  */
 export function CtaGroup({
   size = "md",
@@ -33,7 +35,7 @@ export function CtaGroup({
   only,
 }: CtaGroupProps) {
   const [applyOpen, setApplyOpen] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [requestOpen, setRequestOpen] = useState(false);
 
   const showJobSeeker = only !== "employer";
   const showEmployer = only !== "jobSeeker";
@@ -60,33 +62,27 @@ export function CtaGroup({
             variant="secondary"
             data-testid="cta-employer"
             data-cta={CTA.employer.key}
-            onClick={() =>
-              // Placeholder only — Developer 2 owns this flow.
-              setNotice(
-                `“${CTA.employer.label}” is handled by the employer request flow, which is still being built.`,
-              )
-            }
+            aria-haspopup="dialog"
+            onClick={() => setRequestOpen(true)}
           >
             {CTA.employer.label}
           </Button>
         )}
       </div>
 
-      <p
-        role="status"
-        aria-live="polite"
-        data-testid="cta-notice"
-        className={cn(
-          "text-sm",
-          tone === "inverse" ? "text-ink-inverse" : "text-ink-muted",
-          notice ? "block" : "sr-only",
-        )}
-      >
-        {notice}
-      </p>
+      {/* The `cta-notice` live region that used to announce the employer
+          placeholder is gone: the button now opens a real dialog, which
+          announces itself. */}
 
       {showJobSeeker && (
         <ApplyNowModal open={applyOpen} onClose={() => setApplyOpen(false)} />
+      )}
+
+      {showEmployer && (
+        <RequestManpowerModal
+          open={requestOpen}
+          onClose={() => setRequestOpen(false)}
+        />
       )}
     </div>
   );

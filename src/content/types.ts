@@ -108,6 +108,8 @@ export type SiteContent = {
   employers: PageIntro & {
     body: string;
     steps: readonly Feature[];
+    /** Instructions shown alongside the Request Manpower flow (Milestone 3). */
+    requestInstructions: readonly string[];
   };
 
   jobSeekers: PageIntro & {
@@ -147,6 +149,7 @@ export type SiteContent = {
     certifications: string;
     partners: string;
     manpowerCategories: string;
+    requestManpower: string;
     howToApply: string;
     applyWhatsApp: string;
     applyEmail: string;
