@@ -8,6 +8,8 @@ import { CtaBand } from "@/components/sections/CtaBand";
 import { StatsBand } from "@/components/sections/StatsBand";
 import { TestimonialsBand } from "@/components/sections/TestimonialsBand";
 import { CtaGroup } from "@/components/cta/CtaGroup";
+import { SiteImage } from "@/components/ui/SiteImage";
+import { IMAGES } from "@/config/images";
 
 /**
  * Home page.
@@ -73,19 +75,14 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Photography slot — Developer 2 scope, asset not yet supplied. */}
+            {/* Photography slot — Developer 2 scope. Config-driven: setting
+                IMAGES.homeHero.src in config/images.ts swaps the placeholder
+                for the real photo with no change here. */}
             <div
               data-hero
               style={{ "--hero-delay": "180ms" } as React.CSSProperties}
-              data-empty-slot="hero photograph"
-              className="flex aspect-4/3 items-center justify-center rounded-card border border-dashed border-hairline bg-surface"
             >
-              <p className="px-6 text-center text-sm text-ink-muted">
-                Awaiting client content: hero photograph
-                <span className="mt-1 block text-xs text-ink-muted">
-                  Real workforce imagery — supplied separately by the client.
-                </span>
-              </p>
+              <SiteImage slot={IMAGES.homeHero} priority />
             </div>
           </div>
         </Container>
