@@ -55,14 +55,18 @@ export default function HomePage() {
               >
                 {content.home.supporting}
               </p>
-              {/* Deliberately NOT wrapped in `data-hero`: CtaGroup renders the
-                  Apply Now dialog as its own child, and an animating ancestor
-                  would drag the open dialog through the hero's fade. The
-                  buttons arrive with the supporting line instead. */}
-              <CtaGroup size="lg" className="mt-8" />
-              <p
+              {/* Safe to animate: the dialogs CtaGroup owns are portalled to
+                  <body>, so they never inherit this wrapper's animation. The
+                  motion spec guards that invariant. */}
+              <div
                 data-hero
                 style={{ "--hero-delay": "270ms" } as React.CSSProperties}
+              >
+                <CtaGroup size="lg" className="mt-8" />
+              </div>
+              <p
+                data-hero
+                style={{ "--hero-delay": "360ms" } as React.CSSProperties}
                 className="mt-6 text-sm text-ink-muted"
               >
                 {content.home.trustLine}
