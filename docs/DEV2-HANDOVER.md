@@ -3,9 +3,9 @@
 Status of all fifteen Developer 2 tasks from `Manpower_Task_Division_Simple.pdf`,
 and the exact reason for anything not finished.
 
-**Verification:** 671 Playwright tests passing, 0 failing, across five viewports
-(360, 768, 1280, 1440, 1920). `npm run typecheck`, `npm run lint` and
-`npm run build` all clean.
+**Verification:** 690 Playwright tests passing, 0 failing, across five viewports
+(360, 768, 1280, 1440, 1920). Milestone gate 17/17. `npm run typecheck`,
+`npm run lint` and `npm run build` all clean.
 
 **Branches:** `dev2-milestone-1` (animation) and `dev2-milestone-3` (employer
 flow, layout, images, docs). Neither is merged to `main` — the task division
@@ -18,6 +18,7 @@ says who merges is agreed first, not taken.
 | Task | Level | Status |
 | --- | --- | --- |
 | Landing page animation (hero + scroll) | Hard | Done |
+| Mobile menu / overlay behaviour | — | Done — four bugs fixed, see below |
 | Animation for the other pages | Medium | Done |
 | Look good on laptop and desktop | Medium | Done — fixed a real defect, see below |
 | Placeholder image blocks | Easy | Done — now config-driven |
@@ -53,10 +54,15 @@ Not skipped — attempted and investigated. See
 [DEPLOY.md](DEPLOY.md) for the full write-up.
 
 - `vercel build` and `vercel deploy` need an account login, which is yours.
+  `vercel whoami` reports logged out, and there is no token in the environment.
 - The anonymous `vercel deploy --temporary` path fails inside Vercel's builder
   on the Next 16 `_global-error` segment. `next build` produces the file the
   builder reports as missing, it reproduces with and without an explicit
   `global-error.tsx`, and Next 16.3.1 has no flag to suppress segment output.
+- Attempted four times across substantially different states of the codebase
+  (before and after the error boundary, before and after the overlay rewrite).
+  Byte-identical failure every time, which is what rules the app out as the
+  cause.
 
 **To finish it:** import the repo through the Vercel dashboard (the
 authenticated path, which builds differently), add the environment variables
@@ -78,6 +84,56 @@ No component or test changes. Until then `SiteImage` renders the standard
 dashed "awaiting client content" block, holding the same 4:3 ratio, so photos
 landing later cannot shift the layout. A test asserts `alt` is non-empty
 whenever `src` is set.
+
+**The filled path is verified, not just written.** Because every slot ships
+empty, the branch that renders a real photo would otherwise never have run
+until the client's files arrived — a bad moment to discover a bug. It was
+exercised by pointing `homeHero` at an existing asset and loading the page:
+a real `<img>` rendered, `alt` applied, the file loaded (naturalWidth 901),
+`object-fit: cover` applied, the 4:3 ratio held, and the placeholder branch
+correctly stepped aside. The temporary value was then reverted. Dropping in
+photos is a config edit that is known to work.
+
+---
+
+## The overlay bugs (user-reported)
+
+Opening the mobile menu while scrolled put it off screen — you had to scroll up
+to reach the menu you had just tapped. Measured at 360px, scrolled to y=1200:
+header at `top: -1710px`, panel at `-1646px`. Four separate faults:
+
+1. **The scroll lock broke sticky positioning.** Every overlay used
+   `body.style.overflow = "hidden"`, which makes `<body>` the scroll container,
+   so the sticky header snapped back to the top of the document. Replaced with
+   `src/lib/scroll-lock.ts`, which locks the root element.
+2. **The lock was not reference counted.** The menu holds the CTA buttons, so a
+   dialog can open above it; closing that dialog released the page while the
+   menu still covered it.
+3. **The overlay was not portalled.** The header sets `backdrop-blur`, and a
+   backdrop-filter creates a containing block for fixed descendants — so the
+   overlay positioned against the 64px header box and the backdrop computed to
+   height **0**: invisible and untappable. `ApplyNowModal` already documented
+   this exact trap; the menu did not follow it.
+4. **Escape dismissed two layers at once**, since both handlers sit on
+   `document`.
+
+Plus: restoring focus on close scrolled the page ~500px, because `focus()`
+scrolls into view by default. All focus restoration now passes `preventScroll`.
+
+`tests/dev2-overlays.spec.ts` pins every one. These came from a bug a visitor
+hit, not one a test caught — which is why they are worth keeping.
+
+---
+
+## The logo
+
+Supplied by the client and now in use, replacing the `BrandMark` placeholder
+that existed only until the file arrived. SVG over PNG: a fifth of the bytes,
+sharp at any density. `taoohan-black.svg` on the light header,
+`taoohan-white.svg` on the inverse footer (the text colour is baked into the
+artwork), and `logo.svg` as the tab icon. The `<span>Taoohan</span>` beside it
+was removed — the wordmark already says it, so it announced the name twice to a
+screen reader; the image `alt` carries it.
 
 ---
 
