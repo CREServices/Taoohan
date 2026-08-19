@@ -6,10 +6,7 @@ import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { CtaBand } from "@/components/sections/CtaBand";
 
-export const metadata: Metadata = {
-  title: NAV_BY_HREF["/services"].label,
-  description: content.services.lead,
-};
+export const metadata: Metadata = { title: NAV_BY_HREF["/services"].label };
 
 export default function ServicesPage() {
   return (

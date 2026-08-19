@@ -8,16 +8,7 @@ import { StatsBand } from "@/components/sections/StatsBand";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { EmptySlot } from "@/components/ui/EmptySlot";
 
-/**
- * Title comes from the nav config and the description from the page's own lead
- * line, so neither can drift from what the menu and the hero actually say. No
- * copy is written here — search results quote the same sentence the visitor
- * reads at the top of the page.
- */
-export const metadata: Metadata = {
-  title: NAV_BY_HREF["/about"].label,
-  description: content.about.lead,
-};
+export const metadata: Metadata = { title: NAV_BY_HREF["/about"].label };
 
 export default function AboutPage() {
   return (
