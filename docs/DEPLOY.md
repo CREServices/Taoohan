@@ -67,6 +67,33 @@ so an existing deployment will not pick them up on its own.
 4. Add the environment variables (above) *before* the first deploy.
 5. Deploy.
 
+### Known issue: the anonymous `--temporary` deploy fails
+
+`npx vercel deploy --temporary` (the no-login path) fails on this project with:
+
+```
+ENOENT: no such file or directory, stat
+'/vercel/path0/.vercel/output/functions/_global-error.segments/__PAGE__.segment.rsc.func'
+```
+
+This is **not** a fault in the app, and not something a code change fixes:
+
+- `next build` produces the file locally — `.next/server/app/_global-error.segments/__PAGE__.segment.rsc` exists.
+- The global-error segment is laid out differently from a normal route
+  (`__PAGE__` sits at the top level, and there is no `_index.segment.rsc`), and
+  the builder tries to turn it into a serverless function anyway.
+- It reproduces with and without an explicit `src/app/global-error.tsx`, because
+  Next 16 emits the segment either way.
+- Next 16.3.1 has no supported flag to suppress segment output.
+
+Use the normal **authenticated** flow below instead — importing the GitHub repo
+through the Vercel dashboard. That path builds differently from the anonymous
+temporary one and is the supported route. If the same error appears there,
+report it to Vercel as a Next.js 16.3.1 builder issue rather than trying to
+work around it in the app.
+
+---
+
 **Do NOT connect a custom domain.** Phase 1 ships on the Vercel-provided URL
 only. `Taoohan.com` is still being confirmed by the client, and the domain is
 theirs to purchase. The gate has a rule that fails the build if a custom domain
