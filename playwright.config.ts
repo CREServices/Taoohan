@@ -24,8 +24,15 @@ export default defineConfig({
   },
 
   /**
-   * The three widths the acceptance checklist names explicitly: phone (360),
-   * tablet (768), plus a desktop width where the full 7-item nav bar is shown.
+   * The widths in the acceptance checklists: phone (360) and tablet (768) are
+   * Developer 1's assigned devices, plus a desktop width where the full 7-item
+   * nav bar is shown.
+   *
+   * laptop-1280 and desktop-1920 were added by Developer 2: the task division
+   * assigns laptop and desktop to Developer 2 ("make the site look good on
+   * laptop and desktop", "test the employer flow on laptop and desktop"), and
+   * neither width was represented. 1440 alone cannot stand in for both a
+   * 1280 laptop and a 1920 desktop — the grid breakpoints differ.
    */
   projects: [
     {
@@ -37,8 +44,16 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: { width: 768, height: 1024 } },
     },
     {
+      name: "laptop-1280",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } },
+    },
+    {
       name: "desktop-1440",
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: "desktop-1920",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1920, height: 1080 } },
     },
   ],
 

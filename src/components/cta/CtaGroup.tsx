@@ -12,6 +12,16 @@ type CtaGroupProps = {
   tone?: "default" | "inverse";
   /** Hide the employer CTA where only the job-seeker path is relevant. */
   only?: "jobSeeker" | "employer";
+  /**
+   * Use the config's `shortLabel` instead of the full button name.
+   *
+   * For the sticky header, where the brand, all seven nav items and both
+   * buttons share one row. At full length the row needs ~1318px inside a
+   * 1232px container at 1280, which is what made the nav labels wrap onto two
+   * lines at every desktop width. The page body always uses the full,
+   * client-approved wording.
+   */
+  compact?: boolean;
 };
 
 /**
@@ -30,6 +40,7 @@ export function CtaGroup({
   className,
   tone = "default",
   only,
+  compact = false,
 }: CtaGroupProps) {
   const [notice, setNotice] = useState("");
 
@@ -42,8 +53,26 @@ export function CtaGroup({
   const showEmployer = only !== "jobSeeker";
 
   return (
-    <div data-testid="cta-group" className={cn("flex w-full flex-col gap-3", className)}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+    <div
+      data-testid="cta-group"
+      className={cn(
+        "flex gap-3",
+        // In the page body the buttons stack and fill the column. In the
+        // header they must size to their content: `w-full` there made the
+        // group claim 413px of a 1216px container, which is what pushed the
+        // whole header row past the container and forced the nav to wrap.
+        compact ? "w-auto items-center" : "w-full flex-col",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "flex gap-3",
+          compact
+            ? "flex-row flex-nowrap"
+            : "flex-col sm:flex-row sm:flex-wrap",
+        )}
+      >
         {showJobSeeker && (
           <Button
             size={size}
@@ -52,7 +81,7 @@ export function CtaGroup({
             data-cta={CTA.jobSeeker.key}
             onClick={placeholderHandler(CTA.jobSeeker.label)}
           >
-            {CTA.jobSeeker.label}
+            {compact ? CTA.jobSeeker.shortLabel : CTA.jobSeeker.label}
           </Button>
         )}
 
@@ -64,7 +93,7 @@ export function CtaGroup({
             data-cta={CTA.employer.key}
             onClick={placeholderHandler(CTA.employer.label)}
           >
-            {CTA.employer.label}
+            {compact ? CTA.employer.shortLabel : CTA.employer.label}
           </Button>
         )}
       </div>

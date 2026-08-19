@@ -83,13 +83,17 @@ export function Header() {
           <nav aria-label="Main" className="hidden xl:block">
             <ul data-testid="desktop-nav" className="flex items-center gap-1">
               {NAV.map((item) => (
-                <li key={item.key}>
+                // `shrink-0` + `whitespace-nowrap`: without them the flex row
+                // squeezes each item and multi-word labels ("Industries We
+                // Serve", "For Job Seekers") wrap onto two lines at every
+                // desktop width, including 1920 where there is room to spare.
+                <li key={item.key} className="shrink-0">
                   <Link
                     href={item.href}
                     data-nav-key={item.key}
                     aria-current={isActive(item.href) ? "page" : undefined}
                     className={cn(
-                      "rounded-pill px-3 py-2 text-sm transition-colors",
+                      "block whitespace-nowrap rounded-pill px-3 py-2 text-sm transition-colors",
                       isActive(item.href)
                         ? "bg-surface-muted font-medium text-ink"
                         : "text-ink-muted hover:text-ink",
@@ -104,7 +108,10 @@ export function Header() {
 
           {/* Desktop CTAs */}
           <div className="hidden shrink-0 xl:block">
-            <CtaGroup size="md" />
+            {/* Compact wording: the full button names do not fit alongside the
+                brand and all seven nav items on one row. The page body keeps
+                the client's approved full labels. */}
+            <CtaGroup size="md" compact />
           </div>
 
           {/* Mobile / tablet toggle */}
