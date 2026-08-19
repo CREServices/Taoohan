@@ -7,6 +7,8 @@ import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { StatsBand } from "@/components/sections/StatsBand";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { EmptySlot } from "@/components/ui/EmptySlot";
+import { SiteImage } from "@/components/ui/SiteImage";
+import { IMAGES } from "@/config/images";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/about"].label };
 
@@ -32,16 +34,9 @@ export default function AboutPage() {
             ))}
           </div>
 
-          {/* Photography slot — Developer 2 scope, asset not yet supplied. */}
+          {/* Photography slot — Developer 2 scope, config-driven. */}
           <div className="lg:col-span-5">
-            <div
-              data-empty-slot="about photograph"
-              className="flex aspect-4/3 items-center justify-center rounded-card border border-dashed border-hairline bg-surface-muted"
-            >
-              <p className="px-6 text-center text-sm text-ink-muted">
-                Awaiting client content: team photograph
-              </p>
-            </div>
+            <SiteImage slot={IMAGES.aboutTeam} />
           </div>
         </div>
       </Section>
