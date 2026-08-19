@@ -14,6 +14,22 @@ import { NAV } from "../src/config/site.config";
  * below the WCAG AA contrast ratio, this suite catches it immediately.
  */
 
+/**
+ * Audited with reduced motion — added by Developer 2 with the Milestone 1
+ * animation work.
+ *
+ * WCAG contrast applies to the settled, rendered state. Scanning an element
+ * mid-fade measures a partially transparent colour and reports a contrast
+ * failure that does not exist once the animation lands, which made the dialog
+ * and mobile-menu scans race the hero entrance.
+ *
+ * Forcing `prefers-reduced-motion` means the boot script never applies the
+ * hidden starting state, so axe always sees the final frame. It also audits the
+ * exact experience a motion-sensitive visitor gets. The animation itself is
+ * covered separately in motion.spec.ts.
+ */
+test.use({ contextOptions: { reducedMotion: "reduce" } });
+
 for (const item of NAV) {
   test(`${item.label} (${item.href}) has no WCAG A/AA violations`, async ({
     page,

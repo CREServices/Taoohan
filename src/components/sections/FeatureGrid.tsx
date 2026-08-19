@@ -31,6 +31,15 @@ export function FeatureGrid({
       {items.map((item, index) => (
         <li
           key={item.key}
+          data-reveal
+          // Cards cascade rather than appearing as one slab. Capped so a long
+          // list (11 services) never leaves the last card lagging seconds
+          // behind the first.
+          style={
+            {
+              "--reveal-delay": `${Math.min(index, 5) * 70}ms`,
+            } as React.CSSProperties
+          }
           className="rounded-card border border-hairline bg-surface p-6 transition-colors hover:border-brand-300"
         >
           {numbered && (

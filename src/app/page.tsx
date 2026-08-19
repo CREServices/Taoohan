@@ -29,22 +29,50 @@ export default function HomePage() {
       <div className="border-b border-hairline bg-surface-muted">
         <Container>
           <div className="grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
+            {/* Landing hero entrance — Developer 2 scope (Milestone 1).
+                Load-triggered, not scroll-triggered: this is above the fold on
+                every breakpoint, so a scroll reveal would never fire. Each line
+                is offset ~90ms so the eye is led down the hero in reading
+                order and lands on the buttons last. */}
             <div>
-              <p className="text-sm font-medium uppercase tracking-wide text-brand-700">
+              <p
+                data-hero
+                className="text-sm font-medium uppercase tracking-wide text-brand-700"
+              >
                 {content.brand.tagline}
               </p>
-              <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+              <h1
+                data-hero
+                style={{ "--hero-delay": "90ms" } as React.CSSProperties}
+                className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+              >
                 {content.home.headline}
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-ink-muted sm:text-lg">
+              <p
+                data-hero
+                style={{ "--hero-delay": "180ms" } as React.CSSProperties}
+                className="mt-6 max-w-xl text-base leading-relaxed text-ink-muted sm:text-lg"
+              >
                 {content.home.supporting}
               </p>
+              {/* Deliberately NOT wrapped in `data-hero`: CtaGroup renders the
+                  Apply Now dialog as its own child, and an animating ancestor
+                  would drag the open dialog through the hero's fade. The
+                  buttons arrive with the supporting line instead. */}
               <CtaGroup size="lg" className="mt-8" />
-              <p className="mt-6 text-sm text-ink-muted">{content.home.trustLine}</p>
+              <p
+                data-hero
+                style={{ "--hero-delay": "270ms" } as React.CSSProperties}
+                className="mt-6 text-sm text-ink-muted"
+              >
+                {content.home.trustLine}
+              </p>
             </div>
 
             {/* Photography slot — Developer 2 scope, asset not yet supplied. */}
             <div
+              data-hero
+              style={{ "--hero-delay": "180ms" } as React.CSSProperties}
               data-empty-slot="hero photograph"
               className="flex aspect-4/3 items-center justify-center rounded-card border border-dashed border-hairline bg-surface"
             >
