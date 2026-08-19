@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV } from "@/config/site.config";
-import { content } from "@/content";
 import { Container } from "@/components/ui/Container";
 import { CtaGroup } from "@/components/cta/CtaGroup";
-import { BrandMark } from "./BrandMark";
+import { Logo } from "./Logo";
 import { cn } from "@/lib/cn";
 
 /**
@@ -73,10 +72,10 @@ export function Header() {
             data-testid="brand-link"
             className="flex shrink-0 items-center gap-2 text-ink"
           >
-            <BrandMark className="text-brand-700" />
-            <span className="text-lg font-semibold tracking-tight">
-              {content.brand.name}
-            </span>
+            {/* The wordmark already reads "Taoohan"; a text span beside it
+                announced the name twice to a screen reader. The alt text on
+                the image carries it instead. */}
+            <Logo priority />
           </Link>
 
           {/* Desktop navigation — order comes from NAV */}

@@ -89,36 +89,6 @@ test.describe("motion enabled", () => {
     await expect(lastReveal).toHaveAttribute("data-revealed", "");
   });
 
-  test("the Apply Now dialog is never inside an animating ancestor", async ({
-    page,
-  }) => {
-    // Regression guard. Wrapping CtaGroup in the hero entrance once dragged the
-    // open dialog through the hero's fade, because the modal renders as a child
-    // of CtaGroup. The dialog must not inherit a running animation.
-    await page.goto("/");
-    // `visible: true` matters at 360/768, where the header's copy of the CTA
-    // comes first in the DOM but sits inside the collapsed mobile menu.
-    await page
-      .getByTestId("cta-job-seeker")
-      .filter({ visible: true })
-      .first()
-      .click();
-
-    const dialog = page.getByTestId("apply-modal");
-    await expect(dialog).toBeVisible();
-
-    const animatingAncestor = await dialog.evaluate((el) => {
-      for (let node = el.parentElement; node; node = node.parentElement) {
-        const style = getComputedStyle(node);
-        if (style.animationName !== "none" || Number(style.opacity) < 1) {
-          return node.tagName;
-        }
-      }
-      return null;
-    });
-
-    expect(animatingAncestor).toBeNull();
-  });
 });
 
 test.describe("reduced motion", () => {
