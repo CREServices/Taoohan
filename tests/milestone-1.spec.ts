@@ -1,6 +1,7 @@
 import { test, expect, type Page, type ConsoleMessage } from "@playwright/test";
 import { NAV, CTA } from "../src/config/site.config";
 import { content } from "../src/content";
+import { showsFullNav } from "./support/viewport";
 
 /**
  * MILESTONE 1 ACCEPTANCE CHECKLIST — AS EXECUTABLE TESTS.
@@ -105,7 +106,7 @@ test.describe("navigation order", () => {
 
   test("desktop bar renders in config order", async ({ page }, testInfo) => {
     test.skip(
-      testInfo.project.name !== "desktop-1440",
+      !showsFullNav(testInfo),
       "The full nav bar is only shown at desktop width.",
     );
 
@@ -141,7 +142,7 @@ test.describe("mobile menu", () => {
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === "desktop-1440",
+      showsFullNav(testInfo),
       "Desktop shows the full bar instead of the disclosure menu.",
     );
 
@@ -183,7 +184,7 @@ test.describe("mobile menu", () => {
   });
 
   test("desktop hides the disclosure toggle", async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== "desktop-1440", "Desktop-only assertion.");
+    test.skip(!showsFullNav(testInfo), "Desktop-only assertion.");
 
     await page.goto("/");
     await expect(page.getByTestId("mobile-menu-toggle")).toBeHidden();
@@ -212,10 +213,17 @@ test.describe("calls to action", () => {
     await expect(visibleCta(page, "cta-job-seeker")).toBeVisible();
     await expect(visibleCta(page, "cta-employer")).toBeVisible();
 
-    await expect(visibleCta(page, "cta-job-seeker")).toHaveText(
-      CTA.jobSeeker.label,
-    );
-    await expect(visibleCta(page, "cta-employer")).toHaveText(CTA.employer.label);
+    // Wording assertions scoped to the page body by Developer 2. The first
+    // VISIBLE CTA at desktop widths is the sticky header's, which now uses the
+    // config's `shortLabel` so the header row fits its 1216px container. The
+    // client's approved full wording lives on the page, so assert it there.
+    const main = page.locator("main");
+    await expect(
+      main.getByTestId("cta-job-seeker").filter({ visible: true }).first(),
+    ).toHaveText(CTA.jobSeeker.label);
+    await expect(
+      main.getByTestId("cta-employer").filter({ visible: true }).first(),
+    ).toHaveText(CTA.employer.label);
   });
 
   test("every page surfaces at least one call to action", async ({ page }) => {

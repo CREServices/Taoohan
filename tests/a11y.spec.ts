@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { NAV } from "../src/config/site.config";
+import { showsFullNav } from "./support/viewport";
 
 /**
  * ACCESSIBILITY GATE.
@@ -86,10 +87,7 @@ test("the open Apply Now dialog is accessible", async ({ page }) => {
 });
 
 test("the open mobile menu is accessible", async ({ page }, testInfo) => {
-  test.skip(
-    testInfo.project.name === "desktop-1440",
-    "Desktop shows the full nav bar instead.",
-  );
+  test.skip(showsFullNav(testInfo), "Desktop shows the full nav bar instead.");
 
   await page.goto("/");
   await page.getByTestId("mobile-menu-toggle").click();
