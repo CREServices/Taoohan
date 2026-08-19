@@ -10,14 +10,28 @@ export function PageHero({ eyebrow, heading, lead }: PageIntro) {
   return (
     <div className="border-b border-hairline bg-surface-muted">
       <Container>
+        {/* Above the fold, so these use the load-triggered `data-hero`
+            entrance rather than a scroll reveal that would never fire. The
+            three lines rise in sequence, reading top to bottom. */}
         <div className="max-w-3xl py-14 sm:py-16 lg:py-20">
-          <p className="text-sm font-medium uppercase tracking-wide text-brand-700">
+          <p
+            data-hero
+            className="text-sm font-medium uppercase tracking-wide text-brand-700"
+          >
             {eyebrow}
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+          <h1
+            data-hero
+            style={{ "--hero-delay": "90ms" } as React.CSSProperties}
+            className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+          >
             {heading}
           </h1>
-          <p className="mt-5 text-base leading-relaxed text-ink-muted sm:text-lg">
+          <p
+            data-hero
+            style={{ "--hero-delay": "180ms" } as React.CSSProperties}
+            className="mt-5 text-base leading-relaxed text-ink-muted sm:text-lg"
+          >
             {lead}
           </p>
         </div>

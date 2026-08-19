@@ -124,3 +124,79 @@
     border-radius: 0.5rem;
   }
 }
+
+/* ==========================================================================
+   MOTION — Developer 2 scope (Milestone 1: animation)
+   ==========================================================================
+   Everything here is gated behind `.motion-ready` on <html>, which the boot
+   script in layout.tsx adds before first paint. It adds the class ONLY when
+   the visitor has not asked for reduced motion. Consequences, by design:
+
+     no JavaScript   → class absent → every element renders visible
+     reduced motion  → class absent → every element renders visible
+     JS + motion OK  → class present → elements start hidden and animate in
+
+   That ordering is deliberate: content must never depend on an animation
+   running in order to be readable.
+
+   Only two primitives exist, both compositor-friendly (opacity + transform
+   only — no layout-triggering properties, so reveals stay off the main thread):
+
+     [data-reveal]  fades and rises in when scrolled into view (driven by the
+                    single IntersectionObserver in MotionProvider.tsx)
+     [data-hero]    fades and rises in immediately on load, for above-the-fold
+                    content that must not wait for a scroll event
+
+   Both accept a `--reveal-delay` / `--hero-delay` custom property for stagger.
+   ========================================================================== */
+
+@layer components {
+  /* --- Scroll reveal ----------------------------------------------------- */
+  .motion-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+
+  .motion-ready [data-reveal][data-revealed] {
+    opacity: 1;
+    transform: none;
+    /* border-color is in this list only so that the hover treatment on cards
+       (Tailwind's `transition-colors`) is not clobbered by this rule, which
+       wins on specificity. */
+    transition-property: opacity, transform, border-color;
+    transition-duration: 700ms, 700ms, 200ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* --- Hero entrance ----------------------------------------------------- */
+  .motion-ready [data-hero] {
+    opacity: 0;
+    animation: rise-in 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--hero-delay, 0ms);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Safety net. The boot script reads the motion preference once, at load. If the
+   visitor changes that OS setting mid-session, this guarantees nothing is left
+   stranded at opacity 0 waiting for a scroll that will no longer animate. */
+@media (prefers-reduced-motion: reduce) {
+  .motion-ready [data-reveal],
+  .motion-ready [data-hero] {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

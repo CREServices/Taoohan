@@ -35,7 +35,12 @@ export function Section({
         className,
       )}
     >
-      <Container>{children}</Container>
+      {/* Every band reveals as one unit on scroll. Putting it here means all
+          seven pages animate without a single page file changing — and the
+          bands built on Section (stats, testimonials, CTA) inherit it too. */}
+      <Container>
+        <div data-reveal>{children}</div>
+      </Container>
     </section>
   );
 }
