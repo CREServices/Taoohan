@@ -1,15 +1,21 @@
 # Deployment & credentials
 
-Everything on this page is a **manual step for Developer 1**. None of it can be
-automated from the codebase, because all of it needs credentials or account
-access.
+Everything on this page is a **manual step**. None of it can be automated from
+the codebase, because all of it needs credentials or account access.
+
+**Ownership:** collecting the credentials is Developer 1's job (they are the
+sole client liaison). Publishing to Vercel is **Developer 2's** task per the
+task division. Developer 1 hands the values over; Developer 2 pastes them into
+Vercel and deploys.
 
 ---
 
 ## 1. The six environment variables
 
-These are the only secrets the project uses. They are read at request time by
-`src/app/api/apply/route.ts` via `process.env`, and are never hardcoded.
+These are the only secrets the project uses. They are read at request time via
+`process.env` by both mail routes — `src/app/api/apply/route.ts` (job seekers)
+and `src/app/api/request-manpower/route.ts` (employers) — and are never
+hardcoded.
 
 | Key | What it is | Source |
 | --- | --- | --- |
@@ -19,6 +25,7 @@ These are the only secrets the project uses. They are read at request time by
 | `SMTP_PASS` | SMTP password or app-specific password | Client / mail provider |
 | `SMTP_FROM` | From header, e.g. `Taoohan Careers <noreply@example.com>` | Client |
 | `APPLY_TO_EMAIL` | The inbox that receives job applications | Client |
+| `REQUEST_TO_EMAIL` | *Optional.* Inbox for employer staffing requests. Leave blank and they go to `APPLY_TO_EMAIL` too. | Client |
 
 > If the mail provider offers an **app-specific password**, use it. Never put a
 > primary account password in `SMTP_PASS`.
@@ -42,8 +49,9 @@ fails the build rather than reaching the remote.
 
 ### On Vercel
 
-**Vercel → Project → Settings → Environment Variables**, then add all six keys
-with the same values. Apply them to **Production** and **Preview**.
+**Vercel → Project → Settings → Environment Variables**, then add the six
+required keys (plus `REQUEST_TO_EMAIL` if the client wants employer requests in
+a separate inbox). Apply them to **Production** and **Preview**.
 
 Redeploy after adding them — Vercel bakes environment variables at build time,
 so an existing deployment will not pick them up on its own.
@@ -56,7 +64,7 @@ so an existing deployment will not pick them up on its own.
 2. Import `Gene232908/manpower-dev`.
 3. Framework preset: **Next.js**. Root directory: repository root. Build
    command and output directory: leave as detected.
-4. Add the six environment variables (above) *before* the first deploy.
+4. Add the environment variables (above) *before* the first deploy.
 5. Deploy.
 
 **Do NOT connect a custom domain.** Phase 1 ships on the Vercel-provided URL
@@ -96,6 +104,23 @@ business number in `src/config/contact.ts` first (see
 
 Until the number is supplied, the modal correctly shows *"WhatsApp is not
 available yet"* instead of a broken link.
+
+### Employer channel — Request Staffing & Manpower
+
+1. Open the live site → **Request Staffing & Manpower**.
+2. Fill in company, name and work email → **Continue**.
+3. Describe the roles needed → **Send request**.
+4. Expect the on-screen confirmation, and an email in `REQUEST_TO_EMAIL` (or
+   `APPLY_TO_EMAIL` if that key is blank).
+
+The dialog also offers **Open in my email app**, a `mailto:` link with the
+recipient and subject already filled in. That path needs no SMTP at all, but it
+does need the client's business email in `src/config/contact.ts` — until then
+the dialog says so rather than rendering a dead link.
+
+The category selector stays hidden until the client's manpower categories list
+is added to `src/config/manpower.ts`; the free-text field carries the request
+in the meantime.
 
 ---
 
