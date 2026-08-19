@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CTA } from "@/config/site.config";
 import { Button } from "@/components/ui/Button";
 import { ApplyNowModal } from "@/components/flows/ApplyNowModal";
+import { RequestManpowerModal } from "@/components/flows/RequestManpowerModal";
 import { cn } from "@/lib/cn";
 
 type CtaGroupProps = {
@@ -13,6 +14,16 @@ type CtaGroupProps = {
   tone?: "default" | "inverse";
   /** Hide the employer CTA where only the job-seeker path is relevant. */
   only?: "jobSeeker" | "employer";
+  /**
+   * Use the config's `shortLabel` instead of the full button name.
+   *
+   * For the sticky header, where the brand, all seven nav items and both
+   * buttons share one row. At full length the row needs ~1318px inside a
+   * 1232px container at 1280, which is what made the nav labels wrap onto two
+   * lines at every desktop width. The page body always uses the full,
+   * client-approved wording.
+   */
+  compact?: boolean;
 };
 
 /**
@@ -22,25 +33,45 @@ type CtaGroupProps = {
  *   to the real two-step Apply Now flow (WhatsApp deep link or Nodemailer
  *   email). Nothing is stored; the modal hands off and forgets.
  *
- * - EMPLOYER ("Request Staffing & Manpower") — the request-manpower flow logic
- *   is Developer 2's scope. Developer 1 places the button and leaves it on a
- *   PLACEHOLDER HANDLER so the two workstreams do not collide.
+ * - EMPLOYER ("Request Staffing & Manpower") — Developer 2 scope. Milestone 3
+ *   replaced Developer 1's placeholder handler with the real two-step employer
+ *   request flow (SMTP via /api/request-manpower, with a pre-filled mailto:
+ *   fallback). Email only, by agreement — no WhatsApp on the employer side.
  */
 export function CtaGroup({
   size = "md",
   className,
   tone = "default",
   only,
+  compact = false,
 }: CtaGroupProps) {
   const [applyOpen, setApplyOpen] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [requestOpen, setRequestOpen] = useState(false);
 
   const showJobSeeker = only !== "employer";
   const showEmployer = only !== "jobSeeker";
 
   return (
-    <div data-testid="cta-group" className={cn("flex w-full flex-col gap-3", className)}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+    <div
+      data-testid="cta-group"
+      className={cn(
+        "flex gap-3",
+        // In the page body the buttons stack and fill the column. In the
+        // header they must size to their content: `w-full` there made the
+        // group claim 413px of a 1216px container, which is what pushed the
+        // whole header row past the container and forced the nav to wrap.
+        compact ? "w-auto items-center" : "w-full flex-col",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "flex gap-3",
+          compact
+            ? "flex-row flex-nowrap"
+            : "flex-col sm:flex-row sm:flex-wrap",
+        )}
+      >
         {showJobSeeker && (
           <Button
             size={size}
@@ -50,7 +81,7 @@ export function CtaGroup({
             aria-haspopup="dialog"
             onClick={() => setApplyOpen(true)}
           >
-            {CTA.jobSeeker.label}
+            {compact ? CTA.jobSeeker.shortLabel : CTA.jobSeeker.label}
           </Button>
         )}
 
@@ -60,33 +91,27 @@ export function CtaGroup({
             variant="secondary"
             data-testid="cta-employer"
             data-cta={CTA.employer.key}
-            onClick={() =>
-              // Placeholder only — Developer 2 owns this flow.
-              setNotice(
-                `“${CTA.employer.label}” is handled by the employer request flow, which is still being built.`,
-              )
-            }
+            aria-haspopup="dialog"
+            onClick={() => setRequestOpen(true)}
           >
-            {CTA.employer.label}
+            {compact ? CTA.employer.shortLabel : CTA.employer.label}
           </Button>
         )}
       </div>
 
-      <p
-        role="status"
-        aria-live="polite"
-        data-testid="cta-notice"
-        className={cn(
-          "text-sm",
-          tone === "inverse" ? "text-ink-inverse" : "text-ink-muted",
-          notice ? "block" : "sr-only",
-        )}
-      >
-        {notice}
-      </p>
+      {/* The `cta-notice` live region that used to announce the employer
+          placeholder is gone: the button now opens a real dialog, which
+          announces itself. */}
 
       {showJobSeeker && (
         <ApplyNowModal open={applyOpen} onClose={() => setApplyOpen(false)} />
+      )}
+
+      {showEmployer && (
+        <RequestManpowerModal
+          open={requestOpen}
+          onClose={() => setRequestOpen(false)}
+        />
       )}
     </div>
   );

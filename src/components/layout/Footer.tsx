@@ -3,7 +3,7 @@ import { NAV } from "@/config/site.config";
 import { CONTACT, activeSocials, hasValue } from "@/config/contact";
 import { content } from "@/content";
 import { Container } from "@/components/ui/Container";
-import { BrandMark } from "./BrandMark";
+import { Logo } from "./Logo";
 
 /**
  * A contact line. When the client has not supplied the value yet we render a
@@ -39,8 +39,7 @@ export function Footer() {
           {/* Brand + tagline */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2">
-              <BrandMark className="text-ink-inverse" />
-              <span className="text-lg font-semibold">{content.brand.name}</span>
+              <Logo variant="onDark" />
             </div>
             <p className="mt-3 max-w-xs text-sm text-ink-inverse/70">
               {content.brand.tagline}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { content } from "@/content";
 import { NAV_BY_HREF } from "@/config/site.config";
+import { MANPOWER_CATEGORIES } from "@/config/manpower";
 import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
@@ -52,13 +53,30 @@ export default function ForEmployersPage() {
         <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {content.labels.manpowerCategories}
         </h2>
-        {/* BLOCKED ON CLIENT: the categories list is sent as a separate file.
-            The employer selector that consumes it is Developer 2's scope. */}
-        <EmptySlot
-          className="mt-6"
-          label="manpower categories list"
-          note="Client is sending this as a separate file. The employer selector built on it is Developer 2's scope."
-        />
+        {/* Data-driven from the same config the Request Manpower selector
+            reads, so filling in that one file lights up both surfaces.
+            BLOCKED ON CLIENT: the list is promised as a separate file. */}
+        {MANPOWER_CATEGORIES.length > 0 ? (
+          <ul
+            data-testid="manpower-categories"
+            className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {MANPOWER_CATEGORIES.map((category) => (
+              <li
+                key={category.key}
+                className="rounded-card border border-hairline bg-surface px-5 py-4 text-sm font-medium"
+              >
+                {category.label}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptySlot
+            className="mt-6"
+            label="manpower categories list"
+            note="Client is sending this as a separate file. The Request Manpower selector reads the same config and falls back to a free-text field until it arrives."
+          />
+        )}
       </Section>
 
       <TestimonialsBand heading={content.labels.testimonialsEmployers} />

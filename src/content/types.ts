@@ -108,6 +108,8 @@ export type SiteContent = {
   employers: PageIntro & {
     body: string;
     steps: readonly Feature[];
+    /** Instructions shown alongside the Request Manpower flow (Milestone 3). */
+    requestInstructions: readonly string[];
   };
 
   jobSeekers: PageIntro & {
@@ -147,6 +149,7 @@ export type SiteContent = {
     certifications: string;
     partners: string;
     manpowerCategories: string;
+    requestManpower: string;
     howToApply: string;
     applyWhatsApp: string;
     applyEmail: string;
@@ -154,6 +157,18 @@ export type SiteContent = {
     footerPages: string;
     footerContact: string;
     footerOffice: string;
+  };
+
+  /** Copy for the root error boundary (app/global-error.tsx). */
+  errorPage: {
+    heading: string;
+    body: string;
+    /** Label on the button that re-renders the failed tree. */
+    retry: string;
+    /** Label on the link back to the home page. */
+    home: string;
+    /** Prefix for the error digest, e.g. "Reference:". */
+    reference: string;
   };
 
   /** Recruitment disclaimer shown in the footer. */

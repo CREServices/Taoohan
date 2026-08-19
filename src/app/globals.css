@@ -124,3 +124,204 @@
     border-radius: 0.5rem;
   }
 }
+
+/* ==========================================================================
+   MOTION — Developer 2 scope (Milestone 1: animation)
+   ==========================================================================
+   Everything here is gated behind `.motion-ready` on <html>, which the boot
+   script in layout.tsx adds before first paint. It adds the class ONLY when
+   the visitor has not asked for reduced motion. Consequences, by design:
+
+     no JavaScript   → class absent → every element renders visible
+     reduced motion  → class absent → every element renders visible
+     JS + motion OK  → class present → elements start hidden and animate in
+
+   That ordering is deliberate: content must never depend on an animation
+   running in order to be readable.
+
+   Only two primitives exist, both compositor-friendly (opacity + transform
+   only — no layout-triggering properties, so reveals stay off the main thread):
+
+     [data-reveal]  fades and rises in when scrolled into view (driven by the
+                    single IntersectionObserver in MotionProvider.tsx)
+     [data-hero]    fades and rises in immediately on load, for above-the-fold
+                    content that must not wait for a scroll event
+
+   Both accept a `--reveal-delay` / `--hero-delay` custom property for stagger.
+   ========================================================================== */
+
+@layer components {
+  /* --- Scroll reveal ----------------------------------------------------- */
+  .motion-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+
+  .motion-ready [data-reveal][data-revealed] {
+    opacity: 1;
+    transform: none;
+    /* border-color is in this list only so that the hover treatment on cards
+       (Tailwind's `transition-colors`) is not clobbered by this rule, which
+       wins on specificity. */
+    transition-property: opacity, transform, border-color;
+    transition-duration: 700ms, 700ms, 200ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* --- Hero entrance ----------------------------------------------------- */
+  .motion-ready [data-hero] {
+    opacity: 0;
+    animation: rise-in 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--hero-delay, 0ms);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   BRAND WATERMARK
+   ==========================================================================
+   The infinity mark sitting behind section content, so the brand is present
+   down the page rather than only in the header and footer.
+
+   Rendered by <Section>. Position, size and rotation vary by `:nth-of-type`,
+   which gives a scattered feel that is nonetheless DETERMINISTIC — the server
+   and client agree on it. A JS random position would not, and that is one of
+   the documented causes of a React hydration mismatch.
+
+   Opacity is kept low enough that body text keeps its full contrast ratio.
+   The accessibility gate checks contrast on every page, so this cannot drift
+   into unreadable territory without the suite failing.
+   ========================================================================== */
+
+.brand-watermark {
+  /* Hidden by default. Only every OTHER section shows one — a mark on every
+     band put two of them either side of a section boundary, which read as
+     clutter rather than texture. */
+  display: none;
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 22rem;
+  aspect-ratio: 901 / 481;
+  background-image: url("/logo/logo.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.09;
+}
+
+/* Odd sections only, sides alternating. Because the marks sit vertically
+   centred rather than at the edges, two can never crowd a section boundary. */
+section:nth-of-type(4n + 1) .brand-watermark {
+  display: block;
+  top: 50%;
+  right: -5rem;
+  translate: 0 -50%;
+  rotate: -8deg;
+}
+
+section:nth-of-type(4n + 3) .brand-watermark {
+  display: block;
+  top: 50%;
+  left: -5rem;
+  translate: 0 -50%;
+  rotate: 7deg;
+  width: 18rem;
+}
+
+/* The dark bands swallow the mark, so it needs more presence there. */
+section[data-tone="inverse"] .brand-watermark {
+  opacity: 0.14;
+}
+
+/* Phones: smaller, and always pushed off an edge so it never sits squarely
+   behind a narrow column of body text. */
+@media (max-width: 640px) {
+  .brand-watermark {
+    width: 13rem;
+    opacity: 0.07;
+  }
+
+  section:nth-of-type(4n + 1) .brand-watermark {
+    right: -4rem;
+  }
+
+  section:nth-of-type(4n + 3) .brand-watermark {
+    left: -4rem;
+    width: 12rem;
+  }
+}
+
+/* --- Overlay entrances -----------------------------------------------------
+   Used by the mobile menu panel and both dialogs. These are applied through
+   Tailwind's `motion-safe:` variant, so a visitor who has asked for reduced
+   motion gets the overlay instantly rather than a shortened animation. */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The menu panel is anchored to the header, so it grows downward out of it. */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Dialogs rise and settle — a touch of scale reads as "arriving", without the
+   bounce that makes repeated use feel slow. */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* On phones both dialogs are bottom sheets, so they come up from the edge. */
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Safety net. The boot script reads the motion preference once, at load. If the
+   visitor changes that OS setting mid-session, this guarantees nothing is left
+   stranded at opacity 0 waiting for a scroll that will no longer animate. */
+@media (prefers-reduced-motion: reduce) {
+  .motion-ready [data-reveal],
+  .motion-ready [data-hero] {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

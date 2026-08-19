@@ -1,6 +1,7 @@
 import { test, expect, type Page, type ConsoleMessage } from "@playwright/test";
 import { NAV, CTA } from "../src/config/site.config";
 import { content } from "../src/content";
+import { showsFullNav } from "./support/viewport";
 
 /**
  * MILESTONE 1 ACCEPTANCE CHECKLIST — AS EXECUTABLE TESTS.
@@ -105,7 +106,7 @@ test.describe("navigation order", () => {
 
   test("desktop bar renders in config order", async ({ page }, testInfo) => {
     test.skip(
-      testInfo.project.name !== "desktop-1440",
+      !showsFullNav(testInfo),
       "The full nav bar is only shown at desktop width.",
     );
 
@@ -141,7 +142,7 @@ test.describe("mobile menu", () => {
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === "desktop-1440",
+      showsFullNav(testInfo),
       "Desktop shows the full bar instead of the disclosure menu.",
     );
 
@@ -183,7 +184,7 @@ test.describe("mobile menu", () => {
   });
 
   test("desktop hides the disclosure toggle", async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== "desktop-1440", "Desktop-only assertion.");
+    test.skip(!showsFullNav(testInfo), "Desktop-only assertion.");
 
     await page.goto("/");
     await expect(page.getByTestId("mobile-menu-toggle")).toBeHidden();
@@ -212,10 +213,17 @@ test.describe("calls to action", () => {
     await expect(visibleCta(page, "cta-job-seeker")).toBeVisible();
     await expect(visibleCta(page, "cta-employer")).toBeVisible();
 
-    await expect(visibleCta(page, "cta-job-seeker")).toHaveText(
-      CTA.jobSeeker.label,
-    );
-    await expect(visibleCta(page, "cta-employer")).toHaveText(CTA.employer.label);
+    // Wording assertions scoped to the page body by Developer 2. The first
+    // VISIBLE CTA at desktop widths is the sticky header's, which now uses the
+    // config's `shortLabel` so the header row fits its 1216px container. The
+    // client's approved full wording lives on the page, so assert it there.
+    const main = page.locator("main");
+    await expect(
+      main.getByTestId("cta-job-seeker").filter({ visible: true }).first(),
+    ).toHaveText(CTA.jobSeeker.label);
+    await expect(
+      main.getByTestId("cta-employer").filter({ visible: true }).first(),
+    ).toHaveText(CTA.employer.label);
   });
 
   test("every page surfaces at least one call to action", async ({ page }) => {
@@ -245,26 +253,24 @@ test.describe("calls to action", () => {
     }
   });
 
-  test("the employer CTA stays a placeholder and does NOT navigate", async ({
+  test("the employer CTA opens the request dialog and does NOT navigate", async ({
     page,
   }) => {
-    // The employer request-manpower flow is Developer 2's scope, so this button
-    // must remain inert in Developer 1's work at every milestone.
+    // Updated by Developer 2 in Milestone 3. This asserted the placeholder
+    // handler ("still being built") that Developer 1 left in place while the
+    // employer flow was unbuilt. That flow now exists, so the button opens the
+    // Request Manpower dialog instead. The rest of the guarantee is unchanged
+    // and still worth asserting: opening it must not navigate or log errors.
     const errors = watchConsole(page);
     await page.goto("/for-employers");
 
     const before = page.url();
 
-    // Scope to one CTA group so the notice asserted below is the one this
-    // button actually drives.
     const group = page.getByTestId("cta-group").filter({ visible: true }).first();
     await group.getByTestId("cta-employer").click();
 
-    await expect(group.getByTestId("cta-notice")).toContainText(
-      "still being built",
-    );
+    await expect(page.getByTestId("request-modal")).toBeVisible();
 
-    // Nothing real happened: no navigation, no console errors.
     expect(page.url()).toBe(before);
     expect(errors).toEqual([]);
   });

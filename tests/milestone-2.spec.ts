@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { NAV, CTA } from "../src/config/site.config";
 import { CONTACT, SOCIALS } from "../src/config/contact";
 import { content } from "../src/content";
+import { showsFullNav } from "./support/viewport";
 
 /**
  * MILESTONE 2 ACCEPTANCE CHECKLIST — AS EXECUTABLE TESTS.
@@ -216,12 +217,33 @@ test.describe("wording comes from config", () => {
     expect(CTA.jobSeeker.label).toBe("Submit Your CV");
     expect(CTA.employer.label).toBe("Request Staffing & Manpower");
 
+    // Scoped to the page body by Developer 2. This used to take the first
+    // VISIBLE CTA, which at desktop widths is the one in the sticky header —
+    // and the header now uses the config's `shortLabel`, because the full
+    // names do not fit beside the brand and seven nav items on one row.
+    // The client's approved wording is what the page shows, so assert it there.
+    const main = page.locator("main");
     await expect(
-      page.getByTestId("cta-job-seeker").filter({ visible: true }).first(),
+      main.getByTestId("cta-job-seeker").filter({ visible: true }).first(),
     ).toHaveText(CTA.jobSeeker.label);
     await expect(
-      page.getByTestId("cta-employer").filter({ visible: true }).first(),
+      main.getByTestId("cta-employer").filter({ visible: true }).first(),
     ).toHaveText(CTA.employer.label);
+  });
+
+  test("the header's compact CTA wording also comes from the config", async ({
+    page,
+  }, testInfo) => {
+    test.skip(!showsFullNav(testInfo), "The header CTAs only show at desktop.");
+    await page.goto("/");
+
+    const header = page.locator("header");
+    await expect(header.getByTestId("cta-job-seeker")).toHaveText(
+      CTA.jobSeeker.shortLabel,
+    );
+    await expect(header.getByTestId("cta-employer")).toHaveText(
+      CTA.employer.shortLabel,
+    );
   });
 });
 

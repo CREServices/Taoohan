@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { NAV } from "../src/config/site.config";
+import { showsFullNav } from "./support/viewport";
 
 /**
  * ACCESSIBILITY GATE.
@@ -13,6 +14,22 @@ import { NAV } from "../src/config/site.config";
  * It also protects the brand-colour swap — if a future palette change puts text
  * below the WCAG AA contrast ratio, this suite catches it immediately.
  */
+
+/**
+ * Audited with reduced motion — added by Developer 2 with the Milestone 1
+ * animation work.
+ *
+ * WCAG contrast applies to the settled, rendered state. Scanning an element
+ * mid-fade measures a partially transparent colour and reports a contrast
+ * failure that does not exist once the animation lands, which made the dialog
+ * and mobile-menu scans race the hero entrance.
+ *
+ * Forcing `prefers-reduced-motion` means the boot script never applies the
+ * hidden starting state, so axe always sees the final frame. It also audits the
+ * exact experience a motion-sensitive visitor gets. The animation itself is
+ * covered separately in motion.spec.ts.
+ */
+test.use({ contextOptions: { reducedMotion: "reduce" } });
 
 for (const item of NAV) {
   test(`${item.label} (${item.href}) has no WCAG A/AA violations`, async ({
@@ -70,10 +87,7 @@ test("the open Apply Now dialog is accessible", async ({ page }) => {
 });
 
 test("the open mobile menu is accessible", async ({ page }, testInfo) => {
-  test.skip(
-    testInfo.project.name === "desktop-1440",
-    "Desktop shows the full nav bar instead.",
-  );
+  test.skip(showsFullNav(testInfo), "Desktop shows the full nav bar instead.");
 
   await page.goto("/");
   await page.getByTestId("mobile-menu-toggle").click();
