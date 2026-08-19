@@ -49,6 +49,28 @@ export const IMAGES = {
   },
 } as const satisfies Record<string, ImageSlot>;
 
+/**
+ * Brand logo files — SUPPLIED by the client, no longer a blocked slot.
+ *
+ * The wordmark bakes its text colour into the artwork, so there are two files
+ * rather than one recolourable asset. The standalone infinity mark is used for
+ * the browser tab icon (src/app/icon.svg).
+ *
+ * SVG is used everywhere in preference to the PNG copies in the same folder:
+ * a fifth of the bytes, and sharp at any size or pixel density.
+ */
+export const LOGOS = {
+  /** Dark text — for light backgrounds (the header). */
+  wordmarkOnLight: "/logo/taoohan-black.svg",
+  /** White text — for dark backgrounds (the footer's inverse band). */
+  wordmarkOnDark: "/logo/taoohan-white.svg",
+  /** The infinity mark on its own, no wordmark. */
+  mark: "/logo/logo.svg",
+  /** Intrinsic size of the wordmark files, for next/image. */
+  wordmarkWidth: 880,
+  wordmarkHeight: 289,
+} as const;
+
 /** True once a real file has been supplied for this slot. */
 export const hasImage = (slot: ImageSlot): boolean => slot.src.trim().length > 0;
 

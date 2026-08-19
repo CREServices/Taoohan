@@ -13,6 +13,7 @@ import {
   type EmployerErrors,
 } from "@/lib/employer";
 import { cn } from "@/lib/cn";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 
 /**
  * The employer Request Manpower flow — Developer 2 scope, Milestone 3.
@@ -101,7 +102,7 @@ export function RequestManpowerModal({
   useEffect(() => {
     if (!open) return;
     const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE);
-    first?.focus();
+    first?.focus({ preventScroll: true });
   }, [open, step]);
 
   // Escape to close, and trap Tab inside the dialog.
@@ -128,10 +129,10 @@ export function RequestManpowerModal({
 
       if (event.shiftKey && active === first) {
         event.preventDefault();
-        last.focus();
+        last.focus({ preventScroll: true });
       } else if (!event.shiftKey && active === last) {
         event.preventDefault();
-        first.focus();
+        first.focus({ preventScroll: true });
       }
     };
 
@@ -140,14 +141,19 @@ export function RequestManpowerModal({
   }, [open, onClose]);
 
   // Lock the page behind the dialog, and restore focus to the trigger on close.
+  // Uses the shared reference-counted lock: this dialog can be opened from
+  // inside the already-open mobile menu, and a naive unlock here would release
+  // the page while the menu is still covering it.
   useEffect(() => {
     if (!open) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    lockScroll();
 
     return () => {
-      document.body.style.overflow = previousOverflow;
-      restoreFocusRef.current?.focus();
+      unlockScroll();
+      // preventScroll: restoring focus must not drag the page to the trigger.
+      // Without it, closing this dialog from inside the open mobile menu
+      // scrolled the locked page by ~500px.
+      restoreFocusRef.current?.focus({ preventScroll: true });
     };
   }, [open]);
 
@@ -272,7 +278,7 @@ export function RequestManpowerModal({
   // otherwise clip a fixed-position dialog rendered inside it.
   return createPortal(
     <div
-      className="fixed inset-0 z-100 flex items-end justify-center bg-ink/60 p-0 sm:items-center sm:p-6"
+      className="fixed inset-0 z-100 flex items-end justify-center bg-ink/60 p-0 motion-safe:animate-[fade-in_180ms_ease-out] sm:items-center sm:p-6"
       data-testid="request-backdrop"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -284,7 +290,7 @@ export function RequestManpowerModal({
         aria-modal="true"
         aria-labelledby={titleId}
         data-testid="request-modal"
-        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-card bg-surface p-6 sm:rounded-card sm:p-8"
+        className="max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-card bg-surface p-6 motion-safe:animate-[sheet-up_260ms_cubic-bezier(0.16,1,0.3,1)] sm:rounded-card sm:p-8 sm:motion-safe:animate-[dialog-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
       >
         <div className="flex items-start justify-between gap-4">
           <div>

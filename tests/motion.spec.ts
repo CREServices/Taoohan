@@ -107,17 +107,26 @@ test.describe("motion enabled", () => {
     const dialog = page.getByTestId("apply-modal");
     await expect(dialog).toBeVisible();
 
-    const animatingAncestor = await dialog.evaluate((el) => {
+    // The guarantee is that the dialog is PORTALLED OUT of the page content,
+    // so it can never inherit the hero entrance or a scroll reveal. Its own
+    // backdrop animates on purpose, so "no ancestor animates" would be the
+    // wrong assertion — what matters is which ancestors it has at all.
+    const trappedIn = await dialog.evaluate((el) => {
       for (let node = el.parentElement; node; node = node.parentElement) {
-        const style = getComputedStyle(node);
-        if (style.animationName !== "none" || Number(style.opacity) < 1) {
-          return node.tagName;
-        }
+        if (node.tagName === "MAIN") return "main";
+        if (node.hasAttribute("data-hero")) return "data-hero";
+        if (node.hasAttribute("data-reveal")) return "data-reveal";
       }
       return null;
     });
 
-    expect(animatingAncestor).toBeNull();
+    expect(trappedIn).toBeNull();
+
+    // And it really is a direct child of <body>, i.e. portalled.
+    const parentIsBody = await dialog.evaluate(
+      (el) => el.parentElement?.parentElement === document.body,
+    );
+    expect(parentIsBody).toBe(true);
   });
 });
 

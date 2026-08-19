@@ -188,6 +188,57 @@
   }
 }
 
+/* --- Overlay entrances -----------------------------------------------------
+   Used by the mobile menu panel and both dialogs. These are applied through
+   Tailwind's `motion-safe:` variant, so a visitor who has asked for reduced
+   motion gets the overlay instantly rather than a shortened animation. */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The menu panel is anchored to the header, so it grows downward out of it. */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Dialogs rise and settle — a touch of scale reads as "arriving", without the
+   bounce that makes repeated use feel slow. */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* On phones both dialogs are bottom sheets, so they come up from the edge. */
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Safety net. The boot script reads the motion preference once, at load. If the
    visitor changes that OS setting mid-session, this guarantees nothing is left
    stranded at opacity 0 waiting for a scroll that will no longer animate. */
