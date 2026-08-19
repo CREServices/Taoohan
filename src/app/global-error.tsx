@@ -1,5 +1,7 @@
 "use client";
 
+import { content } from "@/content";
+
 /**
  * Root error boundary — Developer 2 scope (Milestone 3: go live).
  *
@@ -10,7 +12,9 @@
  * has failed.
  *
  * It is deliberately styled inline: if the failure prevented the stylesheet
- * from loading, class names would render an unstyled wall of text.
+ * from loading, class names would render an unstyled wall of text. Copy still
+ * comes from the content layer — that is a plain static object with no side
+ * effects, so importing it here cannot depend on the layout that just failed.
  *
  * Added because the site would not deploy without it. Next 16 emits a
  * `_global-error` segment into the Vercel build output whether or not the file
@@ -44,7 +48,7 @@ export default function GlobalError({
       >
         <main style={{ maxWidth: "32rem", textAlign: "center" }}>
           <h1 style={{ fontSize: "1.5rem", fontWeight: 600, margin: 0 }}>
-            Something went wrong
+            {content.errorPage.heading}
           </h1>
           <p
             style={{
@@ -53,8 +57,7 @@ export default function GlobalError({
               color: "#5a6b66",
             }}
           >
-            Sorry — this page could not be loaded. Please try again, or return
-            to the home page.
+            {content.errorPage.body}
           </p>
 
           {/* The digest is the only safe identifier to surface: it lets the
@@ -68,7 +71,7 @@ export default function GlobalError({
                 color: "#5a6b66",
               }}
             >
-              Reference: {error.digest}
+              {content.errorPage.reference} {error.digest}
             </p>
           )}
 
@@ -95,7 +98,7 @@ export default function GlobalError({
                 color: "#ffffff",
               }}
             >
-              Try again
+              {content.errorPage.retry}
             </button>
             {/* A real <a>, not next/link, on purpose: the root layout has
                 already failed, so a client-side navigation would re-mount the
@@ -113,7 +116,7 @@ export default function GlobalError({
                 textDecoration: "none",
               }}
             >
-              Go to home page
+              {content.errorPage.home}
             </a>
           </div>
         </main>

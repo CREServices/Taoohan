@@ -238,6 +238,17 @@ export const taoohanContent: SiteContent = {
     footerOffice: "Office",
   },
 
+  // [DRAFT] Root error boundary copy. Describes a site failure, makes no claim
+  // about the business, but is Taoohan's voice to a visitor — worth a read at
+  // sign-off with the other [DRAFT] strings.
+  errorPage: {
+    heading: "Something went wrong",
+    body: "Sorry — this page could not be loaded. Please try again, or return to the home page.",
+    retry: "Try again",
+    home: "Go to home page",
+    reference: "Reference:",
+  },
+
   // [CLIENT] "Recruitment disclaimer" — verbatim.
   disclaimer:
     "Taoohan does not guarantee a specific salary, position, or hiring outcome unless formally agreed.",

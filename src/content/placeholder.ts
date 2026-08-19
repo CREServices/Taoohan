@@ -170,6 +170,14 @@ export const placeholderContent: SiteContent = {
     footerOffice: "Office",
   },
 
+  errorPage: {
+    heading: "Placeholder Error Heading",
+    body: "Placeholder error page body sentence, sized to the final approved copy.",
+    retry: "Placeholder Retry Label",
+    home: "Placeholder Home Link Label",
+    reference: "Reference:",
+  },
+
   disclaimer:
     "Placeholder recruitment disclaimer sentence, sized to the length of the final approved statement.",
 

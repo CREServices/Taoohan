@@ -159,6 +159,18 @@ export type SiteContent = {
     footerOffice: string;
   };
 
+  /** Copy for the root error boundary (app/global-error.tsx). */
+  errorPage: {
+    heading: string;
+    body: string;
+    /** Label on the button that re-renders the failed tree. */
+    retry: string;
+    /** Label on the link back to the home page. */
+    home: string;
+    /** Prefix for the error digest, e.g. "Reference:". */
+    reference: string;
+  };
+
   /** Recruitment disclaimer shown in the footer. */
   disclaimer: string;
 
