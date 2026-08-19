@@ -30,7 +30,13 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={poppins.variable}>
+    // suppressHydrationWarning is required, not incidental: the motion boot
+    // script below adds `motion-ready` to this element BEFORE React hydrates,
+    // so the live DOM legitimately carries a class the server markup does not.
+    // React would otherwise report a mismatch on every page load. It suppresses
+    // only this element's own attributes, one level deep — children are still
+    // fully checked.
+    <html lang="en" className={poppins.variable} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
         {/*
           Motion boot script — Developer 2 scope (Milestone 1: animation).

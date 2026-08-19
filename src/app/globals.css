@@ -188,6 +188,80 @@
   }
 }
 
+/* ==========================================================================
+   BRAND WATERMARK
+   ==========================================================================
+   The infinity mark sitting behind section content, so the brand is present
+   down the page rather than only in the header and footer.
+
+   Rendered by <Section>. Position, size and rotation vary by `:nth-of-type`,
+   which gives a scattered feel that is nonetheless DETERMINISTIC — the server
+   and client agree on it. A JS random position would not, and that is one of
+   the documented causes of a React hydration mismatch.
+
+   Opacity is kept low enough that body text keeps its full contrast ratio.
+   The accessibility gate checks contrast on every page, so this cannot drift
+   into unreadable territory without the suite failing.
+   ========================================================================== */
+
+.brand-watermark {
+  /* Hidden by default. Only every OTHER section shows one — a mark on every
+     band put two of them either side of a section boundary, which read as
+     clutter rather than texture. */
+  display: none;
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 22rem;
+  aspect-ratio: 901 / 481;
+  background-image: url("/logo/logo.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.09;
+}
+
+/* Odd sections only, sides alternating. Because the marks sit vertically
+   centred rather than at the edges, two can never crowd a section boundary. */
+section:nth-of-type(4n + 1) .brand-watermark {
+  display: block;
+  top: 50%;
+  right: -5rem;
+  translate: 0 -50%;
+  rotate: -8deg;
+}
+
+section:nth-of-type(4n + 3) .brand-watermark {
+  display: block;
+  top: 50%;
+  left: -5rem;
+  translate: 0 -50%;
+  rotate: 7deg;
+  width: 18rem;
+}
+
+/* The dark bands swallow the mark, so it needs more presence there. */
+section[data-tone="inverse"] .brand-watermark {
+  opacity: 0.14;
+}
+
+/* Phones: smaller, and always pushed off an edge so it never sits squarely
+   behind a narrow column of body text. */
+@media (max-width: 640px) {
+  .brand-watermark {
+    width: 13rem;
+    opacity: 0.07;
+  }
+
+  section:nth-of-type(4n + 1) .brand-watermark {
+    right: -4rem;
+  }
+
+  section:nth-of-type(4n + 3) .brand-watermark {
+    left: -4rem;
+    width: 12rem;
+  }
+}
+
 /* --- Overlay entrances -----------------------------------------------------
    Used by the mobile menu panel and both dialogs. These are applied through
    Tailwind's `motion-safe:` variant, so a visitor who has asked for reduced
