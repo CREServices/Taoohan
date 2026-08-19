@@ -8,7 +8,10 @@ import { CtaBand } from "@/components/sections/CtaBand";
 import { CtaGroup } from "@/components/cta/CtaGroup";
 import { EmptySlot } from "@/components/ui/EmptySlot";
 
-export const metadata: Metadata = { title: NAV_BY_HREF["/contact"].label };
+export const metadata: Metadata = {
+  title: NAV_BY_HREF["/contact"].label,
+  description: content.contact.lead,
+};
 
 /** One row of contact detail, or a marked empty slot when still blocked. */
 function DetailRow({ label, value }: { label: string; value: string }) {

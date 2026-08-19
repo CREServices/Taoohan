@@ -9,6 +9,7 @@ import { CtaGroup } from "@/components/cta/CtaGroup";
 
 export const metadata: Metadata = {
   title: NAV_BY_HREF["/for-job-seekers"].label,
+  description: content.jobSeekers.lead,
 };
 
 /**

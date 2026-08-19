@@ -8,7 +8,10 @@ import { TestimonialsBand } from "@/components/sections/TestimonialsBand";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { EmptySlot } from "@/components/ui/EmptySlot";
 
-export const metadata: Metadata = { title: NAV_BY_HREF["/for-employers"].label };
+export const metadata: Metadata = {
+  title: NAV_BY_HREF["/for-employers"].label,
+  description: content.employers.lead,
+};
 
 /**
  * Employer-facing page.

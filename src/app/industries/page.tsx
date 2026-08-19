@@ -6,7 +6,10 @@ import { PageHero } from "@/components/sections/PageHero";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { EmptySlot } from "@/components/ui/EmptySlot";
 
-export const metadata: Metadata = { title: NAV_BY_HREF["/industries"].label };
+export const metadata: Metadata = {
+  title: NAV_BY_HREF["/industries"].label,
+  description: content.industries.lead,
+};
 
 export default function IndustriesPage() {
   return (
