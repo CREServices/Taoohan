@@ -14,18 +14,8 @@ export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
   forbidOnly: true,
-  /**
-   * On a resource-constrained dev machine, 2 workers driving 5 viewport
-   * projects against one shared `next start` server starves whichever
-   * project runs last (desktop-1920 here) — deterministically, so a retry
-   * does not help. Confirmed via a serial (--workers=1) full run: 690
-   * passed / 60 skipped / 0 failed, so nothing here is a real defect, only
-   * a concurrency budget this machine cannot sustain. Serial execution is
-   * slower but reliable everywhere, which matters more for an acceptance
-   * gate than raw speed.
-   */
-  retries: 1,
-  workers: 1,
+  retries: 0,
+  workers: 2,
   reporter: [["list"]],
 
   use: {
