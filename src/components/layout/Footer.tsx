@@ -35,7 +35,7 @@ export function Footer() {
   return (
     <footer className="bg-surface-inverse text-ink-inverse">
       <Container>
-        <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:py-16">
+        <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-16 lg:py-16">
           {/* Brand + tagline */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2">

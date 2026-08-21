@@ -64,7 +64,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-hairline bg-surface/90 backdrop-blur">
-      <Container>
+      <Container size="wide">
         <div className="flex h-16 items-center justify-between gap-4 lg:h-20">
           {/* Brand */}
           <Link
