@@ -29,7 +29,7 @@ export default function HomePage() {
     <>
       {/* ---------------------------------------------------------------- HERO */}
       <div className="border-b border-hairline bg-surface-muted">
-        <Container>
+        <Container size="wide">
           <div className="grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
             {/* Landing hero entrance — Developer 2 scope (Milestone 1).
                 Load-triggered, not scroll-triggered: this is above the fold on

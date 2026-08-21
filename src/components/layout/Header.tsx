@@ -79,7 +79,7 @@ export function Header() {
         open ? "bg-surface" : "bg-surface/90",
       )}
     >
-      <Container>
+      <Container size="wide">
         <div className="flex h-16 items-center justify-between gap-4 lg:h-20">
           {/* Brand */}
           <Link
