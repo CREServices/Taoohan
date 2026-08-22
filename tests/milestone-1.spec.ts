@@ -57,14 +57,18 @@ for (const item of NAV) {
       const errors = watchConsole(page);
 
       await page.goto(item.href);
-      await page.waitForLoadState("networkidle");
+      // "load", not "networkidle": the home page's hero video autoplays and
+      // loops, so it streams indefinitely and "networkidle" would never fire.
+      await page.waitForLoadState("load");
 
       expect(errors, `console must be clean on ${item.href}`).toEqual([]);
     });
 
     test("does not scroll horizontally", async ({ page }) => {
       await page.goto(item.href);
-      await page.waitForLoadState("networkidle");
+      // "load", not "networkidle": the home page's hero video autoplays and
+      // loops, so it streams indefinitely and "networkidle" would never fire.
+      await page.waitForLoadState("load");
 
       expect(
         await hasHorizontalScroll(page),

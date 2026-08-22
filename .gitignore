@@ -48,3 +48,7 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 .claude/gate-state.json
+
+# raw source media — original uncompressed uploads, never shipped or committed.
+# The compressed/served versions live under public/.
+/raw-assets/

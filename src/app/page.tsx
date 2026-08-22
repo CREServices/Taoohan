@@ -26,9 +26,59 @@ export default function HomePage() {
   return (
     <>
       {/* ---------------------------------------------------------------- HERO */}
-      <div className="border-b border-hairline bg-surface-muted">
-        <Container size="wide">
-          <div className="grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
+      <div className="relative isolate overflow-hidden border-b border-hairline bg-ink">
+        {/* Background video — decorative only (muted, looping, no controls),
+            so it carries aria-hidden and nothing here is announced to screen
+            readers; the same content is already in the text column below.
+            `poster` paints the first frame instantly so there is never a
+            blank/black flash while the video buffers, and `preload="auto"`
+            plus serving from public/ (byte-range requests) means playback
+            starts as soon as the page does, not after a full download.
+
+            FOUR ENCODES, not one: the client supplied a 4K/60fps/23Mbps/340MB
+            master. Shipping that directly would be exactly the "malag"
+            experience being avoided here. Each is downscaled + re-encoded
+            (ffmpeg, source in raw-assets/, gitignored — never shipped):
+              - 1920x1080 for tablet/desktop, 960x540 for phones — a phone
+                on a slow connection has no business pulling a 1080p stream
+                it displays at a fraction of that size anyway.
+              - WebM/VP9 listed before MP4/H.264 at each tier: ~25-30%
+                smaller than H.264 at matching visual quality, so browsers
+                that support it (everything except Safari) get the lighter
+                file; Safari falls through to the MP4 <source>.
+            <source> media queries are evaluated in DOM order — the browser
+            uses the first one that matches AND that it can decode — so the
+            phone-tier sources must come first or a matching desktop source
+            earlier in the list would win instead. */}
+        <video
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+          poster="/manpower-hero-poster.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        >
+          <source media="(max-width: 640px)" src="/video/hero-540.webm" type="video/webm" />
+          <source media="(max-width: 640px)" src="/video/hero-540.mp4" type="video/mp4" />
+          <source src="/video/hero-1080.webm" type="video/webm" />
+          <source src="/video/hero-1080.mp4" type="video/mp4" />
+        </video>
+        {/* Darkens the footage so the white text stays readable, heavier over
+            the text column and easing off toward the right so the video
+            itself still reads through on the empty half. */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/55 to-black/25" />
+
+        <Container
+          size="wide"
+          // min-h, not just padding: a video background reads as decorative
+          // wallpaper, not a hero, until the section actually fills the
+          // fold. Sized to the viewport minus the sticky header (h-16/h-20)
+          // so hero + header together occupy exactly the first screen.
+          className="flex min-h-[calc(100svh-4rem)] flex-col justify-center py-16 sm:py-20 lg:min-h-[calc(100svh-5rem)] lg:py-24"
+        >
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
             {/* Landing hero entrance — Developer 2 scope (Milestone 1).
                 Load-triggered, not scroll-triggered: this is above the fold on
                 every breakpoint, so a scroll reveal would never fire. Each line
@@ -37,21 +87,21 @@ export default function HomePage() {
             <div>
               <p
                 data-hero
-                className="text-sm font-medium uppercase tracking-wide text-brand-700"
+                className="text-sm font-medium uppercase tracking-wide text-brand-300"
               >
                 {content.brand.tagline}
               </p>
               <h1
                 data-hero
                 style={{ "--hero-delay": "90ms" } as React.CSSProperties}
-                className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+                className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-ink-inverse sm:text-5xl lg:text-7xl"
               >
                 {content.home.headline}
               </h1>
               <p
                 data-hero
                 style={{ "--hero-delay": "180ms" } as React.CSSProperties}
-                className="mt-6 max-w-xl text-base leading-relaxed text-ink-muted sm:text-lg"
+                className="mt-6 max-w-xl text-base leading-relaxed text-ink-inverse/80 sm:text-lg lg:text-xl"
               >
                 {content.home.supporting}
               </p>
@@ -67,18 +117,42 @@ export default function HomePage() {
               <p
                 data-hero
                 style={{ "--hero-delay": "360ms" } as React.CSSProperties}
-                className="mt-6 text-sm text-ink-muted"
+                className="mt-6 text-sm text-ink-inverse/70"
               >
                 {content.home.trustLine}
               </p>
             </div>
 
-            {/* Right column intentionally left empty — the hero background
-                here is a video, not a photo slot, so there is no image to
-                place. The grid stays two-column so the text keeps its
-                current left-half position instead of stretching wide. */}
+            {/* Right column intentionally empty — the video is the visual
+                here, not a photo slot, so there is nothing to place. The grid
+                stays two-column so the text keeps its left-half position. */}
           </div>
         </Container>
+
+        {/* Scroll cue — purely decorative (the page scrolls the same without
+            it), so it's aria-hidden. Signals there's more below the fold now
+            that the hero is tall enough that isn't obvious on a first
+            glance, which a short hero never needed. */}
+        <div
+          aria-hidden="true"
+          className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-ink-inverse/60 motion-safe:animate-bounce sm:flex"
+        >
+          <span className="text-xs font-medium uppercase tracking-widest">
+            Scroll
+          </span>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
+        </div>
       </div>
 
       {/* -------------------------------------------------------- WHY CHOOSE US */}
