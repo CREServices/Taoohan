@@ -8,8 +8,6 @@ import { CtaBand } from "@/components/sections/CtaBand";
 import { StatsBand } from "@/components/sections/StatsBand";
 import { TestimonialsBand } from "@/components/sections/TestimonialsBand";
 import { CtaGroup } from "@/components/cta/CtaGroup";
-import { SiteImage } from "@/components/ui/SiteImage";
-import { IMAGES } from "@/config/images";
 
 /**
  * Home page.
@@ -75,15 +73,10 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Photography slot — Developer 2 scope. Config-driven: setting
-                IMAGES.homeHero.src in config/images.ts swaps the placeholder
-                for the real photo with no change here. */}
-            <div
-              data-hero
-              style={{ "--hero-delay": "180ms" } as React.CSSProperties}
-            >
-              <SiteImage slot={IMAGES.homeHero} priority />
-            </div>
+            {/* Right column intentionally left empty — the hero background
+                here is a video, not a photo slot, so there is no image to
+                place. The grid stays two-column so the text keeps its
+                current left-half position instead of stretching wide. */}
           </div>
         </Container>
       </div>

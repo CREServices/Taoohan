@@ -33,13 +33,6 @@ export type ImageSlot = {
 
 /** BLOCKED ON ASSETS — the client is sending photos separately. */
 export const IMAGES = {
-  homeHero: {
-    key: "home-hero",
-    label: "hero photograph",
-    src: "",
-    alt: "",
-    note: "Real workforce imagery — supplied separately by the client. Stock photography is authorised as an interim.",
-  },
   aboutTeam: {
     key: "about-team",
     label: "team photograph",
