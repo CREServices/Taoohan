@@ -50,8 +50,15 @@ export default function HomePage() {
             itself still reads through on the empty half. */}
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/55 to-black/25" />
 
-        <Container size="wide">
-          <div className="grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
+        <Container
+          size="wide"
+          // min-h, not just padding: a video background reads as decorative
+          // wallpaper, not a hero, until the section actually fills the
+          // fold. Sized to the viewport minus the sticky header (h-16/h-20)
+          // so hero + header together occupy exactly the first screen.
+          className="flex min-h-[calc(100svh-4rem)] flex-col justify-center py-16 sm:py-20 lg:min-h-[calc(100svh-5rem)] lg:py-24"
+        >
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
             {/* Landing hero entrance — Developer 2 scope (Milestone 1).
                 Load-triggered, not scroll-triggered: this is above the fold on
                 every breakpoint, so a scroll reveal would never fire. Each line
@@ -67,14 +74,14 @@ export default function HomePage() {
               <h1
                 data-hero
                 style={{ "--hero-delay": "90ms" } as React.CSSProperties}
-                className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-ink-inverse sm:text-5xl lg:text-6xl"
+                className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-ink-inverse sm:text-5xl lg:text-7xl"
               >
                 {content.home.headline}
               </h1>
               <p
                 data-hero
                 style={{ "--hero-delay": "180ms" } as React.CSSProperties}
-                className="mt-6 max-w-xl text-base leading-relaxed text-ink-inverse/80 sm:text-lg"
+                className="mt-6 max-w-xl text-base leading-relaxed text-ink-inverse/80 sm:text-lg lg:text-xl"
               >
                 {content.home.supporting}
               </p>
@@ -101,6 +108,31 @@ export default function HomePage() {
                 stays two-column so the text keeps its left-half position. */}
           </div>
         </Container>
+
+        {/* Scroll cue — purely decorative (the page scrolls the same without
+            it), so it's aria-hidden. Signals there's more below the fold now
+            that the hero is tall enough that isn't obvious on a first
+            glance, which a short hero never needed. */}
+        <div
+          aria-hidden="true"
+          className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-ink-inverse/60 motion-safe:animate-bounce sm:flex"
+        >
+          <span className="text-xs font-medium uppercase tracking-widest">
+            Scroll
+          </span>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
+        </div>
       </div>
 
       {/* -------------------------------------------------------- WHY CHOOSE US */}
