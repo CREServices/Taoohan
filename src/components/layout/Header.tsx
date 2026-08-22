@@ -76,11 +76,11 @@ export function Header() {
                 announced the name twice to a screen reader. The alt text on
                 the image carries it instead.
 
-                Height-capped tighter than the footer's default: this
-                wordmark file is a much flatter/wider crop than the old one,
-                so at the default h-8/h-9 it was wide enough to push the
-                nav + CTA past the viewport at 1280px. */}
-            <Logo priority size="h-6 w-auto lg:h-7" />
+                Uses Logo's default size, which is tuned for this row: the
+                wordmark is a very wide lockup, so anything taller both reads
+                as oversized against the nav links and eats the horizontal
+                room the 7-item nav and two CTAs need at 1280px. */}
+            <Logo priority />
           </Link>
 
           {/* Desktop navigation — order comes from NAV */}
