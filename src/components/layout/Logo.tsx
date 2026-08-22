@@ -25,10 +25,16 @@ import { cn } from "@/lib/cn";
  * the winner would depend on Tailwind's internal stylesheet order rather
  * than which one the caller intended. `size` replaces the default outright
  * instead of colliding with it.
+ *
+ * The default is deliberately modest. This wordmark is an unusually wide
+ * lockup (~6.5:1), so height buys width fast — every 4px of height adds
+ * ~26px of width. At h-7 it ran 185px wide in the header and read as
+ * oversized next to 14px nav links; h-6 lands at ~159px, which sits at a
+ * normal 2:1 against the nav cap height.
  */
 export function Logo({
   variant = "onLight",
-  size = "h-8 w-auto lg:h-9",
+  size = "h-5 w-auto lg:h-6",
   className,
   priority = false,
 }: {

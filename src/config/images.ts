@@ -56,14 +56,20 @@ export const IMAGES = {
  * rather than one recolourable asset. The standalone infinity mark is used for
  * the browser tab icon (src/app/icon.svg).
  *
- * SVG is used everywhere in preference to the PNG copies in the same folder:
- * a fifth of the bytes, and sharp at any size or pixel density.
+ * BOTH WORDMARK FILES ARE CROPPED TIGHT TO THE GLYPHS (~6.5:1), on purpose.
+ * The height classes in `Logo` size the FILE, not the artwork inside it, so
+ * transparent padding baked into one file and not the other makes the same
+ * CSS height render two visibly different logo sizes in header and footer.
+ * The white file shipped as a 1080x1350 canvas with the wordmark in a thin
+ * band in the middle; left alone it rendered as an illegible sliver. If a
+ * replacement file arrives, crop it to the glyph bounds before wiring it up
+ * and update the width/height here to the real pixel dimensions.
  */
 export const LOGOS = {
   /** Dark text — for light backgrounds (the header). */
   wordmarkOnLight: { src: "/logo/taoohan.png", width: 768, height: 116 },
   /** White text — for dark backgrounds (the footer's inverse band). */
-  wordmarkOnDark: { src: "/logo/white-taoohan.png", width: 1053, height: 186 },
+  wordmarkOnDark: { src: "/logo/white-taoohan.png", width: 1021, height: 154 },
   /** The infinity mark on its own, no wordmark. */
   mark: "/logo/infinity.png",
 } as const;
