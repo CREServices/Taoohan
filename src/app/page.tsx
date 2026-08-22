@@ -33,10 +33,25 @@ export default function HomePage() {
             `poster` paints the first frame instantly so there is never a
             blank/black flash while the video buffers, and `preload="auto"`
             plus serving from public/ (byte-range requests) means playback
-            starts as soon as the page does, not after a full download. */}
+            starts as soon as the page does, not after a full download.
+
+            FOUR ENCODES, not one: the client supplied a 4K/60fps/23Mbps/340MB
+            master. Shipping that directly would be exactly the "malag"
+            experience being avoided here. Each is downscaled + re-encoded
+            (ffmpeg, source in raw-assets/, gitignored — never shipped):
+              - 1920x1080 for tablet/desktop, 960x540 for phones — a phone
+                on a slow connection has no business pulling a 1080p stream
+                it displays at a fraction of that size anyway.
+              - WebM/VP9 listed before MP4/H.264 at each tier: ~25-30%
+                smaller than H.264 at matching visual quality, so browsers
+                that support it (everything except Safari) get the lighter
+                file; Safari falls through to the MP4 <source>.
+            <source> media queries are evaluated in DOM order — the browser
+            uses the first one that matches AND that it can decode — so the
+            phone-tier sources must come first or a matching desktop source
+            earlier in the list would win instead. */}
         <video
           className="absolute inset-0 -z-10 h-full w-full object-cover"
-          src="/manpower-hero.mp4"
           poster="/manpower-hero-poster.jpg"
           autoPlay
           muted
@@ -44,7 +59,12 @@ export default function HomePage() {
           playsInline
           preload="auto"
           aria-hidden="true"
-        />
+        >
+          <source media="(max-width: 640px)" src="/video/hero-540.webm" type="video/webm" />
+          <source media="(max-width: 640px)" src="/video/hero-540.mp4" type="video/mp4" />
+          <source src="/video/hero-1080.webm" type="video/webm" />
+          <source src="/video/hero-1080.mp4" type="video/mp4" />
+        </video>
         {/* Darkens the footage so the white text stays readable, heavier over
             the text column and easing off toward the right so the video
             itself still reads through on the empty half. */}
