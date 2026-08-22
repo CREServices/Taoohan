@@ -61,14 +61,11 @@ export const IMAGES = {
  */
 export const LOGOS = {
   /** Dark text — for light backgrounds (the header). */
-  wordmarkOnLight: "/logo/taoohan-black.svg",
+  wordmarkOnLight: { src: "/logo/taoohan.png", width: 768, height: 116 },
   /** White text — for dark backgrounds (the footer's inverse band). */
-  wordmarkOnDark: "/logo/taoohan-white.svg",
+  wordmarkOnDark: { src: "/logo/white-taoohan.png", width: 1053, height: 186 },
   /** The infinity mark on its own, no wordmark. */
-  mark: "/logo/logo.svg",
-  /** Intrinsic size of the wordmark files, for next/image. */
-  wordmarkWidth: 880,
-  wordmarkHeight: 289,
+  mark: "/logo/infinity.png",
 } as const;
 
 /** True once a real file has been supplied for this slot. */
