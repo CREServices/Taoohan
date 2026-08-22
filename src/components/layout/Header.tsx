@@ -65,7 +65,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-hairline bg-surface/90 backdrop-blur">
       <Container size="wide">
-        <div className="flex h-16 items-center justify-between gap-4 lg:h-20">
+        <div className="flex h-16 items-center justify-between gap-2 lg:h-20">
           {/* Brand */}
           <Link
             href="/"
@@ -74,8 +74,13 @@ export function Header() {
           >
             {/* The wordmark already reads "Taoohan"; a text span beside it
                 announced the name twice to a screen reader. The alt text on
-                the image carries it instead. */}
-            <Logo priority />
+                the image carries it instead.
+
+                Height-capped tighter than the footer's default: this
+                wordmark file is a much flatter/wider crop than the old one,
+                so at the default h-8/h-9 it was wide enough to push the
+                nav + CTA past the viewport at 1280px. */}
+            <Logo priority size="h-6 w-auto lg:h-7" />
           </Link>
 
           {/* Desktop navigation — order comes from NAV */}
