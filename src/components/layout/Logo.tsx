@@ -18,13 +18,23 @@ import { cn } from "@/lib/cn";
  * ACCESSIBILITY: the artwork contains the company name as pixels, so `alt`
  * carries it as text. That is also why neither the header nor the footer
  * repeats "Taoohan" in a <span> beside it — that read out twice.
+ *
+ * SIZE is caller-controlled via `size`, not baked in: `cn()` in this project
+ * is a plain string joiner (no tailwind-merge), so a conflicting height class
+ * passed through `className` would sit next to the default in the DOM and
+ * the winner would depend on Tailwind's internal stylesheet order rather
+ * than which one the caller intended. `size` replaces the default outright
+ * instead of colliding with it.
  */
 export function Logo({
   variant = "onLight",
+  size = "h-8 w-auto lg:h-9",
   className,
   priority = false,
 }: {
   variant?: "onLight" | "onDark";
+  /** Height (and width: auto) classes — replaces the default, never merges with it. */
+  size?: string;
   className?: string;
   priority?: boolean;
 }) {
@@ -39,9 +49,7 @@ export function Logo({
       height={wordmark.height}
       priority={priority}
       unoptimized
-      // Height-constrained so the header row height governs it; width follows
-      // the intrinsic ratio so the mark never distorts.
-      className={cn("h-8 w-auto lg:h-9", className)}
+      className={cn(size, className)}
     />
   );
 }
