@@ -8,8 +8,6 @@ import { CtaBand } from "@/components/sections/CtaBand";
 import { StatsBand } from "@/components/sections/StatsBand";
 import { TestimonialsBand } from "@/components/sections/TestimonialsBand";
 import { CtaGroup } from "@/components/cta/CtaGroup";
-import { SiteImage } from "@/components/ui/SiteImage";
-import { IMAGES } from "@/config/images";
 
 /**
  * Home page.
@@ -28,7 +26,30 @@ export default function HomePage() {
   return (
     <>
       {/* ---------------------------------------------------------------- HERO */}
-      <div className="border-b border-hairline bg-surface-muted">
+      <div className="relative isolate overflow-hidden border-b border-hairline bg-ink">
+        {/* Background video — decorative only (muted, looping, no controls),
+            so it carries aria-hidden and nothing here is announced to screen
+            readers; the same content is already in the text column below.
+            `poster` paints the first frame instantly so there is never a
+            blank/black flash while the video buffers, and `preload="auto"`
+            plus serving from public/ (byte-range requests) means playback
+            starts as soon as the page does, not after a full download. */}
+        <video
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+          src="/manpower-hero.mp4"
+          poster="/manpower-hero-poster.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        />
+        {/* Darkens the footage so the white text stays readable, heavier over
+            the text column and easing off toward the right so the video
+            itself still reads through on the empty half. */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/55 to-black/25" />
+
         <Container size="wide">
           <div className="grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
             {/* Landing hero entrance — Developer 2 scope (Milestone 1).
@@ -39,21 +60,21 @@ export default function HomePage() {
             <div>
               <p
                 data-hero
-                className="text-sm font-medium uppercase tracking-wide text-brand-700"
+                className="text-sm font-medium uppercase tracking-wide text-brand-300"
               >
                 {content.brand.tagline}
               </p>
               <h1
                 data-hero
                 style={{ "--hero-delay": "90ms" } as React.CSSProperties}
-                className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+                className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-ink-inverse sm:text-5xl lg:text-6xl"
               >
                 {content.home.headline}
               </h1>
               <p
                 data-hero
                 style={{ "--hero-delay": "180ms" } as React.CSSProperties}
-                className="mt-6 max-w-xl text-base leading-relaxed text-ink-muted sm:text-lg"
+                className="mt-6 max-w-xl text-base leading-relaxed text-ink-inverse/80 sm:text-lg"
               >
                 {content.home.supporting}
               </p>
@@ -69,21 +90,15 @@ export default function HomePage() {
               <p
                 data-hero
                 style={{ "--hero-delay": "360ms" } as React.CSSProperties}
-                className="mt-6 text-sm text-ink-muted"
+                className="mt-6 text-sm text-ink-inverse/70"
               >
                 {content.home.trustLine}
               </p>
             </div>
 
-            {/* Photography slot — Developer 2 scope. Config-driven: setting
-                IMAGES.homeHero.src in config/images.ts swaps the placeholder
-                for the real photo with no change here. */}
-            <div
-              data-hero
-              style={{ "--hero-delay": "180ms" } as React.CSSProperties}
-            >
-              <SiteImage slot={IMAGES.homeHero} priority />
-            </div>
+            {/* Right column intentionally empty — the video is the visual
+                here, not a photo slot, so there is nothing to place. The grid
+                stays two-column so the text keeps its left-half position. */}
           </div>
         </Container>
       </div>

@@ -36,7 +36,9 @@ for (const item of NAV) {
     page,
   }) => {
     await page.goto(item.href);
-    await page.waitForLoadState("networkidle");
+    // "load", not "networkidle": the home page's hero video autoplays and
+    // loops, so it streams indefinitely and "networkidle" would never fire.
+    await page.waitForLoadState("load");
 
     const { violations } = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
