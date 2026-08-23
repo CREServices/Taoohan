@@ -1,0 +1,200 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   THEME TOKENS — THE SINGLE PLACE COLOUR IS DEFINED
+   ==========================================================================
+   Every colour used anywhere in the UI resolves back to a token below. No
+   component hardcodes a hex value or a stock Tailwind colour like `bg-blue-600`.
+
+   ⚠️ MILESTONE 1: the brand ramp below is a DELIBERATELY NEUTRAL SLATE.
+   The final brand colour is NOT locked yet. The client answered "Green (fresh,
+   growth, approachable)" on the intake form, so Milestone 2 replaces the
+   eleven `--color-brand-*` lines below with the approved green ramp. Nothing
+   else in the codebase changes when that happens.
+   ========================================================================== */
+
+@theme {
+  /* --- BRAND RAMP (placeholder neutral — swapped in Milestone 2) --------- */
+  --color-brand-50: oklch(0.984 0.003 247.858);
+  --color-brand-100: oklch(0.968 0.007 247.896);
+  --color-brand-200: oklch(0.929 0.013 255.508);
+  --color-brand-300: oklch(0.869 0.022 252.894);
+  --color-brand-400: oklch(0.704 0.04 256.788);
+  --color-brand-500: oklch(0.554 0.046 257.417);
+  --color-brand-600: oklch(0.446 0.043 257.281);
+  --color-brand-700: oklch(0.372 0.044 257.287);
+  --color-brand-800: oklch(0.279 0.041 260.031);
+  --color-brand-900: oklch(0.208 0.042 265.755);
+  --color-brand-950: oklch(0.129 0.042 264.695);
+
+  /* --- SURFACES & INK --------------------------------------------------- */
+  --color-surface: oklch(1 0 0);
+  --color-surface-muted: oklch(0.984 0.003 247.858);
+  --color-surface-inverse: oklch(0.208 0.042 265.755);
+  --color-ink: oklch(0.208 0.042 265.755);
+  --color-ink-muted: oklch(0.446 0.043 257.281);
+  --color-ink-inverse: oklch(1 0 0);
+  --color-hairline: oklch(0.929 0.013 255.508);
+
+  /* --- TYPOGRAPHY ------------------------------------------------------- */
+  /* Poppins is loaded via next/font in layout.tsx and exposed as --font-poppins. */
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* --- SHAPE ------------------------------------------------------------ */
+  --radius-card: 1rem;
+  --radius-pill: 999px;
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Belt-and-braces against horizontal overflow on narrow phones. */
+    overflow-x: hidden;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Long unbroken strings (emails, URLs) must never widen the viewport. */
+    overflow-wrap: break-word;
+  }
+
+  /* Visible, consistent keyboard focus everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ==========================================================================
+   COMPONENT PRIMITIVES
+   ========================================================================== */
+
+@layer components {
+  /* Skip link — visible only when focused. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+  }
+
+  .skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    border: 1px solid var(--color-hairline);
+    border-radius: 0.5rem;
+  }
+}
+
+/* ==========================================================================
+   MOTION (Milestone 1: animation)
+   ==========================================================================
+   Everything here is gated behind `.motion-ready` on <html>, which the boot
+   script in layout.tsx adds before first paint. It adds the class ONLY when
+   the visitor has not asked for reduced motion. Consequences, by design:
+
+     no JavaScript   → class absent → every element renders visible
+     reduced motion  → class absent → every element renders visible
+     JS + motion OK  → class present → elements start hidden and animate in
+
+   That ordering is deliberate: content must never depend on an animation
+   running in order to be readable.
+
+   Only two primitives exist, both compositor-friendly (opacity + transform
+   only — no layout-triggering properties, so reveals stay off the main thread):
+
+     [data-reveal]  fades and rises in when scrolled into view (driven by the
+                    single IntersectionObserver in MotionProvider.tsx)
+     [data-hero]    fades and rises in immediately on load, for above-the-fold
+                    content that must not wait for a scroll event
+
+   Both accept a `--reveal-delay` / `--hero-delay` custom property for stagger.
+   ========================================================================== */
+
+@layer components {
+  /* --- Scroll reveal ----------------------------------------------------- */
+  .motion-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+
+  .motion-ready [data-reveal][data-revealed] {
+    opacity: 1;
+    transform: none;
+    /* border-color is in this list only so that the hover treatment on cards
+       (Tailwind's `transition-colors`) is not clobbered by this rule, which
+       wins on specificity. */
+    transition-property: opacity, transform, border-color;
+    transition-duration: 700ms, 700ms, 200ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* --- Hero entrance ----------------------------------------------------- */
+  .motion-ready [data-hero] {
+    opacity: 0;
+    animation: rise-in 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--hero-delay, 0ms);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Safety net. The boot script reads the motion preference once, at load. If the
+   visitor changes that OS setting mid-session, this guarantees nothing is left
+   stranded at opacity 0 waiting for a scroll that will no longer animate. */
+@media (prefers-reduced-motion: reduce) {
+  .motion-ready [data-reveal],
+  .motion-ready [data-hero] {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
