@@ -4,14 +4,22 @@ import { NAV_BY_HREF } from "@/config/site.config";
 import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
-import { StatsBand } from "@/components/sections/StatsBand";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { EmptySlot } from "@/components/ui/EmptySlot";
-import { SiteImage } from "@/components/ui/SiteImage";
-import { IMAGES } from "@/config/images";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/about"].label };
 
+/**
+ * About Us page.
+ *
+ * MILESTONE 2: Company Statistics, Certifications & Licences, and the Team
+ * Photograph section are REPLACED with "Trusted By", per the client's
+ * explicit instruction. The Team Photograph section is removed entirely —
+ * no stock photography is used as a stand-in ("we currently do not have an
+ * official company/team photograph ... please do not use stock photography
+ * as a temporary replacement"). Real company names/logos for Trusted By stay
+ * on hold until the client supplies them.
+ */
 export default function AboutPage() {
   return (
     <>
@@ -22,57 +30,49 @@ export default function AboutPage() {
       />
 
       <Section>
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="space-y-5 lg:col-span-7">
-            {content.about.body.map((paragraph, index) => (
-              <p
-                key={index}
-                className="text-base leading-relaxed text-ink-muted"
-              >
-                {paragraph}
-              </p>
-            ))}
-          </div>
-
-          {/* Photography slot — Developer 2 scope, config-driven. */}
-          <div className="lg:col-span-5">
-            <SiteImage slot={IMAGES.aboutTeam} />
-          </div>
+        <div className="max-w-3xl space-y-5">
+          {content.about.body.map((paragraph, index) => (
+            <p key={index} className="text-base leading-relaxed text-ink-muted">
+              {paragraph}
+            </p>
+          ))}
         </div>
       </Section>
 
       <Section tone="muted">
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          {content.home.intro.heading}
-        </h2>
+        <div className="max-w-3xl">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            {content.about.approachHeading}
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-ink-muted">
+            {content.about.approachLead}
+          </p>
+        </div>
         <FeatureGrid items={content.about.values} className="mt-10" />
       </Section>
 
-      <StatsBand />
-
+      {/* Trusted By — replaces Company Statistics, Certifications & Licences,
+          and the Team Photograph section per the client's instruction.
+          Real company names/logos are on hold. */}
       <Section spacing="tight">
         <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          {content.labels.certifications}
+          {content.about.trustedBy.heading}
         </h2>
-        {content.certifications.length > 0 ? (
-          <ul className="mt-6 flex flex-wrap gap-3">
-            {content.certifications.map((certification) => (
-              <li
-                key={certification}
-                className="rounded-pill border border-hairline px-4 py-2 text-sm"
-              >
-                {certification}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptySlot
-            className="mt-6"
-            label="certifications and licences"
-            note="Not yet supplied by the client."
-          />
-        )}
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-ink-muted">
+          {content.about.trustedBy.body}
+        </p>
+        <EmptySlot
+          className="mt-6"
+          label="partner company names and logos"
+          note="Not yet supplied by the client."
+        />
       </Section>
+
+      {/*
+        Team Photograph — REMOVED ENTIRELY per the client's instruction.
+        No stock photography is used as a stand-in. Add back once an
+        official company/team photograph is supplied.
+      */}
 
       <CtaBand
         heading={content.home.intro.heading}

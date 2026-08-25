@@ -13,7 +13,12 @@ const base =
   "text-center whitespace-normal sm:whitespace-nowrap";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand-900 text-ink-inverse hover:bg-brand-800",
+  // brand-700, not brand-500/600: white text needs a 4.5:1 contrast ratio
+  // (WCAG AA, normal text) against its background. brand-500 (2.2:1) and
+  // brand-600 (3.6:1) both fail axe's color-contrast check; brand-700
+  // (5.1:1) is the darkest-but-still-sage step that passes, confirmed by
+  // the a11y suite in tests/a11y.spec.ts.
+  primary: "bg-brand-700 text-ink-inverse hover:bg-brand-800",
   secondary: "border border-hairline bg-surface text-ink hover:bg-surface-muted",
   inverse: "bg-surface text-ink hover:bg-surface-muted",
   quiet: "text-ink hover:bg-surface-muted",

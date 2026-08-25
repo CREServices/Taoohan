@@ -6,37 +6,45 @@
    Every colour used anywhere in the UI resolves back to a token below. No
    component hardcodes a hex value or a stock Tailwind colour like `bg-blue-600`.
 
-   ✅ MILESTONE 2: the brand colour is now LOCKED to the client's choice —
-   "Green (fresh, growth, approachable)" from the intake form. Swapping to any
-   other brand colour later means editing only the eleven `--color-brand-*`
-   lines below; no component, page or test changes.
+   ✅ MILESTONE 2: brand palette LOCKED to the client-approved hex values
+   (minimalist, sweetgreen.com-inspired — not dark/corporate green). Swapping
+   the palette later means editing only the tokens below; no component, page
+   or test changes.
+     Primary    Fresh Sage Green   #5FAF73
+     Secondary  Soft Light Mint    #CCE3C3
+     Accent/BG  Very Light Frost   #F3F8F1
+     Typography Dark Forest Slate  #26332A
+     Base       Pure White         #FFFFFF
    ========================================================================== */
 
 @theme {
-  /* --- BRAND RAMP: approved green (fresh, growth, approachable) ---------- */
-  --color-brand-50: oklch(0.979 0.021 166.113);
-  --color-brand-100: oklch(0.95 0.052 163.051);
-  --color-brand-200: oklch(0.905 0.093 164.15);
-  --color-brand-300: oklch(0.845 0.143 164.978);
-  --color-brand-400: oklch(0.765 0.177 163.223);
-  --color-brand-500: oklch(0.696 0.17 162.48);
-  --color-brand-600: oklch(0.596 0.145 163.225);
-  --color-brand-700: oklch(0.508 0.118 165.612);
-  --color-brand-800: oklch(0.432 0.095 166.913);
-  --color-brand-900: oklch(0.378 0.077 168.94);
-  --color-brand-950: oklch(0.262 0.051 172.552);
+  /* --- BRAND RAMP: client-approved sage green ----------------------------
+     brand-500 is the exact approved Fresh Sage Green (#5FAF73). The rest of
+     the ramp is generated around it so existing hover/active states
+     (brand-600/700/800/900) keep working without touching every component. */
+  --color-brand-50: #F3F8F1;
+  --color-brand-100: #E4F0E0;
+  --color-brand-200: #CCE3C3;
+  --color-brand-300: #A9D3A0;
+  --color-brand-400: #82C084;
+  --color-brand-500: #5FAF73;
+  --color-brand-600: #4C9761;
+  --color-brand-700: #3D7A4F;
+  --color-brand-800: #335F41;
+  --color-brand-900: #2B4A36;
+  --color-brand-950: #1A2E20;
 
-  /* --- SURFACES & INK ---------------------------------------------------
-     Neutrals carry a slight green cast so the dark bands sit with the brand
-     rather than looking like a separate grey theme. Every pairing used in the
-     UI is contrast-checked by the automated accessibility gate. */
-  --color-surface: oklch(1 0 0);
-  --color-surface-muted: oklch(0.982 0.006 165);
-  --color-surface-inverse: oklch(0.235 0.033 170);
-  --color-ink: oklch(0.216 0.024 170);
-  --color-ink-muted: oklch(0.451 0.021 170);
-  --color-ink-inverse: oklch(1 0 0);
-  --color-hairline: oklch(0.921 0.012 165);
+  /* --- SURFACES & INK -----------------------------------------------------
+     Base white + Very Light Frost carry most surfaces; Dark Forest Slate
+     carries all text (never pure black). Every pairing used in the UI is
+     contrast-checked by the automated accessibility gate. */
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F3F8F1;
+  --color-surface-inverse: #26332A;
+  --color-ink: #26332A;
+  --color-ink-muted: #5B6B5F;
+  --color-ink-inverse: #FFFFFF;
+  --color-hairline: #CCE3C3;
 
   /* --- TYPOGRAPHY ------------------------------------------------------- */
   /* Poppins is loaded via next/font in layout.tsx and exposed as --font-poppins. */

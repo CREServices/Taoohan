@@ -3,19 +3,25 @@ import type { SiteContent } from "./types";
 /**
  * MILESTONE 1 PLACEHOLDER COPY.
  *
- * Every string here is deliberately fake and clearly non-final, BUT each one is
- * written to the same character length and the same item count as the real
- * Taoohan copy that lands in Milestone 2 (11 services, 12 industries, 3
- * differentiators, ~42-char hero headline, ~124-char supporting line). That way
- * the layout is stress-tested against real text volume instead of short lorem
- * that would misrepresent how much space the content needs.
+ * Every string here is deliberately fake and clearly non-final, BUT each one
+ * is written to roughly the same length and the same item count as the real
+ * Taoohan copy in `taoohan.ts` (6 services, 16 industries, 3 differentiators,
+ * 6-step recruitment process, 6-step employer process, 4-step job-seeker
+ * journey, 3-step apply flow, 6 partner slots). That way the layout is
+ * stress-tested against real text volume instead of short lorem that would
+ * misrepresent how much space the content needs.
  *
- * Do NOT put real client content in this file — it is replaced wholesale in
- * Milestone 2 by `taoohan.ts`.
+ * Do NOT put real client content in this file — `taoohan.ts` is what ships.
  */
 
 const placeholderBody =
   "Placeholder description text that stands in for the final wording and is set to roughly the length the real sentence will run to on this card.";
+
+const placeholderFeature = (key: string, n: number): SiteContent["services"]["items"][number] => ({
+  key,
+  title: `Placeholder Item ${n}`,
+  body: placeholderBody,
+});
 
 export const placeholderContent: SiteContent = {
   isPlaceholder: true,
@@ -26,20 +32,41 @@ export const placeholderContent: SiteContent = {
   },
 
   home: {
-    // Real headline is ~42 characters — matched here.
+    eyebrow: "Placeholder Eyebrow Line",
     headline: "Placeholder Headline For The Home Hero.",
-    // Real supporting line is ~124 characters — matched here.
     supporting:
       "Placeholder supporting sentence sitting under the main headline, written to about the same length as the final approved line.",
-    trustLine: "Placeholder trust line — replaced with real proof in Milestone 2.",
+    heroCta: { label: "Placeholder Hero CTA" },
     intro: {
       eyebrow: "Placeholder Eyebrow",
       heading: "Placeholder Section Heading For The Introduction",
       lead: "Placeholder lead paragraph introducing the section, sized to the length the approved copy is expected to run.",
     },
-    // Real "what we do" paragraph is ~470 characters — matched here.
-    introBody:
-      "Placeholder paragraph describing what the company does, who it works with and the outcome it delivers for both sides of the market. It is written at approximately the length of the final approved paragraph so the surrounding layout, line height and column width can be judged honestly at review time rather than being flattered by short filler text that would collapse the section and hide any spacing problems.",
+    features: [
+      { key: "feature-1", title: "Placeholder Feature One", body: placeholderBody },
+      { key: "feature-2", title: "Placeholder Feature Two", body: placeholderBody },
+      { key: "feature-3", title: "Placeholder Feature Three", body: placeholderBody },
+    ],
+    employerCard: {
+      heading: "Placeholder Employer Card Heading",
+      body: placeholderBody,
+      ctaLabel: "Placeholder Employer CTA",
+      ctaHref: "/for-employers",
+      linkLabel: "Placeholder Link →",
+      linkHref: "/for-employers",
+    },
+    jobSeekerCard: {
+      heading: "Placeholder Job Seeker Card Heading",
+      body: placeholderBody,
+      ctaLabel: "Placeholder Job Seeker CTA",
+      ctaHref: "/for-job-seekers",
+      linkLabel: "Placeholder Link →",
+      linkHref: "/for-job-seekers",
+    },
+    finalCta: {
+      heading: "Placeholder Final CTA Heading Goes Here",
+      body: placeholderBody,
+    },
   },
 
   about: {
@@ -50,83 +77,83 @@ export const placeholderContent: SiteContent = {
       "Placeholder first body paragraph for the about page. It runs to roughly the length of the real paragraph so that column width, measure and vertical rhythm can be judged properly during layout review.",
       "Placeholder second body paragraph continuing the story with a comparable amount of text, keeping the section height representative of the finished page.",
     ],
+    approachHeading: "Placeholder Approach Heading",
+    approachLead: placeholderBody,
     values: [
       { key: "value-1", title: "Placeholder Value One", body: placeholderBody },
       { key: "value-2", title: "Placeholder Value Two", body: placeholderBody },
       { key: "value-3", title: "Placeholder Value Three", body: placeholderBody },
     ],
+    trustedBy: {
+      heading: "Placeholder Trusted By Heading",
+      body: placeholderBody,
+    },
   },
 
   services: {
     eyebrow: "Placeholder Eyebrow",
     heading: "Placeholder Services Page Heading",
     lead: "Placeholder lead paragraph for the services page, sized to the length of the final approved introduction line.",
-    // 11 items — matches the real services count exactly.
-    items: [
-      { key: "service-1", title: "Placeholder Service One", body: placeholderBody },
-      { key: "service-2", title: "Placeholder Service Two", body: placeholderBody },
-      { key: "service-3", title: "Placeholder Service Three", body: placeholderBody },
-      { key: "service-4", title: "Placeholder Service Four", body: placeholderBody },
-      { key: "service-5", title: "Placeholder Service Five", body: placeholderBody },
-      { key: "service-6", title: "Placeholder Service Six", body: placeholderBody },
-      { key: "service-7", title: "Placeholder Service Seven", body: placeholderBody },
-      { key: "service-8", title: "Placeholder Service Eight", body: placeholderBody },
-      { key: "service-9", title: "Placeholder Service Nine", body: placeholderBody },
-      { key: "service-10", title: "Placeholder Service Ten", body: placeholderBody },
-      { key: "service-11", title: "Placeholder Service Eleven", body: placeholderBody },
-    ],
+    coreHeading: "PLACEHOLDER CORE SERVICES",
+    // 6 items — matches the real services count exactly.
+    items: [1, 2, 3, 4, 5, 6].map((n) => placeholderFeature(`service-${n}`, n)),
+    processHeading: "PLACEHOLDER RECRUITMENT PROCESS",
+    processTitle: "Placeholder Process Title Heading Line",
+    processLead: placeholderBody,
+    // 6 steps — matches the real process step count exactly.
+    steps: [1, 2, 3, 4, 5, 6].map((n) => placeholderFeature(`service-step-${n}`, n)),
+    ctaHeading: "PLACEHOLDER SERVICES CTA HEADING",
+    ctaBody: placeholderBody,
   },
 
   industries: {
     eyebrow: "Placeholder Eyebrow",
     heading: "Placeholder Industries Page Heading",
     lead: "Placeholder lead paragraph for the industries page, sized to the length of the final approved introduction line.",
-    // 12 items — matches the real industries count exactly.
-    items: [
-      { key: "industry-1", name: "Placeholder Industry One", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-2", name: "Placeholder Industry Two", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-3", name: "Placeholder Industry Three", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-4", name: "Placeholder Industry Four", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-5", name: "Placeholder Industry Five", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-6", name: "Placeholder Industry Six", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-7", name: "Placeholder Industry Seven", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-8", name: "Placeholder Industry Eight", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-9", name: "Placeholder Industry Nine", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-10", name: "Placeholder Industry Ten", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-11", name: "Placeholder Industry Eleven", blurb: "Placeholder industry blurb sized to the final line." },
-      { key: "industry-12", name: "Placeholder Industry Twelve", blurb: "Placeholder industry blurb sized to the final line." },
-    ],
+    // 16 items — matches the real industries count exactly.
+    items: Array.from({ length: 16 }, (_, i) => ({
+      key: `industry-${i + 1}`,
+      name: `Placeholder Industry ${i + 1}`,
+      blurb: "Placeholder industry blurb sized to the final line.",
+    })),
+    partners: {
+      eyebrow: "PLACEHOLDER PARTNERS & CLIENTS",
+      heading: "Placeholder Partners Heading",
+      body: placeholderBody,
+    },
+    ctaHeading: "PLACEHOLDER INDUSTRIES CTA HEADING",
+    ctaBody: placeholderBody,
   },
 
   employers: {
     eyebrow: "Placeholder Eyebrow",
     heading: "Placeholder For Employers Heading",
     lead: "Placeholder lead paragraph for the employers page, sized to the length of the final approved introduction line.",
-    body: "Placeholder body paragraph for the employers page explaining how the hiring process works from first brief through to placement, written at approximately the length the final approved copy is expected to run so the section height stays honest.",
-    steps: [
-      { key: "employer-step-1", title: "Placeholder Step One", body: placeholderBody },
-      { key: "employer-step-2", title: "Placeholder Step Two", body: placeholderBody },
-      { key: "employer-step-3", title: "Placeholder Step Three", body: placeholderBody },
-      { key: "employer-step-4", title: "Placeholder Step Four", body: placeholderBody },
-    ],
+    processHeading: "Placeholder Recruitment Process Heading",
+    processLead: placeholderBody,
+    // 6 steps — matches the real employer process step count exactly.
+    steps: [1, 2, 3, 4, 5, 6].map((n) => placeholderFeature(`employer-step-${n}`, n)),
+    solutionsHeading: "PLACEHOLDER EMPLOYER SOLUTIONS",
+    solutionsLead: placeholderBody,
+    solutions: [1, 2, 3, 4, 5, 6].map((n) => placeholderFeature(`employer-solution-${n}`, n)),
+    ctaHeading: "PLACEHOLDER EMPLOYERS CTA HEADING",
+    ctaBody: placeholderBody,
   },
 
   jobSeekers: {
     eyebrow: "Placeholder Eyebrow",
     heading: "Placeholder For Job Seekers Heading",
     lead: "Placeholder lead paragraph for the job seekers page, sized to the length of the final approved introduction line.",
-    body: "Placeholder body paragraph for the job seekers page explaining how candidates are matched to roles and what to expect after applying, written at approximately the length the final approved copy is expected to run.",
-    steps: [
-      { key: "seeker-step-1", title: "Placeholder Step One", body: placeholderBody },
-      { key: "seeker-step-2", title: "Placeholder Step Two", body: placeholderBody },
-      { key: "seeker-step-3", title: "Placeholder Step Three", body: placeholderBody },
-      { key: "seeker-step-4", title: "Placeholder Step Four", body: placeholderBody },
-    ],
-    applyInstructions: [
-      "Placeholder instruction line one, replaced with the real guidance in Milestone 3.",
-      "Placeholder instruction line two, replaced with the real guidance in Milestone 3.",
-      "Placeholder instruction line three, replaced with the real guidance in Milestone 3.",
-    ],
+    journeyHeading: "Placeholder Journey Heading",
+    journeyLead: placeholderBody,
+    // 4 steps — matches the real job-seeker journey step count exactly.
+    steps: [1, 2, 3, 4].map((n) => placeholderFeature(`seeker-step-${n}`, n)),
+    applyHeading: "PLACEHOLDER HOW TO APPLY",
+    applySidebarHeading: "Placeholder Sidebar Heading",
+    // 3 steps — matches the real "how to apply" step count exactly.
+    applySteps: [1, 2, 3].map((n) => placeholderFeature(`apply-step-${n}`, n)),
+    ctaHeading: "PLACEHOLDER JOB SEEKERS CTA HEADING",
+    ctaBody: placeholderBody,
   },
 
   contact: {
@@ -134,35 +161,42 @@ export const placeholderContent: SiteContent = {
     heading: "Placeholder Contact Page Heading",
     lead: "Placeholder lead paragraph for the contact page, sized to the length of the final approved introduction line.",
     body: "Placeholder body paragraph for the contact page telling visitors which channel to use and how quickly they can expect a response once they get in touch.",
+    channels: {
+      email: { label: "Placeholder Email Address", note: placeholderBody },
+      phone: { label: "Placeholder Phone Number", note: placeholderBody },
+      whatsapp: { label: "Placeholder WhatsApp Number", note: placeholderBody, ctaLabel: "Placeholder WhatsApp CTA" },
+    },
+    secondaryHeading: "Placeholder Secondary Heading",
+    secondaryBody: placeholderBody,
   },
 
-  differentiators: [
-    { key: "diff-1", title: "Placeholder Reason One", body: placeholderBody },
-    { key: "diff-2", title: "Placeholder Reason Two", body: placeholderBody },
-    { key: "diff-3", title: "Placeholder Reason Three", body: placeholderBody },
-  ],
-
-  // BLOCKED ON CLIENT — answered "TBD" on the intake form. Intentionally empty.
+  // BLOCKED ON CLIENT — intentionally empty. The Partners & Clients page
+  // renders its own temporary A–Z letter placeholders as decorative UI, not
+  // from this content slot — see PARTNER_PLACEHOLDER_LABELS in
+  // src/app/industries/page.tsx.
   stats: [],
   testimonials: [],
   partners: [],
   certifications: [],
 
   labels: {
-    testimonialsGeneral: "Placeholder Testimonials Heading",
-    testimonialsEmployers: "Placeholder Employer Testimonials Heading",
-    certifications: "Placeholder Certifications Heading",
-    partners: "Placeholder Partners Heading",
-    manpowerCategories: "Placeholder Manpower Categories Heading",
-    howToApply: "Placeholder How To Apply Heading",
-    viewAllServices: "Placeholder View All Link",
+    manpowerCategories: "PLACEHOLDER MANPOWER CATEGORIES HEADING",
     footerPages: "Pages",
     footerContact: "Contact",
-    footerOffice: "Office",
+  },
+
+  footer: {
+    tagline: "Placeholder — Company Name Tagline Here.",
   },
 
   disclaimer:
     "Placeholder recruitment disclaimer sentence, sized to the length of the final approved statement.",
+
+  copyright: {
+    year: "2026",
+    holder: "Company Name. All rights reserved.",
+    developedBy: "Developed by Placeholder Developer Credit",
+  },
 
   // BLOCKED ON CLIENT — client has not prepared these documents yet.
   legal: {

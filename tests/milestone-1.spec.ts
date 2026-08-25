@@ -314,16 +314,21 @@ test.describe("copy volume", () => {
     expect(headline.toLowerCase()).toContain("placeholder");
   });
 
-  test("services page renders the full 11-item list from the content layer", async ({
+  test("services page renders the full 6-item list from the content layer", async ({
     page,
   }) => {
+    // Milestone 2 superseded the 11-item intake-form list with the
+    // client-approved 6-service structure — see the note on CLIENT_VERBATIM
+    // in milestone-2.spec.ts.
     await page.goto("/services");
     const cards = page.locator('[data-testid="feature-grid"]').first().locator("li");
-    await expect(cards).toHaveCount(11);
+    await expect(cards).toHaveCount(6);
   });
 
-  test("industries page renders the full 12-item list", async ({ page }) => {
+  test("industries page renders the full 16-item list", async ({ page }) => {
+    // Milestone 2 superseded the 12-item intake-form list with the
+    // client-approved 16-industry structure.
     await page.goto("/industries");
-    await expect(page.locator("main ul li h2")).toHaveCount(12);
+    await expect(page.locator("main ul li h2")).toHaveCount(16);
   });
 });
