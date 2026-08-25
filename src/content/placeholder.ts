@@ -67,6 +67,22 @@ export const placeholderContent: SiteContent = {
       heading: "Placeholder Final CTA Heading Goes Here",
       body: placeholderBody,
     },
+    partnerModal: {
+      heading: "Placeholder Modal Heading",
+      jobAlerts: {
+        heading: "Placeholder Job Alerts Heading",
+        lead: placeholderBody,
+        submitLabel: "Placeholder Submit",
+        privacyNote: placeholderBody,
+        successNote: placeholderBody,
+      },
+      employer: {
+        heading: "Placeholder Employer Heading",
+        lead: placeholderBody,
+        ctaLabel: "Placeholder Employer CTA",
+        note: placeholderBody,
+      },
+    },
   },
 
   about: {

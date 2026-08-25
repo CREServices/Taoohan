@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { mailtoHref, hasValue, CONTACT } from "@/config/contact";
+import { content } from "@/content";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
@@ -49,6 +50,7 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   const emailConfigured = hasValue(CONTACT.email);
+  const copy = content.home.partnerModal;
 
   const handleSubscribe = (event: React.FormEvent) => {
     event.preventDefault();
@@ -81,7 +83,7 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-start justify-between gap-4">
           <h2 id="partner-modal-heading" className="text-2xl font-semibold tracking-tight">
-            Become Our Partner
+            {copy.heading}
           </h2>
           <button
             type="button"
@@ -98,14 +100,12 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           {/* Job seeker path — job alerts signup */}
           <div className="rounded-card border border-hairline p-5">
-            <h3 className="text-base font-semibold">Get Exclusive Job Alerts</h3>
-            <p className="mt-1 text-sm text-ink-muted">
-              Be the first to know about our latest job openings. Get exclusive opportunities in your industry sent directly to your inbox.
-            </p>
+            <h3 className="text-base font-semibold">{copy.jobAlerts.heading}</h3>
+            <p className="mt-1 text-sm text-ink-muted">{copy.jobAlerts.lead}</p>
 
             {submitted ? (
               <p role="status" className="mt-4 text-sm font-medium text-brand-700">
-                Thanks — your email app should now be open to send your details to our team.
+                {copy.jobAlerts.successNote}
               </p>
             ) : !emailConfigured ? (
               <p data-empty-slot="email" className="mt-4 text-sm italic text-ink-muted">
@@ -144,21 +144,17 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
                   />
                 </label>
                 <Button type="submit" size="md" className="w-full">
-                  Subscribe
+                  {copy.jobAlerts.submitLabel}
                 </Button>
-                <p className="text-xs text-ink-muted">
-                  Your next career move is just a click away. We respect your privacy and you can unsubscribe at any time.
-                </p>
+                <p className="text-xs text-ink-muted">{copy.jobAlerts.privacyNote}</p>
               </form>
             )}
           </div>
 
           {/* Employer path — hiring needs via email */}
           <div className="rounded-card border border-hairline p-5">
-            <h3 className="text-base font-semibold">Hiring for Your Business?</h3>
-            <p className="mt-1 text-sm text-ink-muted">
-              Tell us about the roles you need to fill and our team will get back to you with a recruitment or staffing solution.
-            </p>
+            <h3 className="text-base font-semibold">{copy.employer.heading}</h3>
+            <p className="mt-1 text-sm text-ink-muted">{copy.employer.lead}</p>
             <div className={cn("mt-4 flex flex-col gap-3")}>
               {emailConfigured ? (
                 <>
@@ -168,9 +164,9 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
                     variant="secondary"
                     className="w-full"
                   >
-                    Email Us Your Hiring Needs
+                    {copy.employer.ctaLabel}
                   </Button>
-                  <p className="text-xs text-ink-muted">Opens your email app, addressed to our team.</p>
+                  <p className="text-xs text-ink-muted">{copy.employer.note}</p>
                 </>
               ) : (
                 <p data-empty-slot="email" className="text-sm italic text-ink-muted">

@@ -110,6 +110,23 @@ export type SiteContent = {
       heading: string;
       body: string;
     };
+    /** Copy for the "Become Our Partner" modal (job-alerts + employer paths). */
+    partnerModal: {
+      heading: string;
+      jobAlerts: {
+        heading: string;
+        lead: string;
+        submitLabel: string;
+        privacyNote: string;
+        successNote: string;
+      };
+      employer: {
+        heading: string;
+        lead: string;
+        ctaLabel: string;
+        note: string;
+      };
+    };
   };
 
   about: PageIntro & {

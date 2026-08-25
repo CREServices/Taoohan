@@ -77,6 +77,22 @@ export const taoohanContent: SiteContent = {
       heading: "Ready to Find the Right People or the Right Opportunity?",
       body: "Whether you're looking to build your workforce or take the next step in your career, Taoohan is here to connect you with the right opportunities.",
     },
+    partnerModal: {
+      heading: "Become Our Partner",
+      jobAlerts: {
+        heading: "Get Exclusive Job Alerts",
+        lead: "Be the first to know about our latest job openings. Get exclusive opportunities in your industry sent directly to your inbox.",
+        submitLabel: "Subscribe",
+        privacyNote: "Your next career move is just a click away. We respect your privacy and you can unsubscribe at any time.",
+        successNote: "Thanks — your email app should now be open to send your details to our team.",
+      },
+      employer: {
+        heading: "Hiring for Your Business?",
+        lead: "Tell us about the roles you need to fill and our team will get back to you with a recruitment or staffing solution.",
+        ctaLabel: "Email Us Your Hiring Needs",
+        note: "Opens your email app, addressed to our team.",
+      },
+    },
   },
 
   about: {
