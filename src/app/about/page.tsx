@@ -6,6 +6,7 @@ import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { EmptySlot } from "@/components/ui/EmptySlot";
+import { TalentGrowthNetwork } from "@/components/sections/TalentGrowthNetwork";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/about"].label };
 
@@ -30,12 +31,15 @@ export default function AboutPage() {
       />
 
       <Section>
-        <div className="max-w-3xl space-y-5">
-          {content.about.body.map((paragraph, index) => (
-            <p key={index} className="text-base leading-relaxed text-ink-muted">
-              {paragraph}
-            </p>
-          ))}
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="max-w-3xl space-y-5">
+            {content.about.body.map((paragraph, index) => (
+              <p key={index} className="text-base leading-relaxed text-ink-muted">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+          <TalentGrowthNetwork className="mx-auto max-w-md lg:max-w-none" />
         </div>
       </Section>
 

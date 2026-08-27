@@ -281,3 +281,217 @@ section[data-tone="inverse"] .brand-watermark {
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   LIVE TALENT GROWTH NETWORK — About page, first section, right side only.
+   ==========================================================================
+   Self-contained: nothing here is reused elsewhere, and nothing outside this
+   block affects it. Component drives its own IntersectionObserver (see
+   TalentGrowthNetwork.tsx) rather than the site-wide [data-reveal] system,
+   because it needs a multi-step sequence (path draw → nodes → particles)
+   instead of a single fade/rise. */
+
+.talent-network-scene {
+  transform-style: preserve-3d;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.talent-network-bg-line {
+  stroke-dasharray: 4 7;
+}
+
+.talent-network-path {
+  /* Length supplied inline from PATH_LENGTH in TalentGrowthNetwork.tsx so the
+     draw-in animation always matches the actual ∞ path exactly. */
+  stroke-dasharray: var(--tgn-path-length, 1406);
+  stroke-dashoffset: var(--tgn-path-length, 1406);
+}
+
+.talent-network-path--active {
+  animation: tgn-draw-path 1900ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes tgn-draw-path {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.talent-network-particle {
+  opacity: 0;
+  filter: drop-shadow(0 0 3px rgba(95, 175, 115, 0.5));
+}
+
+.talent-network-particles {
+  animation: tgn-particles-in 400ms ease-out 1600ms forwards;
+}
+
+@keyframes tgn-particles-in {
+  to {
+    opacity: 1;
+  }
+}
+.talent-network-particle--1,
+.talent-network-particle--2,
+.talent-network-particle--3 {
+  opacity: 1;
+}
+
+.talent-network-growth-ring {
+  opacity: 0;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.talent-network-growth-ring--active {
+  opacity: 1;
+  animation: tgn-growth-breathe 3400ms ease-in-out 2000ms infinite;
+}
+
+@keyframes tgn-growth-breathe {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.9;
+  }
+}
+
+.talent-network-nodes {
+  position: absolute;
+  inset: 0;
+}
+
+.talent-network-node {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translate(-50%, -50%) scale(0.85);
+  opacity: 0;
+  padding: 7px 10px 7px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    0 1px 2px rgba(38, 51, 42, 0.05),
+    0 8px 20px -12px rgba(38, 51, 42, 0.25);
+  transition:
+    opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) var(--node-delay, 0ms),
+    transform 500ms cubic-bezier(0.16, 1, 0.3, 1) var(--node-delay, 0ms);
+  white-space: nowrap;
+}
+
+.talent-network-node--active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.talent-network-node--growth {
+  border-color: rgba(95, 175, 115, 0.55);
+  background: rgba(243, 248, 241, 0.75);
+}
+
+.talent-network-node-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+  flex-shrink: 0;
+}
+
+.talent-network-node--growth .talent-network-node-icon {
+  background: var(--color-brand-500);
+  color: #ffffff;
+}
+
+.talent-network-node-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: 0.01em;
+}
+
+/* Subtle independent breathing per node, staggered so they never pulse in
+   unison — starts only after the entrance settles. */
+.talent-network-node--active {
+  animation: tgn-node-pulse 5200ms ease-in-out var(--pulse-delay, 0ms) infinite;
+}
+
+@keyframes tgn-node-pulse {
+  0%, 92%, 100% {
+    box-shadow:
+      0 1px 2px rgba(38, 51, 42, 0.05),
+      0 8px 20px -12px rgba(38, 51, 42, 0.25);
+  }
+  96% {
+    box-shadow:
+      0 1px 2px rgba(38, 51, 42, 0.05),
+      0 8px 20px -12px rgba(38, 51, 42, 0.25),
+      0 0 0 4px rgba(95, 175, 115, 0.12);
+  }
+}
+
+/* Below 640px labels stay but shrink; below 420px hide labels, icon only,
+   so nothing clips or forces horizontal scroll. */
+@media (max-width: 640px) {
+  .talent-network-node {
+    padding: 6px 9px 6px 6px;
+    gap: 5px;
+  }
+  .talent-network-node-label {
+    font-size: 10.5px;
+  }
+  .talent-network-node-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .talent-network-node-label {
+    display: none;
+  }
+  .talent-network-node {
+    padding: 7px;
+    border-radius: 999px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .talent-network-scene {
+    transform: none !important;
+    transition: none !important;
+  }
+  .talent-network-path {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+  .talent-network-path--active {
+    animation: none;
+  }
+  .talent-network-particles {
+    display: none;
+  }
+  .talent-network-growth-ring {
+    opacity: 0.55 !important;
+    animation: none !important;
+  }
+  .talent-network-node {
+    transition: none;
+  }
+  .talent-network-node--active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    animation: none !important;
+  }
+}
