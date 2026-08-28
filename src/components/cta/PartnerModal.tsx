@@ -70,11 +70,10 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
   const [contactNumber, setContactNumber] = useState("");
 
   // Employer — enough to make the request actionable in one reply.
-  const [company, setCompany] = useState("");
+  const [employerFullName, setEmployerFullName] = useState("");
   const [contactPerson, setContactPerson] = useState("");
   const [workEmail, setWorkEmail] = useState("");
   const [category, setCategory] = useState("");
-  const [headcount, setHeadcount] = useState("");
   const [details, setDetails] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -104,6 +103,17 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     dialogRef.current?.focus();
+
+    // The overlay's backdrop-blur has to recompute every frame from whatever
+    // is compositing behind it — with the hero's autoplaying video that meant
+    // a full Gaussian blur pass per video frame, which read as visible lag
+    // opening the modal. The video is fully hidden either way, so pausing it
+    // for as long as the modal is open removes the cost with no visual loss;
+    // resuming on close is exactly what the visitor would expect.
+    const playingVideos = Array.from(document.querySelectorAll("video")).filter(
+      (video) => !video.paused,
+    );
+    playingVideos.forEach((video) => video.pause());
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -136,6 +146,7 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
       opener?.focus?.();
+      playingVideos.forEach((video) => video.play().catch(() => {}));
     };
   }, [onClose]);
 
@@ -186,22 +197,21 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
   const submitEmployer = (event: React.FormEvent) => {
     event.preventDefault();
     const next: Record<string, string> = {};
-    if (company.trim().length < 2) next.company = "Please enter your company name.";
+    if (employerFullName.trim().length < 2) next.employerFullName = "Please enter your full name.";
     if (contactPerson.trim().length < 2) next.contactPerson = "Please enter a contact name.";
     if (!isEmail(workEmail)) next.workEmail = "Please enter a valid email address.";
     if (!category) next.category = "Please choose a category.";
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    const href = mailtoHref(`Staffing & Manpower Request — ${company.trim()}`);
+    const href = mailtoHref(`Staffing & Manpower Request — ${employerFullName.trim()}`);
     if (!href) return;
     const body =
       `Manpower request from the Taoohan website.\n\n` +
-      `Company: ${company.trim()}\n` +
+      `Full name: ${employerFullName.trim()}\n` +
       `Contact person: ${contactPerson.trim()}\n` +
       `Email: ${workEmail.trim()}\n` +
       `Category: ${category}\n` +
-      (headcount.trim() ? `Number of staff needed: ${headcount.trim()}\n` : "") +
       (details.trim() ? `\nDetails:\n${details.trim()}\n` : "");
     openChannel(`${href}&body=${encodeURIComponent(body)}`);
     setStep("sent");
@@ -391,16 +401,16 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className={label}>Company name</span>
+                <span className={label}>Full name</span>
                 <input
-                  name="company"
-                  data-testid="field-company"
-                  value={company}
-                  onChange={(event) => setCompany(event.target.value)}
-                  aria-invalid={Boolean(errors.company)}
+                  name="employerFullName"
+                  data-testid="field-employer-full-name"
+                  value={employerFullName}
+                  onChange={(event) => setEmployerFullName(event.target.value)}
+                  aria-invalid={Boolean(errors.employerFullName)}
                   className={field}
                 />
-                {errors.company && <span className={errorText}>{errors.company}</span>}
+                {errors.employerFullName && <span className={errorText}>{errors.employerFullName}</span>}
               </label>
               <label className="block">
                 <span className={label}>Contact person</span>
@@ -415,7 +425,7 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
                 {errors.contactPerson && <span className={errorText}>{errors.contactPerson}</span>}
               </label>
               <label className="block">
-                <span className={label}>Work email</span>
+                <span className={label}>Email</span>
                 <input
                   name="workEmail"
                   type="email"
@@ -428,36 +438,25 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
                 {errors.workEmail && <span className={errorText}>{errors.workEmail}</span>}
               </label>
               <label className="block">
-                <span className={label}>Number of staff needed</span>
-                <input
-                  name="headcount"
-                  inputMode="numeric"
-                  value={headcount}
-                  onChange={(event) => setHeadcount(event.target.value)}
+                <span className={label}>Manpower category</span>
+                <select
+                  name="category"
+                  data-testid="field-category"
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                  aria-invalid={Boolean(errors.category)}
                   className={field}
-                />
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((item) => (
+                    <option key={item.key} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && <span className={errorText}>{errors.category}</span>}
               </label>
             </div>
-
-            <label className="block">
-              <span className={label}>Manpower category</span>
-              <select
-                name="category"
-                data-testid="field-category"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-                aria-invalid={Boolean(errors.category)}
-                className={field}
-              >
-                <option value="">Select a category</option>
-                {categories.map((item) => (
-                  <option key={item.key} value={item.name}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-              {errors.category && <span className={errorText}>{errors.category}</span>}
-            </label>
 
             <label className="block">
               <span className={label}>What roles do you need? (optional)</span>

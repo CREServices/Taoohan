@@ -61,12 +61,12 @@ test.describe("Become Our Partner modal", () => {
     const modal = page.getByTestId("partner-modal");
 
     await modal.getByTestId("partner-path-employer").click();
-    await expect(modal.getByTestId("field-company")).toBeVisible();
+    await expect(modal.getByTestId("field-employer-full-name")).toBeVisible();
     await expect(modal.getByTestId("field-full-name")).toHaveCount(0);
 
     await modal.getByTestId("partner-path-job-seeker").click();
     await expect(modal.getByTestId("field-full-name")).toBeVisible();
-    await expect(modal.getByTestId("field-company")).toHaveCount(0);
+    await expect(modal.getByTestId("field-employer-full-name")).toHaveCount(0);
   });
 
   test("the hero CTA wording still comes from the config", async ({ page }) => {
@@ -155,7 +155,7 @@ test.describe("Become Our Partner modal", () => {
     await page.getByTestId("partner-path-employer").click();
 
     const modal = page.getByTestId("partner-modal");
-    await expect(modal.getByTestId("field-company")).toBeVisible();
+    await expect(modal.getByTestId("field-employer-full-name")).toBeVisible();
     await expect(modal.getByTestId("field-category")).toBeVisible();
     // The proposal: "WhatsApp will not be offered on the employer side."
     // Scoped to the dialog — the footer legitimately lists a WhatsApp row.
@@ -188,7 +188,7 @@ test.describe("Become Our Partner modal", () => {
     await page.getByTestId("partner-path-employer").click();
     await page.getByTestId("employer-submit").click();
 
-    await expect(page.getByText("Please enter your company name.")).toBeVisible();
+    await expect(page.getByText("Please enter your full name.")).toBeVisible();
     await expect(page.getByText("Please enter a valid email address.")).toBeVisible();
     await expect(page.getByText("Please choose a category.")).toBeVisible();
   });
