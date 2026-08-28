@@ -15,7 +15,7 @@ import { showsFullNav } from "./support/viewport";
  * INTAKE FORM (11 services, 12 industries, lowercase-led names like "Manpower
  * supply"). That intake was superseded by the client-approved
  * "Taoohan Website Content & Copy" document, which is the actual Milestone 2
- * source of truth (see AGENTS.md / the Milestone 2 prompt) and specifies 6
+ * source of truth (see the client brief) and specifies 6
  * core services and 16 industries with different, final wording. This file
  * is updated to match that approved document rather than the earlier draft.
  */

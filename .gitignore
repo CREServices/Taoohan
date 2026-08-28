@@ -52,3 +52,9 @@ next-env.d.ts
 # raw source media — original uncompressed uploads, never shipped or committed.
 # The compressed/served versions live under public/.
 /raw-assets/
+
+# internal planning, briefs and working notes — kept local, never pushed.
+# Covers the milestone brief, the build guide, the agent instruction files
+# and everything under docs/. These stay on disk; they are simply untracked.
+*.md
+/docs/

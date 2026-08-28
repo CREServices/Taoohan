@@ -7,7 +7,7 @@ import { CONTACT } from "@/config/contact";
  *
  * Every string below is taken VERBATIM from the client-approved
  * "Taoohan Website Content & Copy" document. Nothing here is invented —
- * see AGENTS.md / the Milestone 2 prompt for the hard guardrails (no
+ * see the client brief for the hard guardrails (no
  * statistics, testimonials, certifications, company names/logos, social
  * links, team photos or stock people photography).
  *

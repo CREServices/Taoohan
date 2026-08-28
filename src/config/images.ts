@@ -54,7 +54,7 @@ export const IMAGES = {
  * ground baked in — a white box that would have shown as a pale rectangle on
  * the footer's inverse band and over every watermark. They are un-composited
  * back to real alpha and trimmed to the glyph bounds by the script recorded in
- * docs/logo-assets.md; the dark-on-light wordmark is also remapped to white
+ * scripts/build-logo-assets.mjs; the dark-on-light wordmark is also remapped to white
  * for the inverse band, matching the client's own logo-white.png treatment.
  *
  * Both wordmark files now come from the SAME source at the SAME crop, so they

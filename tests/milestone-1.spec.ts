@@ -6,7 +6,7 @@ import { showsFullNav } from "./support/viewport";
 /**
  * MILESTONE 1 ACCEPTANCE CHECKLIST — AS EXECUTABLE TESTS.
  *
- * Each `test` below maps to a line in the Milestone 1 checklist in 18-08-26.md.
+ * Each `test` below maps to a line in the Milestone 1 acceptance checklist.
  * This file is the loop's gate: the milestone is only "done" when this suite is
  * green across all three viewport projects. A model asserting "looks fine" is
  * not evidence; a green run is.
