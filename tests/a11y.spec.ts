@@ -70,3 +70,48 @@ test("the open mobile menu is accessible", async ({ page }, testInfo) => {
 
   expect(violations.map((violation) => violation.id)).toEqual([]);
 });
+
+/**
+ * The "Become Our Partner" dialog carries the two Milestone 3 submission
+ * forms, so it is scanned in every state that renders inputs — the build guide
+ * requires "all fields labeled", and a dialog is exactly where labelling and
+ * focus order tend to rot unnoticed.
+ */
+test("the Become Our Partner dialog is accessible in every step", async ({
+  page,
+}) => {
+  const scan = async (label: string) => {
+    const { violations } = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa"])
+      .analyze();
+    expect(
+      violations.map((violation) => violation.id),
+      `accessibility violations with the dialog on ${label}`,
+    ).toEqual([]);
+  };
+
+  await page.goto("/");
+  await page.getByTestId("cta-partner").first().click();
+  await expect(page.getByTestId("partner-modal")).toBeVisible();
+  await scan("the path chooser");
+
+  // Job seeker: the details step, then the same step showing its errors.
+  await page.getByTestId("partner-path-job-seeker").click();
+  await scan("the job-seeker details step");
+  await page.getByTestId("job-seeker-continue").click();
+  await expect(page.getByText("Please enter your full name.")).toBeVisible();
+  await scan("the job-seeker validation errors");
+
+  // Job seeker: the channel choice.
+  await page.getByTestId("field-full-name").fill("Maria Santos");
+  await page.getByTestId("field-contact-number").fill("+971 50 123 4567");
+  await page.getByTestId("job-seeker-continue").click();
+  await scan("the channel choice");
+
+  // Employer: the request form, including its select. Back returns to the
+  // details form, and the audience toggle swaps it for the employer one.
+  await page.getByRole("button", { name: "Back" }).click();
+  await page.getByTestId("partner-path-employer").click();
+  await expect(page.getByTestId("field-category")).toBeVisible();
+  await scan("the employer request form");
+});

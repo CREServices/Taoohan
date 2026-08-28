@@ -79,18 +79,28 @@ export const taoohanContent: SiteContent = {
     },
     partnerModal: {
       heading: "Become Our Partner",
-      jobAlerts: {
-        heading: "Get Exclusive Job Alerts",
-        lead: "Be the first to know about our latest job openings. Get exclusive opportunities in your industry sent directly to your inbox.",
-        submitLabel: "Subscribe",
-        privacyNote: "Your next career move is just a click away. We respect your privacy and you can unsubscribe at any time.",
-        successNote: "Thanks — your email app should now be open to send your details to our team.",
+      lead: "Tell us which side you are on and we will take you to the right team.",
+      jobSeeker: {
+        tabLabel: "I'm looking for work",
+        heading: "Find Great Opportunities With Great Businesses",
+        lead: "Connect with employers looking for qualified professionals and discover opportunities that match your skills, experience, and career goals.",
+        submitLabel: "Continue",
+        privacyNote: "We use your details only to contact you about opportunities.",
+        channelHeading: "How would you like to send your details?",
+        channelLead: "Choose a channel and we will open it with your details already filled in.",
+        whatsappLabel: "Continue on WhatsApp",
+        whatsappNote: "Opens WhatsApp with your details ready to send. Attach your updated CV in the chat so our recruitment team can review it.",
+        emailLabel: "Continue by Email",
+        emailNote: "Opens your email app with your details ready to send. Attach your updated CV before sending.",
+        successNote: "Your details are ready to send. Remember to attach your CV before you send the message.",
       },
       employer: {
+        tabLabel: "I'm hiring staff",
         heading: "Hiring for Your Business?",
         lead: "Tell us about the roles you need to fill and our team will get back to you with a recruitment or staffing solution.",
         ctaLabel: "Email Us Your Hiring Needs",
-        note: "Opens your email app, addressed to our team.",
+        note: "Opens your email app, addressed to our team, with your request already written out.",
+        successNote: "Thanks — your email app should now be open to send your details to our team.",
       },
     },
   },
@@ -123,10 +133,6 @@ export const taoohanContent: SiteContent = {
         body: "We provide staffing and manpower solutions that adapt to different workforce requirements, projects, and business needs.",
       },
     ],
-    trustedBy: {
-      heading: "Trusted By",
-      body: "We are proud to support businesses across the region with recruitment, staffing, and manpower solutions.",
-    },
   },
 
   services: {

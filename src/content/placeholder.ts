@@ -69,18 +69,28 @@ export const placeholderContent: SiteContent = {
     },
     partnerModal: {
       heading: "Placeholder Modal Heading",
-      jobAlerts: {
-        heading: "Placeholder Job Alerts Heading",
+      lead: placeholderBody,
+      jobSeeker: {
+        tabLabel: "Placeholder Job Seeker Tab",
+        heading: "Placeholder Job Seeker Heading",
         lead: placeholderBody,
         submitLabel: "Placeholder Submit",
         privacyNote: placeholderBody,
+        channelHeading: "Placeholder Channel Heading",
+        channelLead: placeholderBody,
+        whatsappLabel: "Placeholder WhatsApp Label",
+        whatsappNote: placeholderBody,
+        emailLabel: "Placeholder Email Label",
+        emailNote: placeholderBody,
         successNote: placeholderBody,
       },
       employer: {
+        tabLabel: "Placeholder Employer Tab",
         heading: "Placeholder Employer Heading",
         lead: placeholderBody,
         ctaLabel: "Placeholder Employer CTA",
         note: placeholderBody,
+        successNote: placeholderBody,
       },
     },
   },
@@ -100,10 +110,6 @@ export const placeholderContent: SiteContent = {
       { key: "value-2", title: "Placeholder Value Two", body: placeholderBody },
       { key: "value-3", title: "Placeholder Value Three", body: placeholderBody },
     ],
-    trustedBy: {
-      heading: "Placeholder Trusted By Heading",
-      body: placeholderBody,
-    },
   },
 
   services: {

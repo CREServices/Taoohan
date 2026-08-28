@@ -46,25 +46,31 @@ export const IMAGES = {
  * Brand logo files — SUPPLIED by the client, no longer a blocked slot.
  *
  * The wordmark bakes its text colour into the artwork, so there are two files
- * rather than one recolourable asset. The standalone infinity mark is used for
- * the browser tab icon (src/app/icon.svg).
+ * rather than one recolourable asset. The standalone mark is used for the
+ * page watermark and the browser icon (src/app/icon.png).
  *
- * BOTH WORDMARK FILES ARE CROPPED TIGHT TO THE GLYPHS (~6.5:1), on purpose.
- * The height classes in `Logo` size the FILE, not the artwork inside it, so
- * transparent padding baked into one file and not the other makes the same
- * CSS height render two visibly different logo sizes in header and footer.
- * The white file shipped as a 1080x1350 canvas with the wordmark in a thin
- * band in the middle; left alone it rendered as an illegible sliver. If a
- * replacement file arrives, crop it to the glyph bounds before wiring it up
- * and update the width/height here to the real pixel dimensions.
+ * ALL FOUR ARE DERIVED, not hand-cropped. The client supplied three flattened
+ * PNGs (logo-dark, logo-white, taoohan-dark), each 978x662 with an opaque
+ * ground baked in — a white box that would have shown as a pale rectangle on
+ * the footer's inverse band and over every watermark. They are un-composited
+ * back to real alpha and trimmed to the glyph bounds by the script recorded in
+ * docs/logo-assets.md; the dark-on-light wordmark is also remapped to white
+ * for the inverse band, matching the client's own logo-white.png treatment.
+ *
+ * Both wordmark files now come from the SAME source at the SAME crop, so they
+ * share one intrinsic ratio (956x173, ~5.5:1) and a single CSS height renders
+ * header and footer at matching sizes. That was not true of the previous pair
+ * and was the cause of the footer wordmark reading larger than the header's.
+ * If a replacement file arrives, re-run the script rather than cropping by
+ * hand, and update the width/height here to the real pixel dimensions.
  */
 export const LOGOS = {
   /** Dark text — for light backgrounds (the header). */
-  wordmarkOnLight: { src: "/logo/taoohan.png", width: 768, height: 116 },
+  wordmarkOnLight: { src: "/logo/taoohan-wordmark.png", width: 956, height: 173 },
   /** White text — for dark backgrounds (the footer's inverse band). */
-  wordmarkOnDark: { src: "/logo/white-taoohan.png", width: 1021, height: 154 },
-  /** The infinity mark on its own, no wordmark. */
-  mark: "/logo/infinity.png",
+  wordmarkOnDark: { src: "/logo/taoohan-wordmark-inverse.png", width: 956, height: 173 },
+  /** The two-person mark on its own, no wordmark. */
+  mark: "/logo/taoohan-mark.png",
 } as const;
 
 /** True once a real file has been supplied for this slot. */

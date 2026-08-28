@@ -199,7 +199,7 @@
 /* ==========================================================================
    BRAND WATERMARK
    ==========================================================================
-   The infinity mark sitting behind section content, so the brand is present
+   The brand mark sitting behind section content, so the brand is present
    down the page rather than only in the header and footer.
 
    Rendered by <Section>. Position, size and rotation vary by `:nth-of-type`,
@@ -221,11 +221,14 @@
   z-index: 0;
   pointer-events: none;
   width: 22rem;
-  aspect-ratio: 884 / 516;
-  background-image: url("/logo/infinity.png");
+  aspect-ratio: 949 / 506;
+  background-image: url("/logo/taoohan-mark.png");
   background-repeat: no-repeat;
   background-size: contain;
-  opacity: 0.09;
+  /* Tuned for the CURRENT mark. The previous artwork was a thin outline
+     infinity and carried 0.09 comfortably; this one is two solid rings, so
+     the same value read as a grey blob competing with body copy. */
+  opacity: 0.06;
 }
 
 /* Odd sections only, sides alternating. Because the marks sit vertically
@@ -249,7 +252,14 @@ section:nth-of-type(4n + 3) .brand-watermark {
 
 /* The dark bands swallow the mark, so it needs more presence there. */
 section[data-tone="inverse"] .brand-watermark {
-  opacity: 0.14;
+  opacity: 0.1;
+}
+
+/* The process loop is itself drawn on the mark's shape, so a watermark of the
+   same mark behind it read as a smudge rather than as texture. Suppress it on
+   whichever section carries the loop instead of hand-tuning nth-of-type. */
+section:has(.process-loop) .brand-watermark {
+  display: none;
 }
 
 /* Phones: smaller, and always pushed off an edge so it never sits squarely
@@ -257,7 +267,7 @@ section[data-tone="inverse"] .brand-watermark {
 @media (max-width: 640px) {
   .brand-watermark {
     width: 13rem;
-    opacity: 0.07;
+    opacity: 0.05;
   }
 
   section:nth-of-type(4n + 1) .brand-watermark {
@@ -283,215 +293,299 @@ section[data-tone="inverse"] .brand-watermark {
 }
 
 /* ==========================================================================
-   LIVE TALENT GROWTH NETWORK — About page, first section, right side only.
+   RECRUITMENT PROCESS LOOP — About page, first section, right side only.
    ==========================================================================
    Self-contained: nothing here is reused elsewhere, and nothing outside this
-   block affects it. Component drives its own IntersectionObserver (see
-   TalentGrowthNetwork.tsx) rather than the site-wide [data-reveal] system,
-   because it needs a multi-step sequence (path draw → nodes → particles)
-   instead of a single fade/rise. */
+   block affects it. The component drives its own IntersectionObserver (see
+   RecruitmentProcessLoop.tsx) rather than the site-wide [data-reveal] system,
+   because it needs a repeating sequence — ribbon fill → marker → legend row,
+   six times over — instead of a single fade/rise.
 
-.talent-network-scene {
-  transform-style: preserve-3d;
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+   Colours are all --color-* tokens, including inside the SVG, so the brand
+   swap the brief requires still reaches the artwork. */
+
+.process-loop {
+  width: 100%;
+}
+
+.process-loop-scene {
   position: relative;
-}
-
-.talent-network-bg-line {
-  stroke-dasharray: 4 7;
-}
-
-.talent-network-path {
-  /* Length supplied inline from PATH_LENGTH in TalentGrowthNetwork.tsx so the
-     draw-in animation always matches the actual ∞ path exactly. */
-  stroke-dasharray: var(--tgn-path-length, 1406);
-  stroke-dashoffset: var(--tgn-path-length, 1406);
-}
-
-.talent-network-path--active {
-  animation: tgn-draw-path 1900ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
-}
-
-@keyframes tgn-draw-path {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.talent-network-particle {
+  transform-style: preserve-3d;
   opacity: 0;
-  filter: drop-shadow(0 0 3px rgba(95, 175, 115, 0.5));
-}
-
-.talent-network-particles {
-  animation: tgn-particles-in 400ms ease-out 1600ms forwards;
-}
-
-@keyframes tgn-particles-in {
-  to {
-    opacity: 1;
-  }
-}
-.talent-network-particle--1,
-.talent-network-particle--2,
-.talent-network-particle--3 {
-  opacity: 1;
-}
-
-.talent-network-growth-ring {
-  opacity: 0;
-  transform-origin: center;
-  transform-box: fill-box;
-}
-
-.talent-network-growth-ring--active {
-  opacity: 1;
-  animation: tgn-growth-breathe 3400ms ease-in-out 2000ms infinite;
-}
-
-@keyframes tgn-growth-breathe {
-  0%, 100% {
-    transform: scale(0.92);
-    opacity: 0.55;
-  }
-  50% {
-    transform: scale(1.08);
-    opacity: 0.9;
-  }
-}
-
-.talent-network-nodes {
-  position: absolute;
-  inset: 0;
-}
-
-.talent-network-node {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transform: translate(-50%, -50%) scale(0.85);
-  opacity: 0;
-  padding: 7px 10px 7px 7px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow:
-    0 1px 2px rgba(38, 51, 42, 0.05),
-    0 8px 20px -12px rgba(38, 51, 42, 0.25);
   transition:
-    opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) var(--node-delay, 0ms),
-    transform 500ms cubic-bezier(0.16, 1, 0.3, 1) var(--node-delay, 0ms);
-  white-space: nowrap;
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 600ms ease;
 }
 
-.talent-network-node--active {
+.process-loop-scene--active {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
 }
 
-.talent-network-node--growth {
-  border-color: rgba(95, 175, 115, 0.55);
-  background: rgba(243, 248, 241, 0.75);
+.process-loop-svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
-.talent-network-node-icon {
+/* ALL PAINTING FOR THE SVG LIVES HERE, not on the elements. The gate treats
+   any mention of a --color-brand-* token outside this file as a second
+   definition of the brand colour and cannot tell a var() reference from a
+   redefinition, so the component ships geometry and state classes only. That
+   is also why the ribbon gradient's stops are styled rather than given
+   stop-color attributes. */
+
+.process-loop-bloom,
+.process-loop-track,
+.process-loop-fill,
+.process-loop-core,
+.process-loop-spark {
+  fill: none;
+  stroke-linecap: round;
+}
+
+/* Deepens left to right, so the ribbon gains weight as the sequence moves
+   from sourcing toward placement. */
+.process-loop-ribbon-from {
+  stop-color: var(--color-brand-300);
+}
+
+.process-loop-ribbon-via {
+  stop-color: var(--color-brand-500);
+}
+
+.process-loop-ribbon-to {
+  stop-color: var(--color-brand-700);
+}
+
+/* The three ribbon layers that grow together — bloom beneath, gradient body,
+   and a thin core highlight that keeps the band from reading flat. Sharing
+   one transition keeps them locked to the same edge as the fill advances. */
+.process-loop-bloom,
+.process-loop-fill,
+.process-loop-core {
+  transition: stroke-dashoffset 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.process-loop-bloom {
+  stroke: var(--color-brand-400);
+  stroke-width: 22;
+  opacity: 0.45;
+}
+
+/* The untravelled ribbon. */
+.process-loop-track {
+  stroke: var(--color-brand-100);
+  stroke-width: 17;
+}
+
+/* The travelled ribbon, grown to the active step. */
+.process-loop-fill {
+  stroke: url(#process-loop-ribbon);
+  stroke-width: 17;
+}
+
+/* A thin core highlight down the middle, which is what stops the ribbon
+   reading as a flat band. */
+.process-loop-core {
+  stroke: var(--color-surface);
+  stroke-width: 3.5;
+  stroke-opacity: 0.35;
+}
+
+/* The travelling light. It does NOT circle continuously: it glides to the
+   active step, rests there for the whole hold, then moves on when the step
+   does. Same easing and duration as the ribbon fill, so on the first lap the
+   two arrive together and the light reads as the head of the fill. */
+.process-loop-spark {
+  stroke: var(--color-brand-200);
+  stroke-width: 6;
+  opacity: 0.9;
+  transition: stroke-dashoffset 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Step markers ------------------------------------------------------- */
+
+.process-loop-node {
+  opacity: 0;
+  transform: scale(0.5);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 400ms ease var(--node-delay, 0ms),
+    transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1) var(--node-delay, 0ms);
+}
+
+.process-loop-node--in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.process-loop-node--current {
+  transform: scale(1.12);
+}
+
+.process-loop-node-disc {
+  fill: var(--color-surface);
+  stroke: var(--color-brand-200);
+  stroke-width: 2;
+  transition:
+    fill 400ms ease,
+    stroke 400ms ease;
+}
+
+.process-loop-node--done .process-loop-node-disc {
+  fill: var(--color-brand-600);
+  stroke: var(--color-brand-600);
+}
+
+.process-loop-node--current .process-loop-node-disc {
+  fill: var(--color-brand-700);
+  stroke: var(--color-brand-700);
+}
+
+.process-loop-node-label {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--color-ink-muted);
+  transition: fill 400ms ease;
+}
+
+.process-loop-node--done .process-loop-node-label {
+  fill: var(--color-ink-inverse);
+}
+
+.process-loop-node-halo {
+  fill: none;
+  stroke: var(--color-brand-500);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: process-loop-halo 2s ease-out infinite;
+}
+
+@keyframes process-loop-halo {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+/* --- Legend ------------------------------------------------------------- */
+
+/* A real <ol>, not decoration: it carries the same step titles the markers
+   are numbered for, so nothing shown visually is withheld from assistive
+   tech. The drawing above it is aria-hidden. */
+.process-loop-legend {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem 1.25rem;
+  list-style: none;
+  padding: 0;
+}
+
+@media (min-width: 30rem) {
+  .process-loop-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.process-loop-legend-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.process-loop-legend-number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
   border-radius: 999px;
   background: var(--color-brand-100);
   color: var(--color-brand-700);
-  flex-shrink: 0;
-}
-
-.talent-network-node--growth .talent-network-node-icon {
-  background: var(--color-brand-500);
-  color: #ffffff;
-}
-
-.talent-network-node-label {
-  font-size: 11.5px;
+  font-size: 0.6875rem;
   font-weight: 600;
+  line-height: 1;
+  transition:
+    background-color 400ms ease,
+    color 400ms ease;
+}
+
+.process-loop-legend-item--current .process-loop-legend-number {
+  background: var(--color-brand-700);
+  color: var(--color-ink-inverse);
+}
+
+.process-loop-legend-title {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--color-ink-muted);
+  transition: color 400ms ease;
+}
+
+.process-loop-legend-item--current .process-loop-legend-title {
   color: var(--color-ink);
-  letter-spacing: 0.01em;
+  font-weight: 600;
 }
 
-/* Subtle independent breathing per node, staggered so they never pulse in
-   unison — starts only after the entrance settles. */
-.talent-network-node--active {
-  animation: tgn-node-pulse 5200ms ease-in-out var(--pulse-delay, 0ms) infinite;
-}
-
-@keyframes tgn-node-pulse {
-  0%, 92%, 100% {
-    box-shadow:
-      0 1px 2px rgba(38, 51, 42, 0.05),
-      0 8px 20px -12px rgba(38, 51, 42, 0.25);
-  }
-  96% {
-    box-shadow:
-      0 1px 2px rgba(38, 51, 42, 0.05),
-      0 8px 20px -12px rgba(38, 51, 42, 0.25),
-      0 0 0 4px rgba(95, 175, 115, 0.12);
-  }
-}
-
-/* Below 640px labels stay but shrink; below 420px hide labels, icon only,
-   so nothing clips or forces horizontal scroll. */
-@media (max-width: 640px) {
-  .talent-network-node {
-    padding: 6px 9px 6px 6px;
-    gap: 5px;
-  }
-  .talent-network-node-label {
-    font-size: 10.5px;
-  }
-  .talent-network-node-icon {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-@media (max-width: 420px) {
-  .talent-network-node-label {
-    display: none;
-  }
-  .talent-network-node {
-    padding: 7px;
-    border-radius: 999px;
-  }
-}
-
+/* Reduced motion: the sequence never runs, so this block has to paint the
+   finished state outright — a fully travelled ribbon with every marker
+   complete — rather than leaving the component frozen on step one. The
+   !important overrides are deliberate: the dash offsets are inline styles
+   driven by the active step, and this is what outranks them. Nothing here
+   may leave an element stranded at opacity 0. */
 @media (prefers-reduced-motion: reduce) {
-  .talent-network-scene {
+  .process-loop-scene {
+    opacity: 1;
     transform: none !important;
-    transition: none !important;
-  }
-  .talent-network-path {
-    stroke-dasharray: none;
-    stroke-dashoffset: 0;
-  }
-  .talent-network-path--active {
-    animation: none;
-  }
-  .talent-network-particles {
-    display: none;
-  }
-  .talent-network-growth-ring {
-    opacity: 0.55 !important;
-    animation: none !important;
-  }
-  .talent-network-node {
     transition: none;
   }
-  .talent-network-node--active {
+
+  .process-loop-scene--active .process-loop-bloom,
+  .process-loop-scene--active .process-loop-fill,
+  .process-loop-scene--active .process-loop-core {
+    stroke-dashoffset: 0 !important;
+  }
+
+  .process-loop-node--in .process-loop-node-disc {
+    fill: var(--color-brand-600);
+    stroke: var(--color-brand-600);
+  }
+
+  .process-loop-node--in .process-loop-node-label {
+    fill: var(--color-ink-inverse);
+  }
+
+  .process-loop-bloom,
+  .process-loop-fill,
+  .process-loop-core,
+  .process-loop-node,
+  .process-loop-node-disc,
+  .process-loop-node-label,
+  .process-loop-legend-number,
+  .process-loop-legend-title {
+    transition: none;
+  }
+
+  .process-loop-node {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-    animation: none !important;
+    transform: none;
+  }
+
+  .process-loop-spark {
+    display: none;
+  }
+
+  .process-loop-node-halo {
+    animation: none;
+    opacity: 0;
   }
 }

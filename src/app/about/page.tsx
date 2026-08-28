@@ -5,8 +5,7 @@ import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { CtaBand } from "@/components/sections/CtaBand";
-import { EmptySlot } from "@/components/ui/EmptySlot";
-import { TalentGrowthNetwork } from "@/components/sections/TalentGrowthNetwork";
+import { RecruitmentProcessLoop } from "@/components/sections/RecruitmentProcessLoop";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/about"].label };
 
@@ -14,12 +13,15 @@ export const metadata: Metadata = { title: NAV_BY_HREF["/about"].label };
  * About Us page.
  *
  * MILESTONE 2: Company Statistics, Certifications & Licences, and the Team
- * Photograph section are REPLACED with "Trusted By", per the client's
- * explicit instruction. The Team Photograph section is removed entirely —
- * no stock photography is used as a stand-in ("we currently do not have an
- * official company/team photograph ... please do not use stock photography
- * as a temporary replacement"). Real company names/logos for Trusted By stay
- * on hold until the client supplies them.
+ * Photograph section are all removed. The Team Photograph section carries no
+ * stock photography as a stand-in ("we currently do not have an official
+ * company/team photograph ... please do not use stock photography as a
+ * temporary replacement").
+ *
+ * "Trusted By" briefly stood in for those three sections and has since been
+ * removed at the client's request — it was an empty partner-logo slot with
+ * nothing confirmed to put in it. Partner names and logos are still awaited;
+ * the Industries page carries the client-authorised temporary letter tiles.
  */
 export default function AboutPage() {
   return (
@@ -39,7 +41,13 @@ export default function AboutPage() {
               </p>
             ))}
           </div>
-          <TalentGrowthNetwork className="mx-auto max-w-md lg:max-w-none" />
+          {/* The client's approved recruitment process, drawn as a loop.
+              Steps come from the content layer (the same six the Services
+              page lists in full) so the process is stated in one place. */}
+          <RecruitmentProcessLoop
+            steps={content.services.steps}
+            className="mx-auto max-w-md lg:max-w-none"
+          />
         </div>
       </Section>
 
@@ -53,23 +61,6 @@ export default function AboutPage() {
           </p>
         </div>
         <FeatureGrid items={content.about.values} className="mt-10" />
-      </Section>
-
-      {/* Trusted By — replaces Company Statistics, Certifications & Licences,
-          and the Team Photograph section per the client's instruction.
-          Real company names/logos are on hold. */}
-      <Section spacing="tight">
-        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          {content.about.trustedBy.heading}
-        </h2>
-        <p className="mt-3 max-w-2xl text-base leading-relaxed text-ink-muted">
-          {content.about.trustedBy.body}
-        </p>
-        <EmptySlot
-          className="mt-6"
-          label="partner company names and logos"
-          note="Not yet supplied by the client."
-        />
       </Section>
 
       {/*

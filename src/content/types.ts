@@ -4,8 +4,8 @@
  * MILESTONE 2 — reshaped to match the client-approved
  * "Taoohan Website Content & Copy" document exactly: 6 core services (not
  * 11), 16 industries (not 12), numbered process steps per page, and the
- * About page's Trusted By section replacing Company Statistics /
- * Certifications & Licences / Team Photograph.
+ * removal of the About page's Company Statistics, Certifications & Licences
+ * and Team Photograph sections.
  */
 
 /**
@@ -111,20 +111,39 @@ export type SiteContent = {
       body: string;
     };
     /** Copy for the "Become Our Partner" modal (job-alerts + employer paths). */
+    /**
+     * The hero's "Become Our Partner" modal, which carries both Milestone 3
+     * submission flows: the job seeker's two-step Apply Now (details, then a
+     * choice of WhatsApp or email) and the employer's email-only Request
+     * Manpower form.
+     */
     partnerModal: {
       heading: string;
-      jobAlerts: {
+      lead: string;
+      jobSeeker: {
+        /** Short label for the audience toggle at the top of the form. */
+        tabLabel: string;
         heading: string;
         lead: string;
         submitLabel: string;
         privacyNote: string;
+        /** Step two — the channel choice. Job seekers get both. */
+        channelHeading: string;
+        channelLead: string;
+        whatsappLabel: string;
+        whatsappNote: string;
+        emailLabel: string;
+        emailNote: string;
         successNote: string;
       };
       employer: {
+        /** Short label for the audience toggle at the top of the form. */
+        tabLabel: string;
         heading: string;
         lead: string;
         ctaLabel: string;
         note: string;
+        successNote: string;
       };
     };
   };
@@ -134,10 +153,6 @@ export type SiteContent = {
     approachHeading: string;
     approachLead: string;
     values: readonly Feature[];
-    trustedBy: {
-      heading: string;
-      body: string;
-    };
   };
 
   services: PageIntro & {

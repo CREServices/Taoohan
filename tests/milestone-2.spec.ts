@@ -289,10 +289,11 @@ test.describe("data-driven blocks and empty slots", () => {
   // temporary. `content.partners` itself stays a real empty slot (see
   // src/content/taoohan.ts); the letter tiles are decorative UI rendered
   // from a local constant in src/app/industries/page.tsx, not client data.
-  // The About page replaces Certifications & Licences (and Company
-  // Statistics, and the Team Photograph) with "Trusted By" per the client's
-  // explicit instruction — so the old certifications empty-slot no longer
-  // exists there; Trusted By's own logo row is the empty slot instead.
+  // The About page carries no partner or certifications slot at all: the
+  // "Trusted By" section that briefly stood in for Certifications & Licences
+  // (and Company Statistics, and the Team Photograph) has been removed at the
+  // client's request, since it was an empty logo row with nothing confirmed
+  // to fill it. Partners stay awaited in the content layer regardless.
   test("partners and certifications are marked as awaited, never invented", async ({
     page,
   }) => {
@@ -306,10 +307,16 @@ test.describe("data-driven blocks and empty slots", () => {
       page.locator('[aria-label="Temporary placeholder partner logos"] li'),
     ).toHaveCount(6);
 
+    // About shows no partner or certification slot at all — removed, not
+    // merely left empty. Scoped to those slots on purpose: the footer's
+    // blocked email and WhatsApp fields are [data-empty-slot] too, on every
+    // page, and are covered by the contact test below.
     await page.goto("/about");
     await expect(
       page.locator('[data-empty-slot="partner company names and logos"]'),
-    ).toBeVisible();
+    ).toHaveCount(0);
+    await expect(page.locator('[data-empty-slot="certifications"]')).toHaveCount(0);
+    await expect(page.getByText("Trusted By")).toHaveCount(0);
   });
 
   // ⚠️ UPDATED: the approved content document gives a confirmed phone number

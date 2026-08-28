@@ -10,10 +10,11 @@ import { cn } from "@/lib/cn";
  * TWO VARIANTS, because the wordmark's text colour is baked into the file:
  *   `onLight` — dark text, for the white header
  *   `onDark`  — white text, for the inverse footer band
- * The infinity mark is the brand green in both. The two source files have
- * different intrinsic ratios, so each variant carries its own width/height
- * rather than sharing one — `next/image` needs the real ratio to avoid
- * distorting the artwork.
+ * The two-person mark inside the wordmark keeps its greens in both; only the
+ * lettering and the left ring flip to white. Both variants are cut from the
+ * same source at the same crop, so they share one intrinsic ratio and a
+ * single CSS height renders header and footer at matching sizes — see the
+ * note on LOGOS in src/config/images.ts.
  *
  * ACCESSIBILITY: the artwork contains the company name as pixels, so `alt`
  * carries it as text. That is also why neither the header nor the footer
@@ -26,11 +27,10 @@ import { cn } from "@/lib/cn";
  * than which one the caller intended. `size` replaces the default outright
  * instead of colliding with it.
  *
- * The default is deliberately modest. This wordmark is an unusually wide
- * lockup (~6.5:1), so height buys width fast — every 4px of height adds
- * ~26px of width. At h-7 it ran 185px wide in the header and read as
- * oversized next to 14px nav links; h-6 lands at ~159px, which sits at a
- * normal 2:1 against the nav cap height.
+ * The default is deliberately modest. This wordmark is a wide lockup
+ * (~5.5:1), so height buys width fast — every 4px of height adds ~22px of
+ * width. At h-6 it lands at ~133px, which sits at a normal 2:1 against the
+ * nav cap height without crowding the 14px nav links.
  */
 export function Logo({
   variant = "onLight",
