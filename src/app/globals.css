@@ -212,7 +212,7 @@
    breakpoint the cards do:
 
      .frosted-backdrop        ROW layout (sm: and up, 2-3 cards side by side).
-                               One wide wordmark centred across the row, so
+                               One wide mark centred across the row, so
                                every card has part of it underneath.
 
      .frosted-backdrop-mobile STACKED layout (below sm, cards full-width in a
@@ -229,22 +229,22 @@
 
 .frosted-backdrop {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
+  inset: 0;
   z-index: 0;
   pointer-events: none;
-  width: 118%;
-  aspect-ratio: 1200 / 200;
-  background-image: url("/logo/taoohan-wordmark.png");
+  /* The brand's own logo mark (two overlapping circles) rather than
+     invented decoration. Capped to a fixed max width so the FULL mark is
+     always visible, never cropped at the row's edges, while still wide
+     enough to span across all three cards in a row. */
+  background-image: url("/logo/logo-dark.png");
   background-repeat: no-repeat;
-  background-size: contain;
+  background-size: min(85%, 38rem) auto;
   background-position: center;
   /* Strong enough to read clearly between the cards — the effect depends on
      the uncovered part being legible — while staying far below the body copy
      that sits in front of it. The accessibility gate checks contrast on every
      page, so this cannot drift into unreadable territory unnoticed. */
-  opacity: 0.3;
+  opacity: 0.5;
 }
 
 .frosted-backdrop-mobile {
@@ -262,18 +262,122 @@
   .frosted-backdrop-mobile {
     display: block;
     position: absolute;
-    /* Bleeds past the wrapper so a tile is never clipped exactly at a card's
-       top or bottom edge. */
-    inset: -1.5rem -1rem;
+    inset: 0;
     z-index: 0;
     pointer-events: none;
-    background-image: url("/logo/taoohan-mark.png");
-    background-repeat: repeat;
-    /* A tile roughly a third of a card's width — small enough that at least
-       one full repeat lands inside every stacked card, so none of them ends
-       up with a blank patch behind it. */
-    background-size: 8rem auto;
+    /* Three independent, non-repeating instances of the same mark — one per
+       stacked card. Positions are percentages of the wrapper's own height,
+       so as long as the three cards are roughly similar height (true for
+       this content) each mark lands near the middle of its card. Left/right
+       alternates so the three don't line up in a mechanical column, the same
+       idea the ambient .brand-watermark uses elsewhere on the page. */
+    background-image:
+      url("/logo/taoohan-mark.png"),
+      url("/logo/taoohan-mark.png"),
+      url("/logo/taoohan-mark.png");
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 8rem auto, 8rem auto, 8rem auto;
+    background-position:
+      82% 16%,
+      14% 50%,
+      78% 84%;
     opacity: 0.16;
+  }
+}
+
+/* ==========================================================================
+   CARD GLOW
+   ==========================================================================
+   A soft brand-green PANEL sized to match the card it sits behind, giving
+   the glass something to refract. Shared by any multi-row card grid — the
+   numbered Core Services grid (6 cards) and similar `glow`-enabled
+   FeatureGrid instances use it.
+
+   This is deliberately a DIFFERENT technique from the home page's value-prop
+   backdrop (one wordmark shared across a single 3-card row): a grid with more
+   than one row reflows its row/column split at every breakpoint, so a single
+   shared background behind the whole grid would constantly fall out of
+   alignment with whichever cards actually sit on it. Scoping the panel to
+   EACH card instead means it holds up at any row/column arrangement for
+   free — mobile needs no separate handling.
+
+   Also why this can't just be a heavier white background: a card can only
+   refract light through backdrop-filter if something visibly different sits
+   behind it. Two flat whites, however heavy the shadow between them, remain
+   two flat whites — that reads as elevation, not glass.
+
+   Kept deliberately restrained: low opacity and inset from the card's own
+   edges so it never pokes out past the glass — the same "colour behind
+   frosted glass" read used by .industry-glow, just in the brand green rather
+   than a neutral grey. */
+
+.card-glow {
+  position: absolute;
+  inset: 1.5rem;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: calc(var(--radius-card) - 0.4rem);
+  background: linear-gradient(135deg, var(--color-brand-300), var(--color-brand-400));
+  opacity: 0.28;
+  filter: blur(6px);
+}
+
+@media (max-width: 640px) {
+  /* Cards are much narrower on phones; the same inset would leave too thin
+     a sliver of panel showing, so it pulls in less on small screens. */
+  .card-glow {
+    inset: 1rem;
+    opacity: 0.24;
+  }
+}
+
+/* ==========================================================================
+   INDUSTRY PANEL GLOW — "Industries We Serve" cards ONLY
+   ==========================================================================
+   Unlike .card-glow above (one small corner accent, shared brand green,
+   reused by other grids), this is scoped ONLY to the industries grid and is
+   a full colour PANEL sized to match the card it sits behind, not a small
+   corner blob. The frosted card is a sibling layered on top via z-index, so
+   its backdrop-filter can actually pick up this panel's colour and refract
+   it — the same reason .card-glow has to be a sibling, not a descendant.
+
+   Every card uses the SAME flat neutral panel colour (#f6f6f6) rather than a
+   per-industry hue — a deliberately uniform, understated backing rather than
+   a colour-coded one.
+
+   Kept deliberately soft: low opacity, heavily blurred, and inset slightly
+   from the card's own edges so it never pokes out past the glass — a clean
+   "colour behind frosted glass" read rather than a coloured border. */
+
+.industry-glow {
+  position: absolute;
+  inset: 1.5rem;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: calc(var(--radius-card) - 0.4rem);
+  background: #e4e4e4;
+  opacity: 0.58;
+  filter: blur(6px);
+  animation: industry-glow-breathe 7s ease-in-out infinite;
+  animation-delay: var(--glow-delay, 0s);
+}
+
+@keyframes industry-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .industry-glow {
+    animation: none;
+    opacity: 0.56;
   }
 }
 

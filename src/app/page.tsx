@@ -82,7 +82,7 @@ export default function HomePage() {
             {content.services.coreHeading}
           </Link>
         </div>
-        <FeatureGrid items={content.services.items} numbered className="mt-10" />
+        <FeatureGrid items={content.services.items} numbered backdrop className="mt-10" />
       </Section>
 
       {/* ------------------------------------------------------------ INDUSTRIES */}

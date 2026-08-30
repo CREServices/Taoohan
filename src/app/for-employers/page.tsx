@@ -38,7 +38,7 @@ export default function ForEmployersPage() {
             {content.employers.processLead}
           </p>
         </div>
-        <FeatureGrid items={content.employers.steps} numbered className="mt-10" />
+        <FeatureGrid items={content.employers.steps} numbered backdrop className="mt-10" />
       </Section>
 
       <Section tone="muted">

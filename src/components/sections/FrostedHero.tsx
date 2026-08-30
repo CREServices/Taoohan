@@ -54,7 +54,7 @@ export function FrostedHero() {
         <div
           data-hero
           className={
-            "max-w-2xl rounded-card border border-white/30 p-8 shadow-xl sm:p-10 lg:p-12 " +
+            "max-w-3xl rounded-card border border-white/30 p-8 shadow-xl sm:p-10 lg:p-12 " +
             // Frosted glass: a LOW-opacity translucent fill + blur, so the
             // video reads clearly through the panel rather than being
             // mostly hidden behind it. The plain `bg-white/15` is the

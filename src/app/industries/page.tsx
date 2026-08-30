@@ -48,29 +48,44 @@ export default function IndustriesPage() {
             rather than growing along with it. */}
         <ul className="relative left-1/2 grid w-screen max-w-[1600px] -translate-x-1/2 items-stretch gap-6 px-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
           {content.industries.items.map((industry, index) => (
-            <li
-              key={industry.key}
-              data-reveal
-              style={
-                {
-                  "--reveal-delay": `${Math.min(index, 5) * 70}ms`,
-                } as React.CSSProperties
-              }
-              className="group relative flex flex-col overflow-hidden rounded-card border border-white/60 bg-white/55 p-7 shadow-[0_1px_2px_rgba(38,51,42,0.04),0_12px_28px_-16px_rgba(38,51,42,0.18)] backdrop-blur-md transition-all duration-300 ease-out supports-[backdrop-filter]:bg-white/40 supports-[backdrop-filter]:backdrop-blur-md hover:-translate-y-1 hover:border-brand-300/70 hover:bg-white/70 hover:shadow-[0_1px_2px_rgba(38,51,42,0.06),0_20px_40px_-16px_rgba(38,51,42,0.24)] sm:p-8"
-            >
+            // A plain relative wrapper, not the card itself: the glow panel
+            // and the frosted card are SIBLINGS here. `backdrop-filter` only
+            // picks up what renders behind an element's own box, never its
+            // own descendants — so the glow has to sit next to the card, one
+            // level up, or the card would never blur it.
+            <li key={industry.key} className="relative">
               <span
                 aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-brand-400 via-brand-600 to-brand-400 transition-transform duration-500 ease-out group-hover:scale-x-100"
+                className="industry-glow"
+                style={
+                  {
+                    "--glow-delay": `${(index % 6) * -1.1}s`,
+                  } as React.CSSProperties
+                }
               />
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-200/70 bg-brand-50/80 text-brand-700 transition-colors duration-300 group-hover:border-brand-300 group-hover:bg-brand-100/80">
-                <FeatureIcon itemKey={industry.key} className="h-6 w-6" />
-              </span>
-              <h2 className="mt-5 text-lg font-semibold leading-snug text-ink">
-                {industry.name}
-              </h2>
-              <p className="mt-3 max-w-prose text-[0.95rem] leading-relaxed text-ink-muted">
-                {industry.blurb}
-              </p>
+              <div
+                data-reveal
+                style={
+                  {
+                    "--reveal-delay": `${Math.min(index, 5) * 70}ms`,
+                  } as React.CSSProperties
+                }
+                className="group relative flex h-full flex-col overflow-hidden rounded-card border border-white/60 bg-white/55 p-7 shadow-[0_1px_2px_rgba(38,51,42,0.04),0_12px_28px_-16px_rgba(38,51,42,0.18)] backdrop-blur-md transition-all duration-300 ease-out supports-[backdrop-filter]:bg-white/40 supports-[backdrop-filter]:backdrop-blur-md hover:-translate-y-1 hover:border-brand-300/70 hover:bg-white/70 hover:shadow-[0_1px_2px_rgba(38,51,42,0.06),0_20px_40px_-16px_rgba(38,51,42,0.24)] sm:p-8"
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-brand-400 via-brand-600 to-brand-400 transition-transform duration-500 ease-out group-hover:scale-x-100"
+                />
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-200/70 bg-brand-50/80 text-brand-700 transition-colors duration-300 group-hover:border-brand-300 group-hover:bg-brand-100/80">
+                  <FeatureIcon itemKey={industry.key} className="h-6 w-6" />
+                </span>
+                <h2 className="mt-5 text-lg font-semibold leading-snug text-ink">
+                  {industry.name}
+                </h2>
+                <p className="mt-3 max-w-prose text-[0.95rem] leading-relaxed text-ink-muted">
+                  {industry.blurb}
+                </p>
+              </div>
             </li>
           ))}
         </ul>

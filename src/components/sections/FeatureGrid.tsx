@@ -22,6 +22,19 @@ type FeatureGridProps = {
    * See `.frosted-backdrop` in globals.css.
    */
   backdrop?: boolean;
+  /**
+   * Gives each card its own small, soft brand-green glow instead of one
+   * shared backdrop.
+   *
+   * Use this (rather than `backdrop`) for any grid that can wrap to more
+   * than one row — Core Services (6 cards) reflows its row/column split at
+   * every breakpoint, so a single shared background behind the whole grid
+   * would fall out of alignment with whichever cards land on it. A glow
+   * scoped to each card instead holds up at any arrangement for free.
+   *
+   * See `.card-glow` in globals.css.
+   */
+  glow?: boolean;
 };
 
 /**
@@ -39,7 +52,65 @@ export function FeatureGrid({
   columns = 3,
   className,
   backdrop = false,
+  glow = false,
 }: FeatureGridProps) {
+  const cardClassName = cn(
+    "group relative flex h-full flex-col overflow-hidden rounded-card border p-7 sm:p-8",
+    "transition-all duration-300 ease-out",
+    "hover:-translate-y-1 hover:border-brand-300/70",
+    // Over a backdrop or a glow the fill has to stay thin enough for what's
+    // behind it to read through, and the inner top highlight gives the pane
+    // its lit edge. Plain cards have nothing behind them to refract, so the
+    // original heavier fill stands unchanged.
+    backdrop || glow
+      ? cn(
+          "border-white/70 bg-white/45 supports-[backdrop-filter]:bg-white/30",
+          "backdrop-blur-lg supports-[backdrop-filter]:backdrop-blur-lg",
+          "shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(38,51,42,0.04),0_16px_36px_-18px_rgba(38,51,42,0.22)]",
+          "hover:bg-white/55",
+          "hover:shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(38,51,42,0.06),0_26px_50px_-18px_rgba(38,51,42,0.3)]",
+        )
+      : cn(
+          "border-white/60 bg-white/55 supports-[backdrop-filter]:bg-white/40",
+          "backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md",
+          "shadow-[0_1px_2px_rgba(38,51,42,0.04),0_12px_28px_-16px_rgba(38,51,42,0.18)]",
+          "hover:bg-white/70",
+          "hover:shadow-[0_1px_2px_rgba(38,51,42,0.06),0_20px_40px_-16px_rgba(38,51,42,0.24)]",
+        ),
+  );
+
+  const cardInner = (item: Feature, index: number) => (
+    <>
+      {/* Top accent line — fills in on hover/entry as a restrained
+          "progress" motif rather than a literal loading bar. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-brand-400 via-brand-600 to-brand-400 transition-transform duration-500 ease-out group-hover:scale-x-100"
+      />
+
+      <div className="flex items-center gap-3">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-200/70 bg-brand-50/80 text-brand-700 transition-colors duration-300 group-hover:border-brand-300 group-hover:bg-brand-100/80">
+          <FeatureIcon itemKey={item.key} className="h-6 w-6" />
+        </span>
+        {numbered && (
+          <span className="text-sm font-semibold tracking-wide text-brand-700">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+        )}
+      </div>
+
+      <h3 className="mt-5 text-lg font-semibold leading-snug text-ink">{item.title}</h3>
+
+      {/* Description is optional — cards stay title-only rather than
+          carrying invented copy. See the note on `Feature` in content/types. */}
+      {item.body && (
+        <p className="mt-3 max-w-prose text-[0.95rem] leading-relaxed text-ink-muted">
+          {item.body}
+        </p>
+      )}
+    </>
+  );
+
   const grid = (
     <ul
       data-testid="feature-grid"
@@ -51,74 +122,37 @@ export function FeatureGrid({
         backdrop ? "relative" : className,
       )}
     >
-      {items.map((item, index) => (
-        <li
-          key={item.key}
-          data-reveal
-          // Cards cascade rather than appearing as one slab. Capped so a long
-          // list (16 industries) never leaves the last card lagging seconds
-          // behind the first.
-          style={
-            {
-              "--reveal-delay": `${Math.min(index, 5) * 70}ms`,
-            } as React.CSSProperties
-          }
-          className={cn(
-            "group relative flex flex-col overflow-hidden rounded-card border p-7 sm:p-8",
-            "transition-all duration-300 ease-out",
-            "hover:-translate-y-1 hover:border-brand-300/70",
-            // Over a backdrop the fill has to stay thin enough for the mark to
-            // read through the glass, and the inner top highlight gives the
-            // pane its lit edge. Without one there is nothing behind to
-            // refract, so the original heavier card stands unchanged.
-            backdrop
-              ? cn(
-                  "border-white/70 bg-white/45 supports-[backdrop-filter]:bg-white/30",
-                  "backdrop-blur-lg supports-[backdrop-filter]:backdrop-blur-lg",
-                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(38,51,42,0.04),0_16px_36px_-18px_rgba(38,51,42,0.22)]",
-                  "hover:bg-white/55",
-                  "hover:shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(38,51,42,0.06),0_26px_50px_-18px_rgba(38,51,42,0.3)]",
-                )
-              : cn(
-                  "border-white/60 bg-white/55 supports-[backdrop-filter]:bg-white/40",
-                  "backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md",
-                  "shadow-[0_1px_2px_rgba(38,51,42,0.04),0_12px_28px_-16px_rgba(38,51,42,0.18)]",
-                  "hover:bg-white/70",
-                  "hover:shadow-[0_1px_2px_rgba(38,51,42,0.06),0_20px_40px_-16px_rgba(38,51,42,0.24)]",
-                ),
-          )}
-        >
-          {/* Top accent line — fills in on hover/entry as a restrained
-              "progress" motif rather than a literal loading bar. */}
-          <span
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-brand-400 via-brand-600 to-brand-400 transition-transform duration-500 ease-out group-hover:scale-x-100"
-          />
-
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-200/70 bg-brand-50/80 text-brand-700 transition-colors duration-300 group-hover:border-brand-300 group-hover:bg-brand-100/80">
-              <FeatureIcon itemKey={item.key} className="h-6 w-6" />
-            </span>
-            {numbered && (
-              <span className="text-sm font-semibold tracking-wide text-brand-700">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-            )}
-          </div>
-
-          <h3 className="mt-5 text-lg font-semibold leading-snug text-ink">
-            {item.title}
-          </h3>
-
-          {/* Description is optional — cards stay title-only rather than
-              carrying invented copy. See the note on `Feature` in content/types. */}
-          {item.body && (
-            <p className="mt-3 max-w-prose text-[0.95rem] leading-relaxed text-ink-muted">
-              {item.body}
-            </p>
-          )}
-        </li>
-      ))}
+      {items.map((item, index) =>
+        glow ? (
+          // A plain relative wrapper, not the card itself: the glow span and
+          // the frosted card are SIBLINGS here. `backdrop-filter` only picks
+          // up what renders behind an element's own box, never its own
+          // descendants — so the glow has to sit next to the card, one level
+          // up, or the card would never blur it.
+          <li key={item.key} className="relative">
+            <span aria-hidden="true" className="card-glow" />
+            <div
+              data-reveal
+              style={{ "--reveal-delay": `${Math.min(index, 5) * 70}ms` } as React.CSSProperties}
+              className={cardClassName}
+            >
+              {cardInner(item, index)}
+            </div>
+          </li>
+        ) : (
+          <li
+            key={item.key}
+            data-reveal
+            // Cards cascade rather than appearing as one slab. Capped so a
+            // long list never leaves the last card lagging seconds behind
+            // the first.
+            style={{ "--reveal-delay": `${Math.min(index, 5) * 70}ms` } as React.CSSProperties}
+            className={cardClassName}
+          >
+            {cardInner(item, index)}
+          </li>
+        ),
+      )}
     </ul>
   );
 
