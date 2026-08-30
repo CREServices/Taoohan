@@ -6,6 +6,7 @@ import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { RecruitmentProcessLoop } from "@/components/sections/RecruitmentProcessLoop";
+import { TestimonialsBand } from "@/components/sections/TestimonialsBand";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/about"].label };
 
@@ -68,6 +69,18 @@ export default function AboutPage() {
         No stock photography is used as a stand-in. Add back once an
         official company/team photograph is supplied.
       */}
+
+      {/*
+        Testimonials, in PREVIEW mode: the card design renders with copy that
+        says outright it is placeholder, and with no name, role or company on
+        any card. That keeps the client's "do not create placeholder reviews"
+        rule intact — there is no review and no reviewer — while making the
+        section's layout reviewable before the real quotes land. It sits
+        directly above the closing CTA so the page still ends on the CTA
+        rather than trailing off. Drop `preview` (or just populate
+        content.testimonials) and the real quotes take over.
+      */}
+      <TestimonialsBand heading={content.about.testimonialsHeading} preview />
 
       <CtaBand
         heading={content.home.intro.heading}

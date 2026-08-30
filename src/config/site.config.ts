@@ -65,6 +65,19 @@ export const CTA = {
   },
 } as const;
 
+/**
+ * Appended to the client-approved manpower categories in the employer form's
+ * selector, always last.
+ *
+ * Without it that selector is a closed set of sixteen industries, and an
+ * employer whose requirement falls outside them has no way to finish the
+ * form. It lives here rather than in the content layer because it is NOT an
+ * approved industry and must never be mistaken for one on the Industries
+ * page; the free-text box under the selector is where the real requirement
+ * gets described.
+ */
+export const OTHER_CATEGORY = "Others";
+
 export const SITE = {
   /** Legal/company name. */
   name: "Taoohan",

@@ -16,11 +16,19 @@ import type { Feature } from "@/content/types";
  *
  * WHY A LOOP and not a straight line: the shape is the brand mark. The client's
  * logo is two interlocking rings, and recruitment genuinely is continuous —
- * a placement feeds the next requirement. Steps 1–3 (understand, strategy,
- * source) sit on the left ring, 4–6 (screen, interview, place) on the right,
- * and the crossing in the middle is where the employer side meets the talent
- * side. The filled portion of the ribbon grows as the sequence advances, so
- * progress through the process is legible at a glance and not just implied.
+ * a placement feeds the next requirement. The crossing in the middle is where
+ * the employer side meets the talent side, and the filled portion of the
+ * ribbon grows as the sequence advances, so progress through the process is
+ * legible at a glance and not just implied.
+ *
+ * WHERE STEP ONE SITS: at the leftmost point of the left ring, and the
+ * sequence runs from there rightwards around the figure. The client asked for
+ * this: the sequence used to open on the upper-left node, which put the first
+ * beat of the animation somewhere in the middle of the left ring's arc with
+ * no visual reason to start there. The far-left point is the loop's extreme
+ * — the one place on the shape a reader's eye can be relied on to find first
+ * — so beginning there makes the direction of travel self-evident from the
+ * opening frame. See NODES for what that does to the ordering.
  *
  * ACCESSIBILITY: the drawing is decorative and marked aria-hidden; the legend
  * beneath it is a real ordered list carrying the same step titles, so nothing
@@ -58,18 +66,49 @@ const PATH_LENGTH = 964.5;
 const SPARK_LENGTH = 54;
 
 /**
- * Six marker positions, evenly spaced by ARC LENGTH and offset half a step so
- * none lands on the crossing — which puts exactly three on each lobe. `arc` is
- * the distance along the path, used to grow the filled ribbon to that step.
+ * Six marker positions, listed IN STEP ORDER. They are evenly spaced by arc
+ * length and offset half a step so none lands on the crossing, which puts
+ * exactly three on each lobe. `arc` is the distance along the path, used to
+ * grow the filled ribbon to that step, and it MUST increase down the list —
+ * the fill is a dash offset, so a step whose arc went backwards would animate
+ * the ribbon in reverse.
+ *
+ * Step one is the leftmost point (arc 241.1) rather than the upper-left one,
+ * so the list is the six positions rotated by one place. That rotation is why
+ * the last entry's arc is 1044.85 and not 80.4: the upper-left marker is now
+ * reached at the END of the traversal, a full lap on from where the sequence
+ * began, and expressing it as 80.4 + PATH_LENGTH is what keeps the sequence
+ * monotonic — every step must sit further along than the one before it, or
+ * the growing ribbon would animate backwards.
+ *
+ * The cost of starting at the extreme is that the left ring now carries steps
+ * 1, 2 and 6 rather than 1–3 — unavoidable, because the leftmost point is the
+ * MIDDLE of that ring's arc, so any traversal beginning there leaves the ring
+ * before it has spent three steps on it. Three markers still sit on each
+ * ring; only which numbers they carry has moved.
  */
 const NODES = [
-  { x: 165.3, y: 71.7, arc: 80.4 },
   { x: 64.0, y: 130.1, arc: 241.1 },
   { x: 165.4, y: 188.3, arc: 401.9 },
   { x: 274.7, y: 71.7, arc: 562.6 },
   { x: 376.0, y: 130.0, arc: 723.3 },
   { x: 274.6, y: 188.3, arc: 884.1 },
+  { x: 165.3, y: 71.7, arc: 80.4 + 964.5 },
 ] as const;
+
+/**
+ * Where the ribbon starts growing: step one's own position, NOT the path's
+ * start point.
+ *
+ * The path's `M` happens to be the crossing in the middle, which is an
+ * accident of how the four cubics were written and has nothing to do with
+ * where the process begins. Growing the fill from there meant that by the
+ * time the ribbon reached step one it had already swept past the marker for
+ * step six sitting between them — the sequence appeared to begin part-drawn,
+ * with its last step lit before its first. Offsetting the dash by this puts
+ * the ribbon's leading edge exactly on step one at step one.
+ */
+const START_ARC = NODES[0].arc;
 
 /** How long each step holds before the loop advances. */
 const STEP_MS = 2400;
@@ -158,7 +197,26 @@ export function RecruitmentProcessLoop({
   // One full pass completed: the ribbon stays closed from here on and the
   // highlight simply tours it, rather than the fill resetting every cycle.
   const toured = count > 0 && tick >= count;
-  const filled = !active ? 0 : toured ? PATH_LENGTH : NODES[step].arc;
+  // How far the ribbon has travelled FROM step one — not from the path's
+  // start point. Once a full pass is done it closes the remaining gap between
+  // step six and step one, which is the loop's whole point.
+  const filled = !active ? 0 : toured ? PATH_LENGTH : NODES[step].arc - START_ARC;
+
+  /**
+   * The dash that paints the travelled ribbon, as `[drawn, gap]` starting at
+   * START_ARC.
+   *
+   * A single-value dasharray (`PATH_LENGTH`) can only ever draw from the
+   * path's start. A two-value pattern whose total is exactly PATH_LENGTH can
+   * be slid to begin anywhere with a negative offset, and because the total
+   * matches the path exactly it wraps around the closed curve seamlessly when
+   * the drawn run passes the start point — which it does on every step past
+   * the halfway mark.
+   */
+  const ribbonDash = {
+    strokeDasharray: `${filled} ${Math.max(PATH_LENGTH - filled, 0)}`,
+    strokeDashoffset: -START_ARC,
+  };
 
   /**
    * The travelling light rests ON the active step rather than circling
@@ -215,7 +273,7 @@ export function RecruitmentProcessLoop({
             d={PATH_D}
             className="process-loop-bloom"
             filter="url(#process-loop-glow)"
-            style={{ strokeDasharray: PATH_LENGTH, strokeDashoffset: PATH_LENGTH - filled }}
+            style={ribbonDash}
           />
 
           {/* The untravelled ribbon. */}
@@ -225,7 +283,7 @@ export function RecruitmentProcessLoop({
           <path
             d={PATH_D}
             className="process-loop-fill"
-            style={{ strokeDasharray: PATH_LENGTH, strokeDashoffset: PATH_LENGTH - filled }}
+            style={ribbonDash}
           />
 
           {/* A thin core highlight down the middle of the ribbon, which is
@@ -233,7 +291,7 @@ export function RecruitmentProcessLoop({
           <path
             d={PATH_D}
             className="process-loop-core"
-            style={{ strokeDasharray: PATH_LENGTH, strokeDashoffset: PATH_LENGTH - filled }}
+            style={ribbonDash}
           />
 
           {/* The travelling light. It advances one step at a time and rests on

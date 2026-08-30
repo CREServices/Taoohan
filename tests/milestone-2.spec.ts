@@ -64,6 +64,37 @@ const CLIENT_VERBATIM = {
 const bodyText = async (page: Page) =>
   (await page.locator("body").innerText()).replace(/\s+/g, " ");
 
+/**
+ * Body text with the testimonials LAYOUT PREVIEW removed.
+ *
+ * The client's brief bans filler copy from the live site, and the assertion
+ * below enforces it. The one sanctioned exception is the About page's
+ * testimonials band: the client has since asked to see that section's card
+ * design ahead of the real quotes arriving, so it renders cards whose copy
+ * says outright that it is placeholder and which carry no name, role or
+ * company. That is a deliberate, clearly-labelled preview rather than filler
+ * pretending to be copy — but it does contain the word the ban looks for, so
+ * it is excised here and asserted separately.
+ */
+const bodyTextOutsidePreview = async (page: Page) => {
+  let text = await bodyText(page);
+  // Subtract the preview's own rendered text from the page's rendered text.
+  // NOT by cloning the body and deleting nodes: `innerText` on a DETACHED
+  // node degrades to `textContent`, which drags in the inlined Next.js flight
+  // payload — a <script> in <body> carrying every string the page rendered,
+  // including the very ones being excised. Reading both live keeps the
+  // comparison to what a visitor can actually see.
+  for (const locator of [
+    page.getByTestId("testimonials-preview"),
+    page.locator("[data-preview-note]"),
+  ]) {
+    if ((await locator.count()) === 0) continue;
+    const chunk = (await locator.innerText()).replace(/\s+/g, " ");
+    text = text.replace(chunk, " ");
+  }
+  return text;
+};
+
 // ---------------------------------------------------------------------------
 // CHECKLIST: "Every placeholder string replaced ... no lorem shipped"
 // ---------------------------------------------------------------------------
@@ -77,7 +108,7 @@ test.describe("no placeholder copy remains", () => {
   for (const item of NAV) {
     test(`${item.href} ships no lorem or placeholder text`, async ({ page }) => {
       await page.goto(item.href);
-      const text = await bodyText(page);
+      const text = await bodyTextOutsidePreview(page);
 
       // "Awaiting client content" is the deliberate, clearly-marked empty-slot
       // wording for data the client has not sent — that is allowed. Generic
@@ -89,6 +120,33 @@ test.describe("no placeholder copy remains", () => {
       }
     });
   }
+
+  test("the testimonials preview is labelled, unattributed, and About-only", async ({
+    page,
+  }) => {
+    await page.goto("/about");
+    const preview = page.getByTestId("testimonials-preview");
+    await expect(preview).toBeVisible();
+
+    // It says what it is, on the page, to the visitor.
+    await expect(page.locator("[data-preview-note]")).toContainText(
+      "Layout preview only",
+    );
+
+    // And it invents no reviewer: the client's rule is that no testimonial —
+    // and so no person giving one — may be fabricated. The cards carry copy
+    // and a shape where the attribution will go, and nothing else.
+    await expect(preview.locator("blockquote")).toHaveCount(0);
+    await expect(preview.getByRole("img")).toHaveCount(0);
+
+    // Still counted as blocked content, so filling the section stays on the
+    // outstanding list rather than looking done.
+    await expect(preview).toHaveAttribute("data-empty-slot", "testimonials");
+
+    // Nowhere else. The home page hides the band outright.
+    await page.goto("/");
+    await expect(page.getByTestId("testimonials-preview")).toHaveCount(0);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -241,16 +299,29 @@ test.describe("wording comes from config", () => {
   test("the header's compact CTA wording also comes from the config", async ({
     page,
   }, testInfo) => {
-    test.skip(!showsFullNav(testInfo), "The header CTAs only show at desktop.");
+    test.skip(!showsFullNav(testInfo), "The header CTA only shows at desktop.");
     await page.goto("/");
 
     const header = page.locator("header");
     await expect(header.getByTestId("cta-job-seeker")).toHaveText(
       CTA.jobSeeker.shortLabel,
     );
-    await expect(header.getByTestId("cta-employer")).toHaveText(
-      CTA.employer.shortLabel,
-    );
+  });
+
+  test("the header carries the job-seeker CTA alone", async ({ page }) => {
+    await page.goto("/");
+    const header = page.locator("header");
+
+    // The employer button was removed from the header at the client's
+    // request, so that "Submit CV" reads as the single site-wide default
+    // action rather than one of two competing ones.
+    await expect(header.getByTestId("cta-employer")).toHaveCount(0);
+
+    // ...but it is NOT gone from the site. The page body still offers the
+    // employer path with the approved full wording.
+    await expect(
+      page.locator("main").getByTestId("cta-employer").first(),
+    ).toHaveCount(1);
   });
 });
 

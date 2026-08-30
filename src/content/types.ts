@@ -97,6 +97,14 @@ export type SiteContent = {
   home: {
     eyebrow: string;
     headline: string;
+    /**
+     * The same headline, pre-split into the two lines the client signed off on
+     * ("Bringing Great People" / "to Great Businesses."). The hero sets these
+     * as non-wrapping lines so the break never moves with the viewport; the
+     * flat `headline` above stays the canonical string for metadata and for
+     * anywhere the break does not matter.
+     */
+    headlineLines: readonly string[];
     supporting: string;
     /** Single hero CTA — "Become Our Partner". Replaces the old two-button hero. */
     heroCta: {
@@ -151,6 +159,12 @@ export type SiteContent = {
   about: PageIntro & {
     body: readonly string[];
     approachHeading: string;
+    /**
+     * Heading for the testimonials band that closes the page. The quotes
+     * themselves are still blocked on the client (`testimonials` below is
+     * empty); only the section title is settled.
+     */
+    testimonialsHeading: string;
     approachLead: string;
     values: readonly Feature[];
   };
