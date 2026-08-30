@@ -40,16 +40,18 @@ export default function ForJobSeekersPage() {
           lists — four candidate-facing steps against the client's six
           approved process steps — so neither restates the other.
 
-          The cards stack in ONE column here. Two columns inside half a split
-          layout leaves each card too narrow for its copy, and the single
-          column also gives the section a height close to the loop's, so the
-          two halves finish together.
+          The cards run TWO ACROSS, so the four of them are two rows rather
+          than four — a single stacked column made this one section taller
+          than the rest of the page put together. That needs the wider half of
+          the split (7 of 12 against the loop's 5): the loop is a drawing and
+          reads fine scaled down, while a card has copy in it and stops being
+          readable below roughly 300px.
         */}
         <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
-          <div className="lg:col-span-6">
-            <FeatureGrid items={content.jobSeekers.steps} numbered columns={1} />
+          <div className="lg:col-span-7">
+            <FeatureGrid items={content.jobSeekers.steps} numbered columns={2} />
           </div>
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-5">
             {/*
               `start="left"` — step one sits at the loop's leftmost point and
               the sequence drops to the bottom of the ring before rising
