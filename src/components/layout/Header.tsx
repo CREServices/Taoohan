@@ -19,15 +19,9 @@ import { cn } from "@/lib/cn";
  * The full 7-item bar needs real width, so it appears at `xl` and everything
  * narrower (phone AND tablet) uses the disclosure menu.
  *
- * ONE CTA, NOT TWO. The header used to carry both "Submit CV" and "Request
- * Staff". The client asked for the employer button to come out of it and for
- * "Submit CV" to stand alone: the header CTA is the site-wide default action,
- * and two competing defaults in the top-right made neither read as the
- * primary one. The employer path is not lost — "Request Staffing & Manpower"
- * is still on every relevant page body (the home audience cards, the CTA
- * bands, For Employers, Services, Industries) with its full approved wording,
- * and the hero's "Become Our Partner" modal still opens straight onto an
- * employer tab. `only="jobSeeker"` is what drops it here.
+ * BOTH CTAs stay in the header — "Submit CV" and "Request Staff" — so the
+ * job-seeker and employer paths are equally one click away from anywhere on
+ * the site, not just from the page body.
  */
 export function Header() {
   const pathname = usePathname();
@@ -120,12 +114,12 @@ export function Header() {
             </ul>
           </nav>
 
-          {/* Desktop CTA */}
+          {/* Desktop CTAs */}
           <div className="hidden shrink-0 xl:block">
-            {/* Compact wording: the full button name does not fit alongside
-                the brand and all seven nav items on one row. The page body
-                keeps the client's approved full label. */}
-            <CtaGroup size="md" compact only="jobSeeker" />
+            {/* Compact wording: the full button names do not fit alongside the
+                brand and all seven nav items on one row. The page body keeps
+                the client's approved full labels. */}
+            <CtaGroup size="md" compact />
           </div>
 
           {/* Mobile / tablet toggle */}
@@ -195,9 +189,7 @@ export function Header() {
               </ul>
             </nav>
             <div className="pb-6">
-              {/* Same single CTA as the desktop bar — the mobile panel is the
-                  same header, not a second place to make a different offer. */}
-              <CtaGroup size="lg" only="jobSeeker" />
+              <CtaGroup size="lg" />
             </div>
           </Container>
         </div>

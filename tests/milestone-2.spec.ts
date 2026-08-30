@@ -308,20 +308,17 @@ test.describe("wording comes from config", () => {
     );
   });
 
-  test("the header carries the job-seeker CTA alone", async ({ page }) => {
+  test("the header carries both the job-seeker and employer CTAs", async ({
+    page,
+  }, testInfo) => {
+    test.skip(!showsFullNav(testInfo), "The header CTA only shows at desktop.");
     await page.goto("/");
     const header = page.locator("header");
 
-    // The employer button was removed from the header at the client's
-    // request, so that "Submit CV" reads as the single site-wide default
-    // action rather than one of two competing ones.
-    await expect(header.getByTestId("cta-employer")).toHaveCount(0);
-
-    // ...but it is NOT gone from the site. The page body still offers the
-    // employer path with the approved full wording.
-    await expect(
-      page.locator("main").getByTestId("cta-employer").first(),
-    ).toHaveCount(1);
+    // Both paths stay one click away from anywhere on the site — neither
+    // the job-seeker nor the employer action is buried in the page body.
+    await expect(header.getByTestId("cta-job-seeker")).toHaveCount(1);
+    await expect(header.getByTestId("cta-employer")).toHaveCount(1);
   });
 });
 
