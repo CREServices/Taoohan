@@ -120,9 +120,15 @@ export function FeatureGrid({
           </h3>
 
           {/* Description is optional — cards stay title-only rather than
-              carrying invented copy. See the note on `Feature` in content/types. */}
+              carrying invented copy. See the note on `Feature` in content/types.
+
+              0.875rem, a step down from 0.95: at the narrower card widths this
+              grid now runs to (two across inside half a split layout) the
+              larger size was breaking short descriptions over five and six
+              lines. Held above the leading so the block does not tighten up
+              as it shrinks. */}
           {item.body && (
-            <p className="mt-3 max-w-prose text-[0.95rem] leading-relaxed text-ink-muted">
+            <p className="mt-3 max-w-prose text-[0.875rem] leading-relaxed text-ink-muted">
               {item.body}
             </p>
           )}
