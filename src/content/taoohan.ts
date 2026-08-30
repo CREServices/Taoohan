@@ -438,6 +438,14 @@ export const taoohanContent: SiteContent = {
     ],
     ctaHeading: "READY FOR YOUR NEXT OPPORTUNITY?",
     ctaBody: "Take the next step in your career and let Taoohan connect you with opportunities that match your skills and experience.",
+    // [DRAFT] Not yet client-approved — pulled in to make the navbar's
+    // "Submit CV" flow functional. Replace with approved wording once
+    // available; no code changes needed when it lands.
+    applyInstructions: [
+      "Enter your full name and contact number.",
+      "Choose how you would like to continue: WhatsApp or email.",
+      "Attach your CV in the chat or email that opens, and our team will be in touch.",
+    ],
   },
 
   contact: {
@@ -482,6 +490,12 @@ export const taoohanContent: SiteContent = {
     manpowerCategories: "MANPOWER CATEGORIES YOU CAN REQUEST",
     footerPages: "Pages",
     footerContact: "Contact",
+    // [DRAFT] Not yet client-approved — pulled in to make the navbar's
+    // "Submit CV" / "Request Staff" flows functional.
+    requestManpower: "Request staffing and manpower",
+    howToApply: "How to apply",
+    applyWhatsApp: "Continue on WhatsApp",
+    applyEmail: "Send by email",
   },
 
   footer: {

@@ -58,3 +58,16 @@ next-env.d.ts
 # and everything under docs/. These stay on disk; they are simply untracked.
 *.md
 /docs/
+
+# internal planning docs and client materials (coaching scripts, milestone
+# decks, content/copy briefs) — not application source, never pushed.
+*.pdf
+/milestone2-deck/
+
+# local tool state (beads database/lock files) — not source, never pushed.
+/.beads/
+
+# oversized source video (317MB) — exceeds GitHub's 100MB file limit.
+# Stays on disk; not referenced by any component, so nothing breaks by
+# leaving it untracked. Re-add via Git LFS if it needs to ship.
+/public/video/manpower.mp4

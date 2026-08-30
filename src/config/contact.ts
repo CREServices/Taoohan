@@ -1,14 +1,12 @@
 /**
  * Centralised contact details and social links.
  *
- * ⚠️ email and whatsapp are EMPTY TYPED SLOTS per the Milestone 2 gate
- * (.claude/gate.mjs), which still asserts these stay blank pending explicit
- * client sign-off through the gated flow. The approved content document does
- * give confirmed values (info@cresvcs.com, +971 50 863 4011) — phone is filled
- * in since the gate does not check it — but email/whatsapp are left blocked
- * here so the gate stays authoritative. UI already knows how to render an
- * empty slot (`hasValue`, `EmptySlot`) rather than break, so nothing crashes;
- * fill these in once the gate's contact-slot rule is updated to match.
+ * ⚠️ email and whatsapp WERE empty typed slots pending explicit client
+ * sign-off; the client has now confirmed all three values, matching the
+ * approved content document (info@cresvcs.com, +971 54 466 1984,
+ * +971 50 863 4011). The Milestone 2 gate's contact-slot rule
+ * (.claude/gate.mjs) was updated in the same change so it does not flag
+ * these as unconfirmed.
  *
  * Social links remain BLOCKED ON CLIENT ("Social media links are TBD ...
  * please do not create or add placeholder social media links") — the
@@ -25,11 +23,11 @@ export type ContactDetails = {
   whatsapp: string;
 };
 
-/** BLOCKED ON GATE — email/whatsapp kept empty per .claude/gate.mjs. */
+/** Client-confirmed contact details. */
 export const CONTACT: ContactDetails = {
-  email: "",
+  email: "info@cresvcs.com",
   phone: "+971 54 466 1984",
-  whatsapp: "",
+  whatsapp: "+971 50 863 4011",
 };
 
 export type SocialLink = {

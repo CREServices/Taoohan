@@ -319,22 +319,26 @@ test.describe("data-driven blocks and empty slots", () => {
     await expect(page.getByText("Trusted By")).toHaveCount(0);
   });
 
-  // ⚠️ UPDATED: the approved content document gives a confirmed phone number
-  // (+971 54 466 1984) that the client asked to be used site-wide. Email and
-  // WhatsApp stay blocked per the Milestone 2 gate's contact-slot rule
-  // (.claude/gate.mjs) pending that rule being reconciled with the approved
-  // brief — see the note on CONTACT in src/config/contact.ts.
+  // The client has confirmed all three contact fields, matching the approved
+  // content document exactly — see the note on CONTACT in
+  // src/config/contact.ts. Social links remain blocked, but that section is
+  // removed from the page entirely (not rendered as an empty slot), so
+  // /contact now has zero [data-empty-slot] markers — every channel it shows
+  // is confirmed.
   test("contact details are centralised; confirmed fields render, blocked fields stay empty", async ({
     page,
   }) => {
-    expect(CONTACT.email).toBe("");
+    expect(CONTACT.email).toBe("info@cresvcs.com");
     expect(CONTACT.phone).toBe("+971 54 466 1984");
-    expect(CONTACT.whatsapp).toBe("");
+    expect(CONTACT.whatsapp).toBe("+971 50 863 4011");
     expect(SOCIALS.every((social) => social.href === "")).toBe(true);
 
     await page.goto("/contact");
-    const slots = page.locator("[data-empty-slot]");
-    expect(await slots.count()).toBeGreaterThan(0);
+    const main = page.locator("main");
+    await expect(main.getByText(CONTACT.email)).toBeVisible();
+    await expect(main.getByText(CONTACT.phone)).toBeVisible();
+    await expect(main.getByText(CONTACT.whatsapp)).toBeVisible();
+    await expect(page.locator("[data-empty-slot]")).toHaveCount(0);
   });
 
   test("legal documents are empty slots, not invented policies", async () => {

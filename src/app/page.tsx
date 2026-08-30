@@ -43,7 +43,7 @@ export default function HomePage() {
             {content.home.intro.lead}
           </p>
         </div>
-        <FeatureGrid items={content.home.features} className="mt-10" />
+        <FeatureGrid items={content.home.features} backdrop className="mt-10" />
       </Section>
 
       {/* ------------------------------------------------------------ WHAT WE DO */}

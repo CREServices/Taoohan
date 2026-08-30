@@ -197,6 +197,13 @@ export type SiteContent = {
     applySidebarHeading: string;
     ctaHeading: string;
     ctaBody: string;
+    /**
+     * Optional — instructions shown alongside the Apply Now flow (navbar
+     * "Submit CV" button). Only `taoohan.ts` supplies this today; kept
+     * optional so `placeholder.ts` does not need updating for a flow it never
+     * exercises.
+     */
+    applyInstructions?: readonly string[];
   };
 
   contact: PageIntro & {
@@ -230,6 +237,15 @@ export type SiteContent = {
     manpowerCategories: string;
     footerPages: string;
     footerContact: string;
+    /**
+     * Optional — copy for the navbar "Request Staff" / "Submit CV" flows.
+     * Only `taoohan.ts` supplies these today; kept optional so
+     * `placeholder.ts` does not need updating for flows it never exercises.
+     */
+    requestManpower?: string;
+    howToApply?: string;
+    applyWhatsApp?: string;
+    applyEmail?: string;
   };
 
   footer: {

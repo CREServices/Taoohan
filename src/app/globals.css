@@ -197,6 +197,87 @@
 }
 
 /* ==========================================================================
+   FROSTED CARD BACKDROP
+   ==========================================================================
+   A large, faint brand mark sitting BEHIND a frosted card grid.
+
+   This is what makes the glassmorphism visible. `backdrop-filter` blurs
+   whatever is behind an element, so over a flat white page there is nothing
+   to blur and a frosted card renders as a plain white box. Putting a mark
+   underneath gives the glass something to refract: where a card covers it
+   the mark goes soft and pale, and in the gaps between cards it stays crisp.
+   That difference along each card edge IS the effect.
+
+   Two variants, because the grid's own layout changes shape at the same
+   breakpoint the cards do:
+
+     .frosted-backdrop        ROW layout (sm: and up, 2-3 cards side by side).
+                               One wide wordmark centred across the row, so
+                               every card has part of it underneath.
+
+     .frosted-backdrop-mobile STACKED layout (below sm, cards full-width in a
+                               single column). A single centred mark would
+                               only reach whichever card sits in the middle of
+                               the stack, leaving the first and last with
+                               nothing behind them — so this tiles the small
+                               brand mark down the FULL height of the stack
+                               instead, guaranteeing every card crosses it.
+
+   Both use the brand's own artwork rather than invented decoration, and both
+   are decorative only: rendered aria-hidden, carrying no meaning the
+   headings do not already give. */
+
+.frosted-backdrop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 0;
+  pointer-events: none;
+  width: 118%;
+  aspect-ratio: 1200 / 200;
+  background-image: url("/logo/taoohan-wordmark.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  /* Strong enough to read clearly between the cards — the effect depends on
+     the uncovered part being legible — while staying far below the body copy
+     that sits in front of it. The accessibility gate checks contrast on every
+     page, so this cannot drift into unreadable territory unnoticed. */
+  opacity: 0.3;
+}
+
+.frosted-backdrop-mobile {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  /* The row wordmark only ever covers the middle of a stack of full-width
+     cards, so it is switched off entirely below the breakpoint rather than
+     just resized. */
+  .frosted-backdrop {
+    display: none;
+  }
+
+  .frosted-backdrop-mobile {
+    display: block;
+    position: absolute;
+    /* Bleeds past the wrapper so a tile is never clipped exactly at a card's
+       top or bottom edge. */
+    inset: -1.5rem -1rem;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("/logo/taoohan-mark.png");
+    background-repeat: repeat;
+    /* A tile roughly a third of a card's width — small enough that at least
+       one full repeat lands inside every stacked card, so none of them ends
+       up with a blank patch behind it. */
+    background-size: 8rem auto;
+    opacity: 0.16;
+  }
+}
+
+/* ==========================================================================
    BRAND WATERMARK
    ==========================================================================
    The brand mark sitting behind section content, so the brand is present

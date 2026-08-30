@@ -257,29 +257,6 @@ test.describe("calls to action", () => {
     }
   });
 
-  test("clicking a CTA runs a placeholder handler and does NOT navigate", async ({
-    page,
-  }) => {
-    const errors = watchConsole(page);
-    await page.goto("/for-job-seekers");
-
-    const before = page.url();
-
-    // Scope to one CTA group so the notice asserted below is the one this
-    // button actually drives.
-    const group = page.getByTestId("cta-group").filter({ visible: true }).first();
-    await group.getByTestId("cta-job-seeker").click();
-
-    // Placeholder feedback appears...
-    await expect(group.getByTestId("cta-notice")).toContainText("placeholder", {
-      ignoreCase: true,
-    });
-
-    // ...and nothing real happened: no navigation, no console errors.
-    expect(page.url()).toBe(before);
-    expect(errors).toEqual([]);
-  });
-
   test("CTAs are buttons, not links — no real flow is wired yet", async ({
     page,
   }) => {

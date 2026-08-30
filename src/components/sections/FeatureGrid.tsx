@@ -8,6 +8,20 @@ type FeatureGridProps = {
   numbered?: boolean;
   columns?: 2 | 3;
   className?: string;
+  /**
+   * Places a large, faint brand wordmark behind the grid so the cards'
+   * frosted glass is actually visible.
+   *
+   * `backdrop-filter` blurs what is BEHIND an element — over a flat white
+   * page there is nothing to blur, so the frosted fill renders as a plain
+   * white box. The mark gives the glass something to refract: covered by a
+   * card it goes soft and pale, uncovered it stays crisp, and that contrast
+   * along the card edge is the effect. Cards also thin their fill when this
+   * is on, so the mark reads through them.
+   *
+   * See `.frosted-backdrop` in globals.css.
+   */
+  backdrop?: boolean;
 };
 
 /**
@@ -24,14 +38,17 @@ export function FeatureGrid({
   numbered = false,
   columns = 3,
   className,
+  backdrop = false,
 }: FeatureGridProps) {
-  return (
+  const grid = (
     <ul
       data-testid="feature-grid"
       className={cn(
         "grid items-stretch gap-6 sm:grid-cols-2",
         columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2",
-        className,
+        // With a backdrop the wrapper carries the outer spacing so the mark
+        // centres on the cards, not on the margin above them.
+        backdrop ? "relative" : className,
       )}
     >
       {items.map((item, index) => (
@@ -48,12 +65,27 @@ export function FeatureGrid({
           }
           className={cn(
             "group relative flex flex-col overflow-hidden rounded-card border p-7 sm:p-8",
-            "border-white/60 bg-white/55 supports-[backdrop-filter]:bg-white/40",
-            "backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md",
-            "shadow-[0_1px_2px_rgba(38,51,42,0.04),0_12px_28px_-16px_rgba(38,51,42,0.18)]",
             "transition-all duration-300 ease-out",
-            "hover:-translate-y-1 hover:border-brand-300/70 hover:bg-white/70",
-            "hover:shadow-[0_1px_2px_rgba(38,51,42,0.06),0_20px_40px_-16px_rgba(38,51,42,0.24)]",
+            "hover:-translate-y-1 hover:border-brand-300/70",
+            // Over a backdrop the fill has to stay thin enough for the mark to
+            // read through the glass, and the inner top highlight gives the
+            // pane its lit edge. Without one there is nothing behind to
+            // refract, so the original heavier card stands unchanged.
+            backdrop
+              ? cn(
+                  "border-white/70 bg-white/45 supports-[backdrop-filter]:bg-white/30",
+                  "backdrop-blur-lg supports-[backdrop-filter]:backdrop-blur-lg",
+                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(38,51,42,0.04),0_16px_36px_-18px_rgba(38,51,42,0.22)]",
+                  "hover:bg-white/55",
+                  "hover:shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(38,51,42,0.06),0_26px_50px_-18px_rgba(38,51,42,0.3)]",
+                )
+              : cn(
+                  "border-white/60 bg-white/55 supports-[backdrop-filter]:bg-white/40",
+                  "backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md",
+                  "shadow-[0_1px_2px_rgba(38,51,42,0.04),0_12px_28px_-16px_rgba(38,51,42,0.18)]",
+                  "hover:bg-white/70",
+                  "hover:shadow-[0_1px_2px_rgba(38,51,42,0.06),0_20px_40px_-16px_rgba(38,51,42,0.24)]",
+                ),
           )}
         >
           {/* Top accent line — fills in on hover/entry as a restrained
@@ -88,5 +120,19 @@ export function FeatureGrid({
         </li>
       ))}
     </ul>
+  );
+
+  if (!backdrop) return grid;
+
+  return (
+    <div className={cn("relative", className)}>
+      {/* Decorative: the marks carry no meaning the headings do not already
+          give, and exist so the cards in front of them have something to
+          refract. Two variants because the grid itself reflows at the same
+          breakpoint the cards do — see the comment in globals.css. */}
+      <span aria-hidden="true" className="frosted-backdrop" />
+      <span aria-hidden="true" className="frosted-backdrop-mobile" />
+      {grid}
+    </div>
   );
 }
