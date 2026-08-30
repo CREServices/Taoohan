@@ -16,11 +16,27 @@ import type { Feature } from "@/content/types";
  *
  * WHY A LOOP and not a straight line: the shape is the brand mark. The client's
  * logo is two interlocking rings, and recruitment genuinely is continuous —
- * a placement feeds the next requirement. Steps 1–3 (understand, strategy,
- * source) sit on the left ring, 4–6 (screen, interview, place) on the right,
- * and the crossing in the middle is where the employer side meets the talent
- * side. The filled portion of the ribbon grows as the sequence advances, so
- * progress through the process is legible at a glance and not just implied.
+ * a placement feeds the next requirement. The crossing in the middle is where
+ * the employer side meets the talent side, and the filled portion of the
+ * ribbon grows as the sequence advances, so progress through the process is
+ * legible at a glance and not just implied.
+ *
+ * WHERE STEP ONE SITS is a choice, made per page by the `start` prop:
+ *
+ *   "crossing" (default) — the ribbon grows from the figure's centre and step
+ *   one sits on the upper-left node. Steps 1–3 land on the left ring and 4–6
+ *   on the right, so the ring grouping carries meaning. The About page uses
+ *   this.
+ *
+ *   "left" — step one sits at the leftmost point, the ribbon starts growing
+ *   there, and the sequence drops to the bottom of the left ring before
+ *   rising through the crossing. Beginning at the shape's extreme makes the
+ *   direction of travel self-evident from the opening frame, at the cost of
+ *   the ring grouping. For Job Seekers uses this.
+ *
+ * Both are the SAME curve, the same markers and the same traversal direction.
+ * All that changes is which marker is numbered one and where the fill begins;
+ * see LOOP_STARTS.
  *
  * ACCESSIBILITY: the drawing is decorative and marked aria-hidden; the legend
  * beneath it is a real ordered list carrying the same step titles, so nothing
@@ -58,11 +74,14 @@ const PATH_LENGTH = 964.5;
 const SPARK_LENGTH = 54;
 
 /**
- * Six marker positions, evenly spaced by ARC LENGTH and offset half a step so
- * none lands on the crossing — which puts exactly three on each lobe. `arc` is
- * the distance along the path, used to grow the filled ribbon to that step.
+ * The six marker positions, evenly spaced by ARC LENGTH around the curve and
+ * offset half a step so none lands on the crossing — which puts exactly three
+ * on each ring. `arc` is the distance along the path.
+ *
+ * Listed here in path order, starting from the curve's own `M` point (the
+ * crossing). LOOP_STARTS below is what turns this into a numbered sequence.
  */
-const NODES = [
+const MARKERS = [
   { x: 165.3, y: 71.7, arc: 80.4 },
   { x: 64.0, y: 130.1, arc: 241.1 },
   { x: 165.4, y: 188.3, arc: 401.9 },
@@ -71,17 +90,58 @@ const NODES = [
   { x: 274.6, y: 188.3, arc: 884.1 },
 ] as const;
 
+export type LoopStart = "crossing" | "left";
+
+/**
+ * The two numbering schemes, as `[markers in step order, where the fill
+ * begins]`.
+ *
+ * Two rules govern both, and breaking either one visibly breaks the drawing:
+ *
+ *   1. Arcs must INCREASE down the list. The fill is a dash length measured
+ *      along the curve, so a step that sat at a lower arc than the one before
+ *      it would animate the ribbon backwards. "left" satisfies this by
+ *      expressing its final marker as one lap on (80.4 + PATH_LENGTH) rather
+ *      than wrapping to 80.4.
+ *
+ *   2. `startArc` must be where step one is meant to be reached FROM. For
+ *      "crossing" that is the curve's start; the ribbon grows out of the
+ *      centre and arrives at step one. For "left" it is step one's own
+ *      position — growing from the curve's start instead would have swept the
+ *      ribbon straight past the marker numbered six before it ever reached
+ *      the one numbered one.
+ */
+const LOOP_STARTS = {
+  crossing: { nodes: MARKERS, startArc: 0 },
+  left: {
+    // The same six positions rotated by one place, so the leftmost is first.
+    nodes: [
+      MARKERS[1],
+      MARKERS[2],
+      MARKERS[3],
+      MARKERS[4],
+      MARKERS[5],
+      { ...MARKERS[0], arc: MARKERS[0].arc + 964.5 },
+    ],
+    startArc: MARKERS[1].arc,
+  },
+} as const;
+
 /** How long each step holds before the loop advances. */
 const STEP_MS = 2400;
 
 export function RecruitmentProcessLoop({
   steps,
   className,
+  start = "crossing",
 }: {
   /** The client's approved process steps — `content.services.steps`. */
   steps: readonly Feature[];
   className?: string;
+  /** Which marker is step one, and where the ribbon starts. See LOOP_STARTS. */
+  start?: LoopStart;
 }) {
+  const { nodes: NODES, startArc: START_ARC } = LOOP_STARTS[start];
   const wrapRef = useRef<HTMLDivElement>(null);
   // Server and first client render must agree, so both start inactive on
   // step one. Reduced motion is settled in the effect below rather than in
@@ -158,7 +218,26 @@ export function RecruitmentProcessLoop({
   // One full pass completed: the ribbon stays closed from here on and the
   // highlight simply tours it, rather than the fill resetting every cycle.
   const toured = count > 0 && tick >= count;
-  const filled = !active ? 0 : toured ? PATH_LENGTH : NODES[step].arc;
+  // How far the ribbon has travelled FROM step one — not from the path's
+  // start point. Once a full pass is done it closes the remaining gap between
+  // step six and step one, which is the loop's whole point.
+  const filled = !active ? 0 : toured ? PATH_LENGTH : NODES[step].arc - START_ARC;
+
+  /**
+   * The dash that paints the travelled ribbon, as `[drawn, gap]` starting at
+   * START_ARC.
+   *
+   * A single-value dasharray (`PATH_LENGTH`) can only ever draw from the
+   * path's start. A two-value pattern whose total is exactly PATH_LENGTH can
+   * be slid to begin anywhere with a negative offset, and because the total
+   * matches the path exactly it wraps around the closed curve seamlessly when
+   * the drawn run passes the start point — which it does on every step past
+   * the halfway mark.
+   */
+  const ribbonDash = {
+    strokeDasharray: `${filled} ${Math.max(PATH_LENGTH - filled, 0)}`,
+    strokeDashoffset: -START_ARC,
+  };
 
   /**
    * The travelling light rests ON the active step rather than circling
@@ -215,7 +294,7 @@ export function RecruitmentProcessLoop({
             d={PATH_D}
             className="process-loop-bloom"
             filter="url(#process-loop-glow)"
-            style={{ strokeDasharray: PATH_LENGTH, strokeDashoffset: PATH_LENGTH - filled }}
+            style={ribbonDash}
           />
 
           {/* The untravelled ribbon. */}
@@ -225,7 +304,7 @@ export function RecruitmentProcessLoop({
           <path
             d={PATH_D}
             className="process-loop-fill"
-            style={{ strokeDasharray: PATH_LENGTH, strokeDashoffset: PATH_LENGTH - filled }}
+            style={ribbonDash}
           />
 
           {/* A thin core highlight down the middle of the ribbon, which is
@@ -233,7 +312,7 @@ export function RecruitmentProcessLoop({
           <path
             d={PATH_D}
             className="process-loop-core"
-            style={{ strokeDasharray: PATH_LENGTH, strokeDashoffset: PATH_LENGTH - filled }}
+            style={ribbonDash}
           />
 
           {/* The travelling light. It advances one step at a time and rests on
@@ -281,7 +360,20 @@ export function RecruitmentProcessLoop({
         </svg>
       </div>
 
-      <ol className="process-loop-legend">
+      {/*
+        READS DOWN, NOT ACROSS. At two columns the steps fill the first column
+        top to bottom (1, 2, 3) before starting the second (4, 5, 6), rather
+        than snaking 1-2 / 3-4 / 5-6 across the rows. `--legend-rows` is the
+        column height the stylesheet needs to do that, and it is computed from
+        the number of steps actually shown so a list of other than six still
+        splits evenly down the middle.
+      */}
+      <ol
+        className="process-loop-legend"
+        style={
+          { "--legend-rows": Math.ceil(shown.length / 2) } as React.CSSProperties
+        }
+      >
         {shown.map((item, index) => (
           <li
             key={item.key}

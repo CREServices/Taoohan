@@ -30,6 +30,7 @@ export const taoohanContent: SiteContent = {
   home: {
     eyebrow: "The Right People. The Right Opportunities.",
     headline: "Bringing Great People to Great Businesses.",
+    headlineLines: ["Bringing Great People", "to Great Businesses."],
     supporting:
       "Connecting employers with qualified talent through reliable recruitment, staffing, and manpower solutions across industries.",
     heroCta: {
@@ -114,6 +115,7 @@ export const taoohanContent: SiteContent = {
       "From skilled professionals to essential workforce roles, we make the hiring process more efficient while helping people discover meaningful opportunities to grow their careers.",
     ],
     approachHeading: "Our Approach",
+    testimonialsHeading: "What Our Partners Say",
     approachLead:
       "We believe successful recruitment goes beyond filling positions. It starts with understanding the needs of both employers and candidates, identifying the right match, and creating connections that support long-term success.",
     values: [

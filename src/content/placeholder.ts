@@ -34,6 +34,7 @@ export const placeholderContent: SiteContent = {
   home: {
     eyebrow: "Placeholder Eyebrow Line",
     headline: "Placeholder Headline For The Home Hero.",
+    headlineLines: ["Placeholder Headline", "For The Home Hero."],
     supporting:
       "Placeholder supporting sentence sitting under the main headline, written to about the same length as the final approved line.",
     heroCta: { label: "Placeholder Hero CTA" },
@@ -103,6 +104,7 @@ export const placeholderContent: SiteContent = {
       "Placeholder first body paragraph for the about page. It runs to roughly the length of the real paragraph so that column width, measure and vertical rhythm can be judged properly during layout review.",
       "Placeholder second body paragraph continuing the story with a comparable amount of text, keeping the section height representative of the finished page.",
     ],
+    testimonialsHeading: "Placeholder Testimonials Heading",
     approachHeading: "Placeholder Approach Heading",
     approachLead: placeholderBody,
     values: [

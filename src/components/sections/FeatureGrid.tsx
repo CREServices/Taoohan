@@ -6,7 +6,12 @@ type FeatureGridProps = {
   items: readonly Feature[];
   /** Show a 01/02/03 counter — used for the "how it works" step lists. */
   numbered?: boolean;
-  columns?: 2 | 3;
+  /**
+   * 1 keeps the cards in one stacked column at every width — for a card list
+   * sitting in one half of a split layout, where two columns would squeeze
+   * each card past readability.
+   */
+  columns?: 1 | 2 | 3;
   className?: string;
   /**
    * Places a large, faint brand wordmark behind the grid so the cards'
@@ -102,9 +107,20 @@ export function FeatureGrid({
       <h3 className="mt-5 text-lg font-semibold leading-snug text-ink">{item.title}</h3>
 
       {/* Description is optional — cards stay title-only rather than
-          carrying invented copy. See the note on `Feature` in content/types. */}
+          carrying invented copy. See the note on `Feature` in content/types.
+
+          0.875rem, a step down from 0.95, on a 2-column grid: at the
+          narrower card widths a two-across layout runs to (e.g. half a
+          split layout), the larger size was breaking short descriptions
+          over five and six lines. Held above the leading so the block does
+          not tighten up as it shrinks. */}
       {item.body && (
-        <p className="mt-3 max-w-prose text-[0.95rem] leading-relaxed text-ink-muted">
+        <p
+          className={cn(
+            "mt-3 max-w-prose leading-relaxed text-ink-muted",
+            columns === 2 ? "text-[0.875rem]" : "text-[0.95rem]",
+          )}
+        >
           {item.body}
         </p>
       )}
@@ -115,8 +131,12 @@ export function FeatureGrid({
     <ul
       data-testid="feature-grid"
       className={cn(
-        "grid items-stretch gap-6 sm:grid-cols-2",
-        columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2",
+        "grid items-stretch gap-6",
+        columns === 1
+          ? "grid-cols-1"
+          : columns === 3
+            ? "sm:grid-cols-2 lg:grid-cols-3"
+            : "sm:grid-cols-2 lg:grid-cols-2",
         // With a backdrop the wrapper carries the outer spacing so the mark
         // centres on the cards, not on the margin above them.
         backdrop ? "relative" : className,

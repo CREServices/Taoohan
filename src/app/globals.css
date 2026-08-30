@@ -544,11 +544,17 @@ section:has(.process-loop) .brand-watermark {
 
 /* The three ribbon layers that grow together — bloom beneath, gradient body,
    and a thin core highlight that keeps the band from reading flat. Sharing
-   one transition keeps them locked to the same edge as the fill advances. */
+   one transition keeps them locked to the same edge as the fill advances.
+
+   It is stroke-DASHARRAY that animates, not the offset. The ribbon starts at
+   step one's position rather than at the path's `M` point, so the drawn run
+   is a two-value pattern pinned there by a constant negative offset, and what
+   grows is the length of that run. Sliding a fixed-length dash — the offset
+   approach — can only ever start a fill at the path's own start point. */
 .process-loop-bloom,
 .process-loop-fill,
 .process-loop-core {
-  transition: stroke-dashoffset 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: stroke-dasharray 900ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .process-loop-bloom {
@@ -677,6 +683,14 @@ section:has(.process-loop) .brand-watermark {
 @media (min-width: 30rem) {
   .process-loop-legend {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Column-major: the steps run DOWN the first column and then down the
+       second (1,2,3 | 4,5,6), which is how a numbered list is read when it is
+       split in two. The default row-major flow would deal them out across the
+       rows instead (1,2 | 3,4 | 5,6), putting step 2 beside step 1 and step 4
+       below it — an order nobody reads. `--legend-rows` comes from the
+       component so the split stays even for lists other than six. */
+    grid-template-rows: repeat(var(--legend-rows, 3), auto);
+    grid-auto-flow: column;
   }
 }
 
@@ -734,10 +748,14 @@ section:has(.process-loop) .brand-watermark {
     transition: none;
   }
 
+  /* The finished state, painted outright rather than animated to: the
+     ribbon reads fully travelled instead of frozen on step one. `none`
+     removes the dash pattern entirely, which is what "the whole loop is
+     drawn" means under the dash-length model above. */
   .process-loop-scene--active .process-loop-bloom,
   .process-loop-scene--active .process-loop-fill,
   .process-loop-scene--active .process-loop-core {
-    stroke-dashoffset: 0 !important;
+    stroke-dasharray: none !important;
   }
 
   .process-loop-node--in .process-loop-node-disc {

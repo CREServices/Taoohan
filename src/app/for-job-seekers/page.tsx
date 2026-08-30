@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { CtaBand } from "@/components/sections/CtaBand";
+import { RecruitmentProcessLoop } from "@/components/sections/RecruitmentProcessLoop";
 import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
@@ -32,7 +33,43 @@ export default function ForJobSeekersPage() {
             {content.jobSeekers.journeyLead}
           </p>
         </div>
-        <FeatureGrid items={content.jobSeekers.steps} numbered columns={2} className="mt-10" />
+        {/*
+          The journey, twice over and deliberately so: the cards on the left
+          say what happens to a candidate, and the loop on the right shows the
+          recruitment process those steps run through. They are different
+          lists — four candidate-facing steps against the client's six
+          approved process steps — so neither restates the other.
+
+          The cards run TWO ACROSS, so the four of them are two rows rather
+          than four — a single stacked column made this one section taller
+          than the rest of the page put together.
+
+          The split is an EVEN half, and deliberately the same
+          `lg:grid-cols-2 lg:gap-16` the About page uses, because the loop has
+          to come out the same size on both pages. It is the same drawing of
+          the same process; rendering it smaller here would read as a lesser
+          version of it rather than the same thing seen again. Matching the
+          structure rather than hand-tuning a width means the two stay equal
+          at every viewport, not just the one they were checked at.
+        */}
+        <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+          <div>
+            <FeatureGrid items={content.jobSeekers.steps} numbered columns={2} />
+          </div>
+          <div>
+            {/*
+              `start="left"` — step one sits at the loop's leftmost point and
+              the sequence drops to the bottom of the ring before rising
+              through the crossing. The About page keeps the default centre
+              start; the two pages differ on purpose.
+            */}
+            <RecruitmentProcessLoop
+              steps={content.services.steps}
+              start="left"
+              className="mx-auto max-w-md lg:max-w-none"
+            />
+          </div>
+        </div>
       </Section>
 
       <Section tone="muted">

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { mailtoHref, whatsappHref, hasValue, CONTACT } from "@/config/contact";
 import { content } from "@/content";
+import { OTHER_CATEGORY } from "@/config/site.config";
 import { Button } from "@/components/ui/Button";
 
 /**
@@ -69,9 +70,13 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
   const [fullName, setFullName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
 
-  // Employer — enough to make the request actionable in one reply.
-  const [employerFullName, setEmployerFullName] = useState("");
-  const [contactPerson, setContactPerson] = useState("");
+  // Employer — enough to make the request actionable in one reply. The
+  // client asked for the COMPANY rather than the individual: a staffing
+  // request is made by a business, and the company name is what the team
+  // needs to look the account up. A contact number sits beside the email so
+  // the reply can go out on whichever channel the employer actually answers.
+  const [companyName, setCompanyName] = useState("");
+  const [employerContactNumber, setEmployerContactNumber] = useState("");
   const [workEmail, setWorkEmail] = useState("");
   const [category, setCategory] = useState("");
   const [details, setDetails] = useState("");
@@ -197,19 +202,20 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
   const submitEmployer = (event: React.FormEvent) => {
     event.preventDefault();
     const next: Record<string, string> = {};
-    if (employerFullName.trim().length < 2) next.employerFullName = "Please enter your full name.";
-    if (contactPerson.trim().length < 2) next.contactPerson = "Please enter a contact name.";
+    if (companyName.trim().length < 2) next.companyName = "Please enter your company name.";
+    if (!isPhone(employerContactNumber))
+      next.employerContactNumber = "Please enter a valid contact number.";
     if (!isEmail(workEmail)) next.workEmail = "Please enter a valid email address.";
     if (!category) next.category = "Please choose a category.";
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    const href = mailtoHref(`Staffing & Manpower Request — ${employerFullName.trim()}`);
+    const href = mailtoHref(`Staffing & Manpower Request — ${companyName.trim()}`);
     if (!href) return;
     const body =
       `Manpower request from the Taoohan website.\n\n` +
-      `Full name: ${employerFullName.trim()}\n` +
-      `Contact person: ${contactPerson.trim()}\n` +
+      `Company name: ${companyName.trim()}\n` +
+      `Contact number: ${employerContactNumber.trim()}\n` +
       `Email: ${workEmail.trim()}\n` +
       `Category: ${category}\n` +
       (details.trim() ? `\nDetails:\n${details.trim()}\n` : "");
@@ -401,28 +407,32 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className={label}>Full name</span>
+                <span className={label}>Company name</span>
                 <input
-                  name="employerFullName"
-                  data-testid="field-employer-full-name"
-                  value={employerFullName}
-                  onChange={(event) => setEmployerFullName(event.target.value)}
-                  aria-invalid={Boolean(errors.employerFullName)}
+                  name="companyName"
+                  data-testid="field-company-name"
+                  value={companyName}
+                  onChange={(event) => setCompanyName(event.target.value)}
+                  aria-invalid={Boolean(errors.companyName)}
                   className={field}
                 />
-                {errors.employerFullName && <span className={errorText}>{errors.employerFullName}</span>}
+                {errors.companyName && <span className={errorText}>{errors.companyName}</span>}
               </label>
               <label className="block">
-                <span className={label}>Contact person</span>
+                <span className={label}>Contact number</span>
                 <input
-                  name="contactPerson"
-                  data-testid="field-contact-person"
-                  value={contactPerson}
-                  onChange={(event) => setContactPerson(event.target.value)}
-                  aria-invalid={Boolean(errors.contactPerson)}
+                  name="employerContactNumber"
+                  type="tel"
+                  inputMode="tel"
+                  data-testid="field-employer-contact-number"
+                  value={employerContactNumber}
+                  onChange={(event) => setEmployerContactNumber(event.target.value)}
+                  aria-invalid={Boolean(errors.employerContactNumber)}
                   className={field}
                 />
-                {errors.contactPerson && <span className={errorText}>{errors.contactPerson}</span>}
+                {errors.employerContactNumber && (
+                  <span className={errorText}>{errors.employerContactNumber}</span>
+                )}
               </label>
               <label className="block">
                 <span className={label}>Email</span>
@@ -453,6 +463,11 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
                       {item.name}
                     </option>
                   ))}
+                  {/* Last, and deliberately outside the approved list: without
+                      it the selector is a closed set and an employer whose
+                      requirement is not one of the sixteen has to abandon the
+                      form. The free-text box below is where they say which. */}
+                  <option value={OTHER_CATEGORY}>{OTHER_CATEGORY}</option>
                 </select>
                 {errors.category && <span className={errorText}>{errors.category}</span>}
               </label>
