@@ -6,7 +6,12 @@ type FeatureGridProps = {
   items: readonly Feature[];
   /** Show a 01/02/03 counter — used for the "how it works" step lists. */
   numbered?: boolean;
-  columns?: 2 | 3;
+  /**
+   * 1 keeps the cards in one stacked column at every width — for a card list
+   * sitting in one half of a split layout, where two columns would squeeze
+   * each card past readability.
+   */
+  columns?: 1 | 2 | 3;
   className?: string;
   /**
    * Places a large, faint brand wordmark behind the grid so the cards'
@@ -44,8 +49,12 @@ export function FeatureGrid({
     <ul
       data-testid="feature-grid"
       className={cn(
-        "grid items-stretch gap-6 sm:grid-cols-2",
-        columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2",
+        "grid items-stretch gap-6",
+        columns === 1
+          ? "grid-cols-1"
+          : columns === 3
+            ? "sm:grid-cols-2 lg:grid-cols-3"
+            : "sm:grid-cols-2 lg:grid-cols-2",
         // With a backdrop the wrapper carries the outer spacing so the mark
         // centres on the cards, not on the margin above them.
         backdrop ? "relative" : className,

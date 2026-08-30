@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { CtaBand } from "@/components/sections/CtaBand";
+import { RecruitmentProcessLoop } from "@/components/sections/RecruitmentProcessLoop";
 import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
@@ -32,7 +33,36 @@ export default function ForJobSeekersPage() {
             {content.jobSeekers.journeyLead}
           </p>
         </div>
-        <FeatureGrid items={content.jobSeekers.steps} numbered columns={2} className="mt-10" />
+        {/*
+          The journey, twice over and deliberately so: the cards on the left
+          say what happens to a candidate, and the loop on the right shows the
+          recruitment process those steps run through. They are different
+          lists — four candidate-facing steps against the client's six
+          approved process steps — so neither restates the other.
+
+          The cards stack in ONE column here. Two columns inside half a split
+          layout leaves each card too narrow for its copy, and the single
+          column also gives the section a height close to the loop's, so the
+          two halves finish together.
+        */}
+        <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
+          <div className="lg:col-span-6">
+            <FeatureGrid items={content.jobSeekers.steps} numbered columns={1} />
+          </div>
+          <div className="lg:col-span-6">
+            {/*
+              `start="left"` — step one sits at the loop's leftmost point and
+              the sequence drops to the bottom of the ring before rising
+              through the crossing. The About page keeps the default centre
+              start; the two pages differ on purpose.
+            */}
+            <RecruitmentProcessLoop
+              steps={content.services.steps}
+              start="left"
+              className="mx-auto max-w-md lg:max-w-none"
+            />
+          </div>
+        </div>
       </Section>
 
       <Section tone="muted">

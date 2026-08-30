@@ -579,6 +579,14 @@ section:has(.process-loop) .brand-watermark {
 @media (min-width: 30rem) {
   .process-loop-legend {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Column-major: the steps run DOWN the first column and then down the
+       second (1,2,3 | 4,5,6), which is how a numbered list is read when it is
+       split in two. The default row-major flow would deal them out across the
+       rows instead (1,2 | 3,4 | 5,6), putting step 2 beside step 1 and step 4
+       below it — an order nobody reads. `--legend-rows` comes from the
+       component so the split stays even for lists other than six. */
+    grid-template-rows: repeat(var(--legend-rows, 3), auto);
+    grid-auto-flow: column;
   }
 }
 

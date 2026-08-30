@@ -21,14 +21,22 @@ import type { Feature } from "@/content/types";
  * ribbon grows as the sequence advances, so progress through the process is
  * legible at a glance and not just implied.
  *
- * WHERE STEP ONE SITS: at the leftmost point of the left ring, and the
- * sequence runs from there rightwards around the figure. The client asked for
- * this: the sequence used to open on the upper-left node, which put the first
- * beat of the animation somewhere in the middle of the left ring's arc with
- * no visual reason to start there. The far-left point is the loop's extreme
- * — the one place on the shape a reader's eye can be relied on to find first
- * — so beginning there makes the direction of travel self-evident from the
- * opening frame. See NODES for what that does to the ordering.
+ * WHERE STEP ONE SITS is a choice, made per page by the `start` prop:
+ *
+ *   "crossing" (default) — the ribbon grows from the figure's centre and step
+ *   one sits on the upper-left node. Steps 1–3 land on the left ring and 4–6
+ *   on the right, so the ring grouping carries meaning. The About page uses
+ *   this.
+ *
+ *   "left" — step one sits at the leftmost point, the ribbon starts growing
+ *   there, and the sequence drops to the bottom of the left ring before
+ *   rising through the crossing. Beginning at the shape's extreme makes the
+ *   direction of travel self-evident from the opening frame, at the cost of
+ *   the ring grouping. For Job Seekers uses this.
+ *
+ * Both are the SAME curve, the same markers and the same traversal direction.
+ * All that changes is which marker is numbered one and where the fill begins;
+ * see LOOP_STARTS.
  *
  * ACCESSIBILITY: the drawing is decorative and marked aria-hidden; the legend
  * beneath it is a real ordered list carrying the same step titles, so nothing
@@ -66,49 +74,58 @@ const PATH_LENGTH = 964.5;
 const SPARK_LENGTH = 54;
 
 /**
- * Six marker positions, listed IN STEP ORDER. They are evenly spaced by arc
- * length and offset half a step so none lands on the crossing, which puts
- * exactly three on each lobe. `arc` is the distance along the path, used to
- * grow the filled ribbon to that step, and it MUST increase down the list —
- * the fill is a dash offset, so a step whose arc went backwards would animate
- * the ribbon in reverse.
+ * The six marker positions, evenly spaced by ARC LENGTH around the curve and
+ * offset half a step so none lands on the crossing — which puts exactly three
+ * on each ring. `arc` is the distance along the path.
  *
- * Step one is the leftmost point (arc 241.1) rather than the upper-left one,
- * so the list is the six positions rotated by one place. That rotation is why
- * the last entry's arc is 1044.85 and not 80.4: the upper-left marker is now
- * reached at the END of the traversal, a full lap on from where the sequence
- * began, and expressing it as 80.4 + PATH_LENGTH is what keeps the sequence
- * monotonic — every step must sit further along than the one before it, or
- * the growing ribbon would animate backwards.
- *
- * The cost of starting at the extreme is that the left ring now carries steps
- * 1, 2 and 6 rather than 1–3 — unavoidable, because the leftmost point is the
- * MIDDLE of that ring's arc, so any traversal beginning there leaves the ring
- * before it has spent three steps on it. Three markers still sit on each
- * ring; only which numbers they carry has moved.
+ * Listed here in path order, starting from the curve's own `M` point (the
+ * crossing). LOOP_STARTS below is what turns this into a numbered sequence.
  */
-const NODES = [
+const MARKERS = [
+  { x: 165.3, y: 71.7, arc: 80.4 },
   { x: 64.0, y: 130.1, arc: 241.1 },
   { x: 165.4, y: 188.3, arc: 401.9 },
   { x: 274.7, y: 71.7, arc: 562.6 },
   { x: 376.0, y: 130.0, arc: 723.3 },
   { x: 274.6, y: 188.3, arc: 884.1 },
-  { x: 165.3, y: 71.7, arc: 80.4 + 964.5 },
 ] as const;
 
+export type LoopStart = "crossing" | "left";
+
 /**
- * Where the ribbon starts growing: step one's own position, NOT the path's
- * start point.
+ * The two numbering schemes, as `[markers in step order, where the fill
+ * begins]`.
  *
- * The path's `M` happens to be the crossing in the middle, which is an
- * accident of how the four cubics were written and has nothing to do with
- * where the process begins. Growing the fill from there meant that by the
- * time the ribbon reached step one it had already swept past the marker for
- * step six sitting between them — the sequence appeared to begin part-drawn,
- * with its last step lit before its first. Offsetting the dash by this puts
- * the ribbon's leading edge exactly on step one at step one.
+ * Two rules govern both, and breaking either one visibly breaks the drawing:
+ *
+ *   1. Arcs must INCREASE down the list. The fill is a dash length measured
+ *      along the curve, so a step that sat at a lower arc than the one before
+ *      it would animate the ribbon backwards. "left" satisfies this by
+ *      expressing its final marker as one lap on (80.4 + PATH_LENGTH) rather
+ *      than wrapping to 80.4.
+ *
+ *   2. `startArc` must be where step one is meant to be reached FROM. For
+ *      "crossing" that is the curve's start; the ribbon grows out of the
+ *      centre and arrives at step one. For "left" it is step one's own
+ *      position — growing from the curve's start instead would have swept the
+ *      ribbon straight past the marker numbered six before it ever reached
+ *      the one numbered one.
  */
-const START_ARC = NODES[0].arc;
+const LOOP_STARTS = {
+  crossing: { nodes: MARKERS, startArc: 0 },
+  left: {
+    // The same six positions rotated by one place, so the leftmost is first.
+    nodes: [
+      MARKERS[1],
+      MARKERS[2],
+      MARKERS[3],
+      MARKERS[4],
+      MARKERS[5],
+      { ...MARKERS[0], arc: MARKERS[0].arc + 964.5 },
+    ],
+    startArc: MARKERS[1].arc,
+  },
+} as const;
 
 /** How long each step holds before the loop advances. */
 const STEP_MS = 2400;
@@ -116,11 +133,15 @@ const STEP_MS = 2400;
 export function RecruitmentProcessLoop({
   steps,
   className,
+  start = "crossing",
 }: {
   /** The client's approved process steps — `content.services.steps`. */
   steps: readonly Feature[];
   className?: string;
+  /** Which marker is step one, and where the ribbon starts. See LOOP_STARTS. */
+  start?: LoopStart;
 }) {
+  const { nodes: NODES, startArc: START_ARC } = LOOP_STARTS[start];
   const wrapRef = useRef<HTMLDivElement>(null);
   // Server and first client render must agree, so both start inactive on
   // step one. Reduced motion is settled in the effect below rather than in
@@ -339,7 +360,20 @@ export function RecruitmentProcessLoop({
         </svg>
       </div>
 
-      <ol className="process-loop-legend">
+      {/*
+        READS DOWN, NOT ACROSS. At two columns the steps fill the first column
+        top to bottom (1, 2, 3) before starting the second (4, 5, 6), rather
+        than snaking 1-2 / 3-4 / 5-6 across the rows. `--legend-rows` is the
+        column height the stylesheet needs to do that, and it is computed from
+        the number of steps actually shown so a list of other than six still
+        splits evenly down the middle.
+      */}
+      <ol
+        className="process-loop-legend"
+        style={
+          { "--legend-rows": Math.ceil(shown.length / 2) } as React.CSSProperties
+        }
+      >
         {shown.map((item, index) => (
           <li
             key={item.key}

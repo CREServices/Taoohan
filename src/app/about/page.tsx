@@ -44,9 +44,15 @@ export default function AboutPage() {
           </div>
           {/* The client's approved recruitment process, drawn as a loop.
               Steps come from the content layer (the same six the Services
-              page lists in full) so the process is stated in one place. */}
+              page lists in full) so the process is stated in one place.
+
+              Default `start="crossing"`: the ribbon grows out of the centre
+              and step one sits on the upper-left node, which keeps steps 1-3
+              on the left ring and 4-6 on the right. For Job Seekers runs the
+              same loop from the leftmost point instead. */}
           <RecruitmentProcessLoop
             steps={content.services.steps}
+            start="crossing"
             className="mx-auto max-w-md lg:max-w-none"
           />
         </div>
