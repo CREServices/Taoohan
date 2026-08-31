@@ -73,14 +73,14 @@ export const placeholderContent: SiteContent = {
       lead: placeholderBody,
       jobSeeker: {
         tabLabel: "Placeholder Job Seeker Tab",
-        lead: placeholderBody,
+        formHeading: "Placeholder Job Seeker Heading",
         submitLabel: "Placeholder Submit",
         cvNote: placeholderBody,
         successNote: placeholderBody,
       },
       employer: {
         tabLabel: "Placeholder Employer Tab",
-        lead: placeholderBody,
+        formHeading: "Placeholder Employer Heading",
         ctaLabel: "Placeholder Employer CTA",
         note: placeholderBody,
         successNote: placeholderBody,

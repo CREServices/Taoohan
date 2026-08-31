@@ -128,18 +128,20 @@ export type SiteContent = {
       heading: string;
       lead: string;
       jobSeeker: {
-        /** Toggle label at the top of the form, and the form's own title. */
+        /** Short audience toggle label at the top of the form — "Job Seekers". */
         tabLabel: string;
-        lead: string;
+        /** The form's own title — "I'm Looking for Work". */
+        formHeading: string;
         submitLabel: string;
         /** Shown once WhatsApp has opened, explaining manual CV attachment. */
         cvNote: string;
         successNote: string;
       };
       employer: {
-        /** Toggle label at the top of the form, and the form's own title. */
+        /** Short audience toggle label at the top of the form — "Employers". */
         tabLabel: string;
-        lead: string;
+        /** The form's own title — "I'm Hiring Staff". */
+        formHeading: string;
         ctaLabel: string;
         note: string;
         successNote: string;

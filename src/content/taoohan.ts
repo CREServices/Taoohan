@@ -82,8 +82,8 @@ export const taoohanContent: SiteContent = {
       heading: "Become Our Partner",
       lead: "Tell us which side you are on and we will take you to the right team.",
       jobSeeker: {
-        tabLabel: "I'm Looking for Work",
-        lead: "This form is specifically for job seekers.",
+        tabLabel: "Job Seekers",
+        formHeading: "I'm Looking for Work",
         submitLabel: "Continue to WhatsApp",
         cvNote:
           "If your CV / resume could not be attached automatically, please attach it manually once WhatsApp opens.",
@@ -91,8 +91,8 @@ export const taoohanContent: SiteContent = {
           "WhatsApp should now be open with your details ready to send. If your CV was not attached automatically, attach it manually in the chat before sending.",
       },
       employer: {
-        tabLabel: "I'm Hiring Staff",
-        lead: "This form is specifically for employers who need manpower.",
+        tabLabel: "Employers",
+        formHeading: "I'm Hiring Staff",
         ctaLabel: "Submit Hiring Request",
         note: "Sent directly to our team — this does not open your email application.",
         successNote: "Thank you. Your hiring request has been sent to our team.",

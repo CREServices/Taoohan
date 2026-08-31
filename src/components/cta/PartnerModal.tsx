@@ -329,8 +329,7 @@ export function PartnerModal({
         {path === "job-seeker" && step === "form" && (
           <form className="mt-5 space-y-4" onSubmit={submitJobSeeker} noValidate>
             <div>
-              <h3 className="text-base font-semibold">{copy.jobSeeker.tabLabel}</h3>
-              <p className="mt-1 text-sm text-ink-muted">{copy.jobSeeker.lead}</p>
+              <h3 className="text-base font-semibold">{copy.jobSeeker.formHeading}</h3>
             </div>
 
             <label className="block">
@@ -381,7 +380,7 @@ export function PartnerModal({
             </label>
 
             <label className="block">
-              <span className={label}>Position They Are Looking For</span>
+              <span className={label}>Position Looking For</span>
               <input
                 name="position"
                 data-testid="field-position"
@@ -437,8 +436,7 @@ export function PartnerModal({
         {path === "employer" && step === "form" && (
           <form className="mt-5 space-y-4" onSubmit={submitEmployer} noValidate>
             <div>
-              <h3 className="text-base font-semibold">{copy.employer.tabLabel}</h3>
-              <p className="mt-1 text-sm text-ink-muted">{copy.employer.lead}</p>
+              <h3 className="text-base font-semibold">{copy.employer.formHeading}</h3>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
