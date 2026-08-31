@@ -14,7 +14,7 @@ export function PartnerCta({
   size = "lg",
   className,
 }: {
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "xl";
   className?: string;
 }) {
   const [open, setOpen] = useState(false);

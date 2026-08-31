@@ -38,8 +38,19 @@ export function FrostedHero() {
           className={
             // `@container` makes the panel a container-query context, which is
             // what lets the headline below size itself from the PANEL's width
-            // rather than the viewport's — see the note on the h1.
-            "@container max-w-2xl rounded-card border border-white/30 p-8 shadow-xl sm:p-10 lg:p-12 " +
+            // rather than the viewport's — see the note on the h1. Narrower
+            // than the widest tried (max-w-[44rem], not max-w-3xl) but
+            // TALLER — vertical padding (py) grows more than horizontal
+            // (px) at every breakpoint, so the panel reads as a bit more
+            // upright rather than just "bigger all round". The text's own
+            // layout is untouched: everything inside still stacks in the
+            // same order with the same mt-4 / mt-6 / mt-8 spacing between
+            // elements — the headline's `cqw` sizing tracks the panel's own
+            // width automatically, so the two-line guarantee holds at any
+            // width this panel is given. Only the panel's own outer size
+            // and breathing room changed, not where the text sits relative
+            // to itself.
+            "@container max-w-[44rem] rounded-card border border-white/30 px-8 py-10 shadow-xl sm:px-9 sm:py-12 lg:px-11 lg:py-16 " +
             // Frosted glass: a LOW-opacity translucent fill + blur, so the
             // video reads clearly through the panel rather than being
             // mostly hidden behind it. The plain `bg-white/15` is the
@@ -107,7 +118,7 @@ export function FrostedHero() {
             style={{ "--hero-delay": "270ms" } as React.CSSProperties}
             className="mt-8"
           >
-            <PartnerCta size="lg" />
+            <PartnerCta size="xl" />
           </div>
         </div>
       </Container>

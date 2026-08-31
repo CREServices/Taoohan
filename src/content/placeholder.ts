@@ -82,7 +82,6 @@ export const placeholderContent: SiteContent = {
         tabLabel: "Placeholder Employer Tab",
         formHeading: "Placeholder Employer Heading",
         ctaLabel: "Placeholder Employer CTA",
-        note: placeholderBody,
         successNote: placeholderBody,
       },
     },

@@ -64,7 +64,13 @@ const EMPTY_EMPLOYER: EmployerRequest = {
   businessEmail: "",
   contactNumber: "",
   countryLocation: "",
-  category: "",
+  // No blank "Select a category" placeholder option any more, so the
+  // <select> itself defaults to its first <option> on mount regardless of
+  // this value — starting state here at the SAME first category keeps the
+  // visible selection and the actual form state in agreement from the
+  // first paint, rather than showing "Construction" while category is
+  // secretly still "".
+  category: MANPOWER_CATEGORIES[0]?.key ?? "",
   rolesNeeded: "",
   numberOfWorkers: "",
   employmentType: "",
@@ -121,12 +127,10 @@ export function PartnerModal({
     document.body.style.overflow = "hidden";
     dialogRef.current?.focus();
 
-    // The overlay's backdrop-blur has to recompute every frame from whatever
-    // is compositing behind it — with the hero's autoplaying video that meant
-    // a full Gaussian blur pass per video frame, which read as visible lag
-    // opening the modal. The video is fully hidden either way, so pausing it
-    // for as long as the modal is open removes the cost with no visual loss;
-    // resuming on close is exactly what the visitor would expect.
+    // The video is fully hidden behind the opaque overlay either way, so
+    // pausing it for as long as the modal is open costs nothing visually and
+    // saves the decode/composite work; resuming on close is exactly what the
+    // visitor would expect.
     const playingVideos = Array.from(document.querySelectorAll("video")).filter(
       (video) => !video.paused,
     );
@@ -185,6 +189,21 @@ export function PartnerModal({
       setApplicantErrors((current) => ({ ...current, [key]: undefined }));
     };
 
+  /**
+   * Contact number fields: strip anything that isn't a digit as the visitor
+   * types, so the field can only ever hold digits — no letters, no "+", no
+   * spaces or dashes. Applied at input time rather than left to validation
+   * so a non-numeric keystroke is simply discarded instead of producing an
+   * error message.
+   */
+  const numericField =
+    (key: keyof Omit<ApplicantDetails, "hasCv">) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value.replace(/\D/g, "");
+      setApplicant((current) => ({ ...current, [key]: value }));
+      setApplicantErrors((current) => ({ ...current, [key]: undefined }));
+    };
+
   const onCvChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const hasCv = (event.target.files?.length ?? 0) > 0;
     setApplicant((current) => ({ ...current, hasCv }));
@@ -212,6 +231,15 @@ export function PartnerModal({
     (key: keyof Omit<EmployerRequest, "category">) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
+      setEmployer((current) => ({ ...current, [key]: value }));
+      setEmployerErrors((current) => ({ ...current, [key]: undefined }));
+    };
+
+  /** Same digit-only stripping as the job-seeker contact field, see above. */
+  const numericEmployerField =
+    (key: keyof Omit<EmployerRequest, "category">) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value.replace(/\D/g, "");
       setEmployer((current) => ({ ...current, [key]: value }));
       setEmployerErrors((current) => ({ ...current, [key]: undefined }));
     };
@@ -256,11 +284,18 @@ export function PartnerModal({
     "mt-1 w-full rounded-md border border-hairline bg-surface px-3 py-2 text-sm outline-none focus-visible:border-brand-500";
   const label = "text-xs font-medium text-ink-muted";
   const errorText = "mt-1 text-xs text-brand-800";
+  /** Marks a required field's label — every field without "(optional)" in it. */
+  const required = "text-brand-700";
 
   return createPortal(
     <div
       role="presentation"
-      className="fixed inset-0 z-100 flex items-center justify-center overflow-y-auto bg-ink/50 p-4 backdrop-blur-sm"
+      // Deliberately a flat, opaque-ish fill with NO `backdrop-blur` — a
+      // backdrop-filter has to recomposite on every DOM mutation beneath it,
+      // and every keystroke in a controlled input is exactly that. With the
+      // blur on, typing in these forms visibly lagged; a plain fill has
+      // nothing to recompute and costs nothing per keystroke.
+      className="fixed inset-0 z-100 flex items-center justify-center overflow-y-auto bg-ink/70 p-4"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -333,7 +368,9 @@ export function PartnerModal({
             </div>
 
             <label className="block">
-              <span className={label}>Full Name</span>
+              <span className={label}>
+                Full Name<span className={required}> *</span>
+              </span>
               <input
                 name="fullName"
                 data-testid="field-full-name"
@@ -348,14 +385,17 @@ export function PartnerModal({
             </label>
 
             <label className="block">
-              <span className={label}>Contact Number / WhatsApp Number</span>
+              <span className={label}>
+                Contact Number / WhatsApp Number<span className={required}> *</span>
+              </span>
               <input
                 name="contactNumber"
                 type="tel"
-                inputMode="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 data-testid="field-contact-number"
                 value={applicant.contactNumber}
-                onChange={applicantField("contactNumber")}
+                onChange={numericField("contactNumber")}
                 aria-invalid={Boolean(applicantErrors.contactNumber)}
                 className={field}
               />
@@ -365,7 +405,9 @@ export function PartnerModal({
             </label>
 
             <label className="block">
-              <span className={label}>Current Location</span>
+              <span className={label}>
+                Current Location<span className={required}> *</span>
+              </span>
               <input
                 name="currentLocation"
                 data-testid="field-current-location"
@@ -380,7 +422,9 @@ export function PartnerModal({
             </label>
 
             <label className="block">
-              <span className={label}>Position Looking For</span>
+              <span className={label}>
+                Position Looking For<span className={required}> *</span>
+              </span>
               <input
                 name="position"
                 data-testid="field-position"
@@ -395,7 +439,9 @@ export function PartnerModal({
             </label>
 
             <label className="block">
-              <span className={label}>CV / Resume Upload</span>
+              <span className={label}>
+                CV / Resume Upload<span className={required}> *</span>
+              </span>
               <input
                 ref={cvInputRef}
                 name="cv"
@@ -441,7 +487,9 @@ export function PartnerModal({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className={label}>Company Name</span>
+                <span className={label}>
+                  Company Name<span className={required}> *</span>
+                </span>
                 <input
                   name="companyName"
                   data-testid="field-company-name"
@@ -456,7 +504,9 @@ export function PartnerModal({
               </label>
 
               <label className="block">
-                <span className={label}>Contact Person</span>
+                <span className={label}>
+                  Contact Person<span className={required}> *</span>
+                </span>
                 <input
                   name="contactPerson"
                   data-testid="field-contact-person"
@@ -471,7 +521,9 @@ export function PartnerModal({
               </label>
 
               <label className="block">
-                <span className={label}>Business Email</span>
+                <span className={label}>
+                  Business Email<span className={required}> *</span>
+                </span>
                 <input
                   name="businessEmail"
                   type="email"
@@ -487,14 +539,17 @@ export function PartnerModal({
               </label>
 
               <label className="block">
-                <span className={label}>Contact Number</span>
+                <span className={label}>
+                  Contact Number<span className={required}> *</span>
+                </span>
                 <input
                   name="contactNumber"
                   type="tel"
-                  inputMode="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   data-testid="field-employer-contact-number"
                   value={employer.contactNumber}
-                  onChange={employerField("contactNumber")}
+                  onChange={numericEmployerField("contactNumber")}
                   aria-invalid={Boolean(employerErrors.contactNumber)}
                   className={field}
                 />
@@ -504,7 +559,9 @@ export function PartnerModal({
               </label>
 
               <label className="block">
-                <span className={label}>Country / Location</span>
+                <span className={label}>
+                  Country / Location<span className={required}> *</span>
+                </span>
                 <input
                   name="countryLocation"
                   data-testid="field-country-location"
@@ -519,7 +576,9 @@ export function PartnerModal({
               </label>
 
               <label className="block">
-                <span className={label}>Manpower Category / Industry</span>
+                <span className={label}>
+                  Manpower Category / Industry<span className={required}> *</span>
+                </span>
                 <select
                   name="category"
                   data-testid="field-category"
@@ -532,7 +591,6 @@ export function PartnerModal({
                   aria-invalid={Boolean(employerErrors.category)}
                   className={field}
                 >
-                  <option value="">Select a category</option>
                   {MANPOWER_CATEGORIES.map((category) => (
                     <option key={category.key} value={category.key}>
                       {category.label}
@@ -545,7 +603,9 @@ export function PartnerModal({
               </label>
 
               <label className="block">
-                <span className={label}>Roles / Positions Needed</span>
+                <span className={label}>
+                  Roles / Positions Needed<span className={required}> *</span>
+                </span>
                 <input
                   name="rolesNeeded"
                   data-testid="field-roles-needed"
@@ -560,16 +620,19 @@ export function PartnerModal({
               </label>
 
               <label className="block">
-                <span className={label}>Number of Workers Needed</span>
+                <span className={label}>
+                  Number of Workers Needed<span className={required}> *</span>
+                </span>
                 <input
                   name="numberOfWorkers"
                   type="number"
                   min={1}
                   step={1}
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   data-testid="field-number-of-workers"
                   value={employer.numberOfWorkers}
-                  onChange={employerField("numberOfWorkers")}
+                  onChange={numericEmployerField("numberOfWorkers")}
                   aria-invalid={Boolean(employerErrors.numberOfWorkers)}
                   className={field}
                 />
@@ -624,7 +687,6 @@ export function PartnerModal({
             >
               {employerStatus === "sending" ? "Sending…" : copy.employer.ctaLabel}
             </Button>
-            <p className="text-xs text-ink-muted">{copy.employer.note}</p>
 
             {employerStatus === "error" && (
               <p role="alert" data-testid="employer-error" className="text-sm text-brand-800">

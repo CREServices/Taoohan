@@ -28,7 +28,7 @@ import { EmptySlot } from "@/components/ui/EmptySlot";
 const PREVIEW_SLOTS = [
   {
     key: "preview-1",
-    body: "Placeholder text. The client's first approved testimonial will sit here, at roughly this length.",
+    body: "Placeholder text. The first approved testimonial will sit here, at roughly this length.",
   },
   {
     key: "preview-2",
@@ -112,16 +112,12 @@ export function TestimonialsBand({
               </li>
             ))}
           </ul>
-          <p data-preview-note className="mt-4 text-xs text-ink-muted">
-            Layout preview only — awaiting the client&rsquo;s genuine testimonials. No
-            review has been written or invented.
-          </p>
         </>
       ) : (
         <EmptySlot
           className="mt-8"
           label="testimonials"
-          note="Not yet supplied by the client — no reviews invented."
+          note="Not yet supplied — no reviews invented."
         />
       )}
     </Section>

@@ -130,8 +130,12 @@ test.describe("Become Our Partner modal", () => {
     await openModal(page);
     const modal = page.getByTestId("partner-modal");
 
+    // Contact number is stripped to digits only as it's typed — filling
+    // "+971 50 123 4567" and asserting the digits-only result is what the
+    // field actually does, not a bug to work around.
     await modal.getByTestId("field-full-name").fill("Maria Santos");
     await modal.getByTestId("field-contact-number").fill("+971 50 123 4567");
+    await expect(modal.getByTestId("field-contact-number")).toHaveValue("971501234567");
     await modal.getByTestId("field-current-location").fill("Dubai, UAE");
     await modal.getByTestId("field-position").fill("Administrative Assistant");
     await modal
@@ -155,7 +159,7 @@ test.describe("Become Our Partner modal", () => {
     const text = url.searchParams.get("text") ?? "";
     expect(text).toContain("Hello Taoohan Recruitment Team,");
     expect(text).toContain("Full Name: Maria Santos");
-    expect(text).toContain("Contact Number: +971 50 123 4567");
+    expect(text).toContain("Contact Number: 971501234567");
     expect(text).toContain("Current Location: Dubai, UAE");
     expect(text).toContain("Position Looking For: Administrative Assistant");
 
@@ -211,8 +215,8 @@ test.describe("Become Our Partner modal", () => {
     await page.getByTestId("partner-path-employer").click();
 
     const options = page.getByTestId("field-category").locator("option");
-    // The empty "Select a category" placeholder, plus every configured category.
-    await expect(options).toHaveCount(MANPOWER_CATEGORIES.length + 1);
+    // No blank placeholder option — every option is a real category.
+    await expect(options).toHaveCount(MANPOWER_CATEGORIES.length);
     for (const category of MANPOWER_CATEGORIES) {
       await expect(
         page.getByTestId("field-category").locator(`option[value="${category.key}"]`),
@@ -233,7 +237,9 @@ test.describe("Become Our Partner modal", () => {
     ).toBeVisible();
     await expect(page.getByText("Please enter a contact number.")).toBeVisible();
     await expect(page.getByText("Please enter the country / location.")).toBeVisible();
-    await expect(page.getByText("Please choose a manpower category.")).toBeVisible();
+    // No "choose a category" error any more — the dropdown has no blank
+    // placeholder option, so it always carries a real category (the first
+    // one, Construction) from the moment the form mounts.
     await expect(
       page.getByText("Please describe the roles / positions needed."),
     ).toBeVisible();

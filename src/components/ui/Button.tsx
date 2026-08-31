@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "secondary" | "inverse" | "quiet";
-type Size = "md" | "lg";
+type Size = "md" | "lg" | "xl";
 
 const base =
   "inline-flex items-center justify-center gap-2 rounded-pill font-medium " +
@@ -27,6 +27,10 @@ const variants: Record<Variant, string> = {
 const sizes: Record<Size, string> = {
   md: "px-5 py-2.5 text-sm",
   lg: "px-6 py-3 text-base",
+  // A step up from `lg` — for the home hero CTA, to stay proportionate as
+  // the panel around it grows. Not used anywhere else, so this never
+  // changes any other "lg" button on the site.
+  xl: "px-7 py-3.5 text-base",
 };
 
 type CommonProps = {

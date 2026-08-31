@@ -25,7 +25,7 @@ export function EmptySlot({
       )}
     >
       <p className="text-sm font-medium text-ink-muted">
-        Awaiting client content: {label}
+        Awaiting content: {label}
       </p>
       {note && <p className="mt-1 text-xs text-ink-muted">{note}</p>}
     </div>

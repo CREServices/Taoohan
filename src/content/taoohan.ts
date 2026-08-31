@@ -94,7 +94,6 @@ export const taoohanContent: SiteContent = {
         tabLabel: "Employers",
         formHeading: "I'm Hiring Staff",
         ctaLabel: "Submit Hiring Request",
-        note: "Sent directly to our team — this does not open your email application.",
         successNote: "Thank you. Your hiring request has been sent to our team.",
       },
     },
@@ -424,7 +423,7 @@ export const taoohanContent: SiteContent = {
         title: "Send Your CV via WhatsApp",
         body: CONTACT.whatsapp
           ? `Send your CV directly to our official WhatsApp number: ${CONTACT.whatsapp}.`
-          : "Send your CV directly to our official WhatsApp number (awaiting client details).",
+          : "Send your CV directly to our official WhatsApp number (coming soon).",
       },
       {
         key: "wait-for-opportunities",

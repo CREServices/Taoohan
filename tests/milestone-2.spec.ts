@@ -128,11 +128,6 @@ test.describe("no placeholder copy remains", () => {
     const preview = page.getByTestId("testimonials-preview");
     await expect(preview).toBeVisible();
 
-    // It says what it is, on the page, to the visitor.
-    await expect(page.locator("[data-preview-note]")).toContainText(
-      "Layout preview only",
-    );
-
     // And it invents no reviewer: the client's rule is that no testimonial —
     // and so no person giving one — may be fabricated. The cards carry copy
     // and a shape where the attribution will go, and nothing else.

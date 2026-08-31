@@ -143,7 +143,6 @@ export type SiteContent = {
         /** The form's own title — "I'm Hiring Staff". */
         formHeading: string;
         ctaLabel: string;
-        note: string;
         successNote: string;
       };
     };
