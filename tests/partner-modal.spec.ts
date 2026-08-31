@@ -1,27 +1,25 @@
 import { test, expect } from "@playwright/test";
-import { CTA, OTHER_CATEGORY } from "../src/config/site.config";
+import { CTA } from "../src/config/site.config";
 import { CONTACT, hasValue } from "../src/config/contact";
-import { content } from "../src/content";
+import { MANPOWER_CATEGORIES } from "../src/config/manpower";
 
 /**
- * THE "BECOME OUR PARTNER" MODAL — the two Milestone 3 submission flows.
+ * THE "BECOME OUR PARTNER" MODAL — the two submission flows.
  *
- * The milestone proposal specifies them precisely, and these tests hold the
- * implementation to it:
+ *   JOB SEEKER — "I'm Looking for Work". ONE form: full name, contact /
+ *   WhatsApp number, current location, position, and a required CV/resume
+ *   file. Validated, then handed straight to the official Taoohan WhatsApp
+ *   with the message pre-filled — no channel choice, no email option.
  *
- *   Job seeker — "A pop-up asks for basic details such as full name and
- *   contact number", then "They choose whether to continue by WhatsApp or by
- *   email", with the typed details carried over.
+ *   EMPLOYER — "I'm Hiring Staff". ONE form, submitted directly from the
+ *   site (never a `mailto:`, never a redirect to the employer's own email
+ *   application).
  *
- *   Employer — "email only ... WhatsApp will not be offered on the employer
- *   side", with a manpower category selector. The identifying field is the
- *   COMPANY, not a person: a staffing request comes from a business, so the
- *   form asks for company name, contact number and email.
- *
- * ⚠️ THE DESTINATIONS ARE STILL BLOCKED. CONTACT.email and CONTACT.whatsapp
- * are empty typed slots, so the tests that would exercise the final hand-off
- * assert the awaiting-details notice instead, and skip themselves once the
- * real values land rather than going red on a passing change.
+ * CONTACT.email and CONTACT.whatsapp are confirmed real values, so both
+ * forms' final buttons render. The employer form's actual SMTP send still
+ * depends on server credentials that are not present in this environment,
+ * so those tests assert the "not configured yet" response rather than a
+ * successful delivery — that is real, expected behaviour here.
  */
 
 const openModal = async (page: import("@playwright/test").Page) => {
@@ -31,7 +29,7 @@ const openModal = async (page: import("@playwright/test").Page) => {
 };
 
 test.describe("Become Our Partner modal", () => {
-  test("the hero CTA opens it, and it offers both flows", async ({ page }) => {
+  test("the hero CTA opens it, on the job-seeker form by default", async ({ page }) => {
     await page.goto("/");
     // Closed until asked for.
     await expect(page.getByTestId("partner-modal")).toHaveCount(0);
@@ -78,77 +76,93 @@ test.describe("Become Our Partner modal", () => {
     );
   });
 
-  // -- Job seeker ---------------------------------------------------------
+  // -- Job seeker: "I'm Looking for Work" ----------------------------------
 
-  test("job seeker step one asks for full name and contact number", async ({
+  test("job seeker step one asks for full name, contact number, location, position and a CV", async ({
     page,
   }) => {
     await openModal(page);
-    await page.getByTestId("partner-path-job-seeker").click();
-
-    await expect(page.getByTestId("field-full-name")).toBeVisible();
-    await expect(page.getByTestId("field-contact-number")).toBeVisible();
-  });
-
-  test("job seeker step one refuses to advance on invalid details", async ({
-    page,
-  }) => {
-    await openModal(page);
-    await page.getByTestId("partner-path-job-seeker").click();
-
-    // Empty: both fields complain and the channel step stays out of reach.
-    await page.getByTestId("job-seeker-continue").click();
-    await expect(page.getByText("Please enter your full name.")).toBeVisible();
-    await expect(page.getByText("Please enter a valid contact number.")).toBeVisible();
-    await expect(page.getByTestId("channel-whatsapp")).toHaveCount(0);
-
-    // A name but a number too short to be real still fails.
-    await page.getByTestId("field-full-name").fill("Maria Santos");
-    await page.getByTestId("field-contact-number").fill("12345");
-    await page.getByTestId("job-seeker-continue").click();
-    await expect(page.getByText("Please enter a valid contact number.")).toBeVisible();
-  });
-
-  test("valid details advance to the WhatsApp / email choice", async ({ page }) => {
-    await openModal(page);
-    await page.getByTestId("partner-path-job-seeker").click();
-    await page.getByTestId("field-full-name").fill("Maria Santos");
-    await page.getByTestId("field-contact-number").fill("+971 50 123 4567");
-    await page.getByTestId("job-seeker-continue").click();
 
     const modal = page.getByTestId("partner-modal");
+    await expect(modal.getByTestId("field-full-name")).toBeVisible();
+    await expect(modal.getByTestId("field-contact-number")).toBeVisible();
+    await expect(modal.getByTestId("field-current-location")).toBeVisible();
+    await expect(modal.getByTestId("field-position")).toBeVisible();
+    await expect(modal.getByTestId("field-cv")).toBeVisible();
     await expect(
-      modal.getByText(content.home.partnerModal.jobSeeker.channelHeading),
-    ).toBeVisible();
-
-    // The proposal gives job seekers BOTH channels. Whether each renders a
-    // button or the awaiting-details notice depends on the contact slots.
-    // Scoped to the dialog: the footer has its own empty slots for these.
-    const whatsapp = hasValue(CONTACT.whatsapp)
-      ? modal.getByTestId("channel-whatsapp")
-      : modal.locator('[data-empty-slot="whatsapp"]');
-    const email = hasValue(CONTACT.email)
-      ? modal.getByTestId("channel-email")
-      : modal.locator('[data-empty-slot="email"]');
-    await expect(whatsapp).toBeVisible();
-    await expect(email).toBeVisible();
+      modal.getByTestId("job-seeker-continue"),
+    ).toHaveText("Continue to WhatsApp");
   });
 
-  test("the details typed in step one survive a trip back and forward", async ({
+  test("job seeker form refuses to advance when required fields are missing", async ({
     page,
   }) => {
     await openModal(page);
-    await page.getByTestId("partner-path-job-seeker").click();
-    await page.getByTestId("field-full-name").fill("Maria Santos");
-    await page.getByTestId("field-contact-number").fill("+971 50 123 4567");
-    await page.getByTestId("job-seeker-continue").click();
+    const modal = page.getByTestId("partner-modal");
 
-    await page.getByRole("button", { name: "Back" }).click();
-    await expect(page.getByTestId("field-full-name")).toHaveValue("Maria Santos");
-    await expect(page.getByTestId("field-contact-number")).toHaveValue("+971 50 123 4567");
+    // Empty everything: every required field complains and WhatsApp never opens.
+    await modal.getByTestId("job-seeker-continue").click();
+    await expect(page.getByText("Please enter your full name.")).toBeVisible();
+    await expect(
+      page.getByText("Please enter your contact / WhatsApp number."),
+    ).toBeVisible();
+    await expect(page.getByText("Please enter your current location.")).toBeVisible();
+    await expect(
+      page.getByText("Please enter the position you are looking for."),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Please select your CV / resume before continuing."),
+    ).toBeVisible();
+    await expect(modal.getByTestId("partner-sent")).toHaveCount(0);
+
+    // A number too short to be real still fails, independent of the others.
+    await modal.getByTestId("field-full-name").fill("Maria Santos");
+    await modal.getByTestId("field-contact-number").fill("12345");
+    await modal.getByTestId("job-seeker-continue").click();
+    await expect(page.getByText("That contact number looks too short.")).toBeVisible();
   });
 
-  // -- Employer -----------------------------------------------------------
+  test("valid job-seeker details open WhatsApp with the message pre-filled", async ({
+    page,
+    context,
+  }) => {
+    test.skip(!hasValue(CONTACT.whatsapp), "WhatsApp button only renders once the number is confirmed.");
+    await openModal(page);
+    const modal = page.getByTestId("partner-modal");
+
+    await modal.getByTestId("field-full-name").fill("Maria Santos");
+    await modal.getByTestId("field-contact-number").fill("+971 50 123 4567");
+    await modal.getByTestId("field-current-location").fill("Dubai, UAE");
+    await modal.getByTestId("field-position").fill("Administrative Assistant");
+    await modal
+      .getByTestId("field-cv")
+      .setInputFiles({ name: "cv.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4") });
+
+    const [popup] = await Promise.all([
+      context.waitForEvent("page"),
+      modal.getByTestId("job-seeker-continue").click(),
+    ]);
+    await popup.waitForLoadState("domcontentloaded").catch(() => {});
+
+    // wa.me is a redirect shortlink — real WhatsApp resolves it to
+    // api.whatsapp.com, so only the destination and the carried `text`
+    // param are checked, not the exact host the click first opened.
+    const url = new URL(popup.url());
+    expect(url.hostname).toMatch(/wa\.me|whatsapp\.com/);
+    // URLSearchParams.get() already decodes both %XX escapes and literal
+    // "+" (space) correctly — a phone number's real "+" survives because
+    // buildWhatsAppUrl percent-encodes it as %2B via encodeURIComponent.
+    const text = url.searchParams.get("text") ?? "";
+    expect(text).toContain("Hello Taoohan Recruitment Team,");
+    expect(text).toContain("Full Name: Maria Santos");
+    expect(text).toContain("Contact Number: +971 50 123 4567");
+    expect(text).toContain("Current Location: Dubai, UAE");
+    expect(text).toContain("Position Looking For: Administrative Assistant");
+
+    await expect(modal.getByTestId("partner-sent")).toBeVisible();
+  });
+
+  // -- Employer: "I'm Hiring Staff" ----------------------------------------
 
   test("the employer flow is email only — WhatsApp is never offered", async ({
     page,
@@ -159,78 +173,101 @@ test.describe("Become Our Partner modal", () => {
     const modal = page.getByTestId("partner-modal");
     await expect(modal.getByTestId("field-company-name")).toBeVisible();
     await expect(modal.getByTestId("field-category")).toBeVisible();
-    // The proposal: "WhatsApp will not be offered on the employer side."
-    // Scoped to the dialog — the footer legitimately lists a WhatsApp row.
     await expect(modal.getByTestId("channel-whatsapp")).toHaveCount(0);
     await expect(modal.getByText(/whatsapp/i)).toHaveCount(0);
   });
 
-  test("the employer form asks for the company, its number and its email", async ({
+  test("the employer form asks for every required field, plus the optional ones", async ({
     page,
   }) => {
     await openModal(page);
     await page.getByTestId("partner-path-employer").click();
 
     const modal = page.getByTestId("partner-modal");
-    await expect(modal.getByTestId("field-company-name")).toBeVisible();
-    await expect(modal.getByTestId("field-employer-contact-number")).toBeVisible();
-    await expect(modal.getByTestId("field-work-email")).toBeVisible();
-    // The person-shaped fields this replaced must be gone, not merely hidden.
-    await expect(modal.getByTestId("field-employer-full-name")).toHaveCount(0);
-    await expect(modal.getByTestId("field-contact-person")).toHaveCount(0);
+    for (const id of [
+      "field-company-name",
+      "field-contact-person",
+      "field-business-email",
+      "field-employer-contact-number",
+      "field-country-location",
+      "field-category",
+      "field-roles-needed",
+      "field-number-of-workers",
+      "field-employment-type",
+      "field-start-date",
+      "field-message",
+    ]) {
+      await expect(modal.getByTestId(id)).toBeVisible();
+    }
+    await expect(modal.getByTestId("employer-submit")).toHaveText(
+      "Submit Hiring Request",
+    );
   });
 
-  test("the category selector is built from approved client data, not invented", async ({
+  test("the category dropdown is exactly the client-supplied list, plus Other", async ({
     page,
   }) => {
     await openModal(page);
     await page.getByTestId("partner-path-employer").click();
 
     const options = page.getByTestId("field-category").locator("option");
-    // Every industry the client approved, plus the empty "Select a category"
-    // and the "Others" escape hatch for a request outside the sixteen.
-    await expect(options).toHaveCount(content.industries.items.length + 2);
-    for (const item of content.industries.items) {
+    // The empty "Select a category" placeholder, plus every configured category.
+    await expect(options).toHaveCount(MANPOWER_CATEGORIES.length + 1);
+    for (const category of MANPOWER_CATEGORIES) {
       await expect(
-        page.getByTestId("field-category").locator(`option[value="${item.name}"]`),
-      ).toHaveCount(1);
+        page.getByTestId("field-category").locator(`option[value="${category.key}"]`),
+      ).toHaveText(category.label);
     }
-    await expect(
-      page.getByTestId("field-category").locator(`option[value="${OTHER_CATEGORY}"]`),
-    ).toHaveCount(1);
-    // Last in the list: an escape hatch reads as one only after the real
-    // options, never jumbled among them.
-    await expect(options.last()).toHaveAttribute("value", OTHER_CATEGORY);
+    await expect(options.last()).toHaveAttribute("value", "other");
   });
 
-  test("the employer form validates before composing anything", async ({ page }) => {
-    test.skip(
-      !hasValue(CONTACT.email),
-      "Submit only renders once the inbox slot is filled.",
-    );
+  test("the employer form validates before sending anything", async ({ page }) => {
     await openModal(page);
     await page.getByTestId("partner-path-employer").click();
     await page.getByTestId("employer-submit").click();
 
     await expect(page.getByText("Please enter your company name.")).toBeVisible();
-    await expect(page.getByText("Please enter a valid contact number.")).toBeVisible();
-    await expect(page.getByText("Please enter a valid email address.")).toBeVisible();
-    await expect(page.getByText("Please choose a category.")).toBeVisible();
+    await expect(page.getByText("Please enter a contact person.")).toBeVisible();
+    await expect(
+      page.getByText("Please enter your business email address."),
+    ).toBeVisible();
+    await expect(page.getByText("Please enter a contact number.")).toBeVisible();
+    await expect(page.getByText("Please enter the country / location.")).toBeVisible();
+    await expect(page.getByText("Please choose a manpower category.")).toBeVisible();
+    await expect(
+      page.getByText("Please describe the roles / positions needed."),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Please enter the number of workers needed."),
+    ).toBeVisible();
   });
 
-  test("employer submission is held behind the blocked inbox slot", async ({
+  test("a valid employer submission does not open mailto: or an email app", async ({
     page,
   }) => {
-    test.skip(
-      hasValue(CONTACT.email),
-      "The inbox is configured, so the notice is correctly gone.",
-    );
     await openModal(page);
-    await page.getByTestId("partner-path-employer").click();
-
     const modal = page.getByTestId("partner-modal");
-    await expect(modal.locator('[data-empty-slot="email"]')).toBeVisible();
-    await expect(modal.getByTestId("employer-submit")).toHaveCount(0);
+    await modal.getByTestId("partner-path-employer").click();
+
+    await modal.getByTestId("field-company-name").fill("Acme Facilities LLC");
+    await modal.getByTestId("field-contact-person").fill("Ahmed Al Farsi");
+    await modal.getByTestId("field-business-email").fill("hiring@acme.example");
+    await modal.getByTestId("field-employer-contact-number").fill("+971 4 123 4567");
+    await modal.getByTestId("field-country-location").fill("Abu Dhabi, UAE");
+    await modal.getByTestId("field-category").selectOption("construction");
+    await modal.getByTestId("field-roles-needed").fill("10 general labourers");
+    await modal.getByTestId("field-number-of-workers").fill("10");
+
+    // Nothing on the page should ever be an anchor to mailto: for this flow.
+    await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
+
+    await modal.getByTestId("employer-submit").click();
+
+    // SMTP credentials are not present in this environment, so the real,
+    // expected outcome is the "not configured yet" error — not a silent
+    // mailto fallback and not a fabricated success.
+    await expect(modal.getByTestId("employer-error")).toBeVisible();
+    await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
   });
 
   // -- Dismissal and focus ------------------------------------------------

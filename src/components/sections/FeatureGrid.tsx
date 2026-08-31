@@ -24,12 +24,18 @@ type FeatureGridProps = {
    * along the card edge is the effect. Cards also thin their fill when this
    * is on, so the mark reads through them.
    *
-   * See `.frosted-backdrop` in globals.css.
+   * `true` uses the shared `.frosted-backdrop` (sized off the grid, so it
+   * fits any row count the grid reflows to, but can crop the mark's top and
+   * bottom on a short single row). `"full-image"` uses `.why-taoohan-backdrop`
+   * instead — a standalone treatment shaped to the source artwork's own
+   * aspect ratio, so the mark always renders whole, never cropped. Home's
+   * "Why Taoohan" section (one row, three cards) is the one place that
+   * matters enough to need it.
    */
-  backdrop?: boolean;
+  backdrop?: boolean | "full-image";
   /**
-   * Gives each card its own small, soft brand-green glow instead of one
-   * shared backdrop.
+   * Gives each card its own small, soft glow panel instead of one shared
+   * backdrop.
    *
    * Use this (rather than `backdrop`) for any grid that can wrap to more
    * than one row — Core Services (6 cards) reflows its row/column split at
@@ -37,9 +43,12 @@ type FeatureGridProps = {
    * would fall out of alignment with whichever cards land on it. A glow
    * scoped to each card instead holds up at any arrangement for free.
    *
-   * See `.card-glow` in globals.css.
+   * `"brand"` is the brand-green panel (`.card-glow` in globals.css).
+   * `"neutral"` is the flat grey panel the Industries page cards use
+   * (`.industry-glow` in globals.css) — for a grid that should read as
+   * understated rather than colour-coded.
    */
-  glow?: boolean;
+  glow?: "brand" | "neutral";
 };
 
 /**
@@ -57,7 +66,7 @@ export function FeatureGrid({
   columns = 3,
   className,
   backdrop = false,
-  glow = false,
+  glow,
 }: FeatureGridProps) {
   const cardClassName = cn(
     "group relative flex h-full flex-col overflow-hidden rounded-card border p-7 sm:p-8",
@@ -150,25 +159,19 @@ export function FeatureGrid({
           // descendants — so the glow has to sit next to the card, one level
           // up, or the card would never blur it.
           <li key={item.key} className="relative">
-            <span aria-hidden="true" className="card-glow" />
-            <div
-              data-reveal
-              style={{ "--reveal-delay": `${Math.min(index, 5) * 70}ms` } as React.CSSProperties}
-              className={cardClassName}
-            >
-              {cardInner(item, index)}
-            </div>
+            <span
+              aria-hidden="true"
+              className={glow === "neutral" ? "industry-glow" : "card-glow"}
+              style={
+                glow === "neutral"
+                  ? ({ "--glow-delay": `${(index % 6) * -1.1}s` } as React.CSSProperties)
+                  : undefined
+              }
+            />
+            <div className={cardClassName}>{cardInner(item, index)}</div>
           </li>
         ) : (
-          <li
-            key={item.key}
-            data-reveal
-            // Cards cascade rather than appearing as one slab. Capped so a
-            // long list never leaves the last card lagging seconds behind
-            // the first.
-            style={{ "--reveal-delay": `${Math.min(index, 5) * 70}ms` } as React.CSSProperties}
-            className={cardClassName}
-          >
+          <li key={item.key} className={cardClassName}>
             {cardInner(item, index)}
           </li>
         ),
@@ -177,6 +180,21 @@ export function FeatureGrid({
   );
 
   if (!backdrop) return grid;
+
+  if (backdrop === "full-image") {
+    return (
+      <div className={cn("relative", className)}>
+        {/* Decorative: the mark carries no meaning the heading does not
+            already give, and exists so the cards in front of it have
+            something to refract. One variant only — unlike `.frosted-backdrop`
+            below, this treatment is shaped to the artwork's own aspect
+            ratio, so it never needs a separate mobile-stacked version to
+            avoid cropping. */}
+        <span aria-hidden="true" className="why-taoohan-backdrop" />
+        {grid}
+      </div>
+    );
+  }
 
   return (
     <div className={cn("relative", className)}>

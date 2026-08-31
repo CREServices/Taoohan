@@ -1,30 +1,34 @@
 /**
- * Manpower categories an employer can request — Developer 2 scope.
+ * Manpower categories an employer can choose from in the "I'm Hiring Staff"
+ * form's Manpower Category / Industry dropdown.
  *
- * ⚠️ BLOCKED ON CLIENT. The intake form answered "Will send you a separate file
- * for the format", so this list is an EMPTY TYPED SLOT. Do NOT populate it from
- * the services or industries lists: those answer different questions, and
- * guessing here would put invented options in front of a paying employer.
- *
- * Everything that consumes this degrades on its own when the array is empty:
- *   - the For Employers page shows an "awaiting client content" slot
- *   - the Request Manpower selector hides its checkbox group and relies on the
- *     free-text field, so the flow still works before the list arrives
- *
- * When the client sends the file, add the entries here and both surfaces light
- * up. No component or test changes are needed.
+ * This exact list — including order and the trailing "Other" escape hatch —
+ * was supplied directly, replacing the earlier placeholder slot that was
+ * blocked pending a client file. It is real, approved content, not invented.
  */
 
 export type ManpowerCategory = {
-  /** Stable key — used by tests and as the checkbox value. */
+  /** Stable key — used as the <option> value and sent verbatim in the request email. */
   key: string;
-  /** Label shown to the employer, and sent verbatim in the request email. */
+  /** Label shown to the employer. */
   label: string;
 };
 
-/** BLOCKED ON CLIENT — promised as a separate file, not yet received. */
-export const MANPOWER_CATEGORIES: readonly ManpowerCategory[] = [];
+export const MANPOWER_CATEGORIES: readonly ManpowerCategory[] = [
+  { key: "construction", label: "Construction" },
+  { key: "hospitality-tourism", label: "Hospitality & Tourism" },
+  { key: "healthcare", label: "Healthcare" },
+  { key: "it-technology", label: "IT & Technology" },
+  { key: "engineering", label: "Engineering" },
+  { key: "sales-marketing", label: "Sales & Marketing" },
+  { key: "administration-office", label: "Administration & Office" },
+  { key: "logistics-transportation", label: "Logistics & Transportation" },
+  { key: "security-facilities", label: "Security & Facilities" },
+  { key: "retail", label: "Retail" },
+  { key: "manufacturing", label: "Manufacturing" },
+  { key: "other", label: "Other" },
+] as const;
 
-/** True once the client's list has actually been supplied. */
+/** True once the category list has entries — always true now, kept for callers that check it. */
 export const hasManpowerCategories = (): boolean =>
   MANPOWER_CATEGORIES.length > 0;

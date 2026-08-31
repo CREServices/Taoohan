@@ -24,7 +24,7 @@ export default function ForJobSeekersPage() {
         lead={content.jobSeekers.lead}
       />
 
-      <Section>
+      <Section containerSize="wide" reveal={false}>
         <div className="max-w-3xl">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {content.jobSeekers.journeyHeading}
@@ -44,17 +44,24 @@ export default function ForJobSeekersPage() {
           than four — a single stacked column made this one section taller
           than the rest of the page put together.
 
-          The split is an EVEN half, and deliberately the same
-          `lg:grid-cols-2 lg:gap-16` the About page uses, because the loop has
-          to come out the same size on both pages. It is the same drawing of
-          the same process; rendering it smaller here would read as a lesser
-          version of it rather than the same thing seen again. Matching the
-          structure rather than hand-tuning a width means the two stay equal
-          at every viewport, not just the one they were checked at.
+          UNEVEN split (3fr/2fr) inside the WIDE container, not the even half
+          the About page's loop uses: the card side needed the extra room —
+          two cards per row inside a plain half-width column left short body
+          copy wrapping over five-plus lines. Widening the whole section
+          (rather than just re-splitting a max-w-7xl one) is what lets the
+          loop side still render at a comfortable size instead of shrinking to
+          make room for the cards. `items-start`, not centered: the composition
+          reads as two aligned columns starting from the same top edge, not a
+          shorter block floating centred against a taller one.
         */}
-        <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+        <div className="mt-10 grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-start lg:gap-16">
           <div>
-            <FeatureGrid items={content.jobSeekers.steps} numbered columns={2} />
+            <FeatureGrid
+              items={content.jobSeekers.steps}
+              numbered
+              columns={2}
+              glow="neutral"
+            />
           </div>
           <div>
             {/*

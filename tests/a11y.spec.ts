@@ -95,23 +95,21 @@ test("the Become Our Partner dialog is accessible in every step", async ({
   await expect(page.getByTestId("partner-modal")).toBeVisible();
   await scan("the path chooser");
 
-  // Job seeker: the details step, then the same step showing its errors.
+  // Job seeker: the single "I'm Looking for Work" form, then the same form
+  // showing its errors.
   await page.getByTestId("partner-path-job-seeker").click();
-  await scan("the job-seeker details step");
+  await scan("the job-seeker form");
   await page.getByTestId("job-seeker-continue").click();
   await expect(page.getByText("Please enter your full name.")).toBeVisible();
   await scan("the job-seeker validation errors");
 
-  // Job seeker: the channel choice.
-  await page.getByTestId("field-full-name").fill("Maria Santos");
-  await page.getByTestId("field-contact-number").fill("+971 50 123 4567");
-  await page.getByTestId("job-seeker-continue").click();
-  await scan("the channel choice");
-
-  // Employer: the request form, including its select. Back returns to the
-  // details form, and the audience toggle swaps it for the employer one.
-  await page.getByRole("button", { name: "Back" }).click();
+  // Employer: the "I'm Hiring Staff" form, including its select. The
+  // audience toggle swaps the job-seeker form for the employer one in
+  // place — there is no intermediate step to go back through.
   await page.getByTestId("partner-path-employer").click();
   await expect(page.getByTestId("field-category")).toBeVisible();
   await scan("the employer request form");
+  await page.getByTestId("employer-submit").click();
+  await expect(page.getByText("Please enter your company name.")).toBeVisible();
+  await scan("the employer validation errors");
 });

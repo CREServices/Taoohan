@@ -10,6 +10,27 @@ type SectionProps = {
   /** Vertical rhythm. */
   spacing?: "default" | "tight";
   id?: string;
+  /**
+   * Passed straight through to the inner `<Container>`. Defaults to
+   * `Container`'s own default (`"default"`, max-w-7xl) — override to `"wide"`
+   * for a big split layout (e.g. a card grid beside an illustration) that has
+   * enough content to use the extra width well, the same reasoning
+   * `Container`'s own doc comment gives for the header and home hero.
+   */
+  containerSize?: "default" | "narrow" | "wide";
+  /**
+   * Fade-and-rise the section's content in on scroll. Defaults to `true`.
+   *
+   * Set `false` for a section whose main content is a card grid: the whole
+   * section content sits behind ONE `data-reveal` wrapper, so a card grid
+   * nested inside it only ever becomes visible once that wrapper's own
+   * scroll-triggered transition finishes — which reads as the cards
+   * appearing a beat late rather than being there immediately. Cards
+   * themselves carry no per-item reveal any more (removed for the same
+   * reason); this is what stops the section wrapper from re-introducing it
+   * one level up.
+   */
+  reveal?: boolean;
 };
 
 const toneClass: Record<NonNullable<SectionProps["tone"]>, string> = {
@@ -25,6 +46,8 @@ export function Section({
   tone = "default",
   spacing = "default",
   id,
+  containerSize = "default",
+  reveal = true,
 }: SectionProps) {
   return (
     <section
@@ -51,11 +74,14 @@ export function Section({
       */}
       <span aria-hidden="true" data-brand-watermark className="brand-watermark" />
 
-      {/* Every band reveals as one unit on scroll. Putting it here means all
-          seven pages animate without a single page file changing — and the
-          bands built on Section (stats, testimonials, CTA) inherit it too. */}
-      <Container className="relative z-10">
-        <div data-reveal>{children}</div>
+      {/* Every band reveals as one unit on scroll by default. Putting it here
+          means all seven pages animate without a single page file
+          changing — and the bands built on Section (stats, testimonials,
+          CTA) inherit it too. `reveal={false}` opts a section out entirely,
+          for content (card grids) that should never wait on a scroll
+          transition to become visible. */}
+      <Container size={containerSize} className="relative z-10">
+        {reveal ? <div data-reveal>{children}</div> : children}
       </Container>
     </section>
   );

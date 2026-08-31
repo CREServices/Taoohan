@@ -118,36 +118,27 @@ export type SiteContent = {
       heading: string;
       body: string;
     };
-    /** Copy for the "Become Our Partner" modal (job-alerts + employer paths). */
     /**
-     * The hero's "Become Our Partner" modal, which carries both Milestone 3
-     * submission flows: the job seeker's two-step Apply Now (details, then a
-     * choice of WhatsApp or email) and the employer's email-only Request
-     * Manpower form.
+     * The hero's "Become Our Partner" modal, which carries both submission
+     * flows: the job seeker's single-form "I'm Looking for Work" (validated,
+     * then handed to WhatsApp) and the employer's single-form "I'm Hiring
+     * Staff" (validated, then submitted directly from the site by email).
      */
     partnerModal: {
       heading: string;
       lead: string;
       jobSeeker: {
-        /** Short label for the audience toggle at the top of the form. */
+        /** Toggle label at the top of the form, and the form's own title. */
         tabLabel: string;
-        heading: string;
         lead: string;
         submitLabel: string;
-        privacyNote: string;
-        /** Step two — the channel choice. Job seekers get both. */
-        channelHeading: string;
-        channelLead: string;
-        whatsappLabel: string;
-        whatsappNote: string;
-        emailLabel: string;
-        emailNote: string;
+        /** Shown once WhatsApp has opened, explaining manual CV attachment. */
+        cvNote: string;
         successNote: string;
       };
       employer: {
-        /** Short label for the audience toggle at the top of the form. */
+        /** Toggle label at the top of the form, and the form's own title. */
         tabLabel: string;
-        heading: string;
         lead: string;
         ctaLabel: string;
         note: string;

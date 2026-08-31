@@ -2,86 +2,109 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { mailtoHref, whatsappHref, hasValue, CONTACT } from "@/config/contact";
+import { CONTACT, hasValue } from "@/config/contact";
+import { MANPOWER_CATEGORIES } from "@/config/manpower";
 import { content } from "@/content";
-import { OTHER_CATEGORY } from "@/config/site.config";
 import { Button } from "@/components/ui/Button";
+import {
+  buildWhatsAppUrl,
+  validateApplicant,
+  type ApplicantDetails,
+  type ValidationErrors,
+} from "@/lib/applicant";
+import {
+  validateEmployerRequest,
+  type EmployerRequest,
+  type EmployerErrors,
+} from "@/lib/employer";
 
 /**
- * The "Become Our Partner" flow — the home hero's single CTA.
+ * The "Become Our Partner" flow — the home hero's single CTA, and also what
+ * the header's "Submit CV" / "Request Staff" buttons open (see CtaGroup).
+ * One implementation, one interaction pattern, rather than two divergent
+ * flows for the same two audiences.
  *
- * This implements the two Milestone 3 submission flows from the milestone
- * proposal. Phase 1 has no database, so nothing is stored: both flows hand the
- * visitor off to a channel with their details already written out.
+ *   JOB SEEKER — "I'm Looking for Work". ONE form: full name, contact /
+ *   WhatsApp number, current location, position looking for, and a required
+ *   CV/resume file picker. Validated, then handed straight to the official
+ *   Taoohan WhatsApp with the message pre-filled — there is no email option
+ *   on this side any more and no intermediate "choose a channel" step.
  *
- *   JOB SEEKER — two steps, both channels.
- *     1. Collect the basic details the proposal names: full name and contact
- *        number, validated.
- *     2. Offer WhatsApp or email; the details typed in step one are carried
- *        into whichever is chosen, and on-screen instructions explain what
- *        happens next.
+ *   CV HANDLING: `wa.me` deep links cannot carry a file attachment — that is
+ *   a real limitation of the WhatsApp Web/click-to-chat API, not something
+ *   this form works around. The file picker still gates submission (you must
+ *   select a CV before continuing), the redirect to WhatsApp is never
+ *   blocked by the attachment limitation, and the applicant is told plainly,
+ *   both before and after sending, that they need to attach the CV manually
+ *   in the chat. Nothing here claims the CV was uploaded automatically.
  *
- *   EMPLOYER — one step, email only.
- *     The proposal is explicit that "WhatsApp will not be offered on the
- *     employer side", on the basis that employer requests should come through
- *     email as the more professional channel. The mailto: carries a pre-filled
- *     recipient, subject line and body.
+ *   EMPLOYER — "I'm Hiring Staff". ONE form, submitted directly from the
+ *   site (POST to /api/request-manpower, which emails the confirmed Taoohan
+ *   business inbox via SMTP) — never a `mailto:` link, never a redirect to
+ *   the employer's own email application.
  *
- * ⚠️ BOTH DESTINATIONS ARE BLOCKED SLOTS. CONTACT.email and CONTACT.whatsapp
- * are empty pending client sign-off (see src/config/contact.ts and the gate),
- * so the final hand-off renders the awaiting-details notice instead of a
- * broken `mailto:`/`wa.me` link. Everything up to that point — the forms, the
- * validation, the composed message — works today and needs no change when the
- * values land; only the two slots have to be filled.
- *
- * The email option is a `mailto:` rather than the Nodemailer API route the
- * build guide describes. That route needs SMTP credentials which do not exist
- * yet, and it is Milestone 3 proper; the gate only requires it once the
- * milestone is bumped. Swapping this button for a POST to /api/apply is the
- * upgrade path and does not change the form above it.
+ * ⚠️ PHASE 1 — no database. Both flows validate and hand off; nothing here is
+ * ever written to storage.
  */
 
 type Path = "job-seeker" | "employer";
+type SendStatus = "idle" | "sending" | "sent" | "error";
 
-/** Enough digits to be a real phone number, ignoring +, spaces and brackets. */
-const isPhone = (value: string) => value.replace(/\D/g, "").length >= 7;
-const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+const EMPTY_APPLICANT: ApplicantDetails = {
+  fullName: "",
+  contactNumber: "",
+  currentLocation: "",
+  position: "",
+  hasCv: false,
+};
 
-/** Opens a composed hand-off link without leaving the page behind a blocker. */
-function openChannel(href: string) {
+const EMPTY_EMPLOYER: EmployerRequest = {
+  companyName: "",
+  contactPerson: "",
+  businessEmail: "",
+  contactNumber: "",
+  countryLocation: "",
+  category: "",
+  rolesNeeded: "",
+  numberOfWorkers: "",
+  employmentType: "",
+  expectedStartDate: "",
+  message: "",
+};
+
+/** Opens a link (WhatsApp) without leaving the current page behind a blocker. */
+function openInNewTab(href: string) {
   const anchor = document.createElement("a");
   anchor.href = href;
+  anchor.target = "_blank";
   anchor.rel = "noopener";
   anchor.click();
 }
 
-export function PartnerModal({ onClose }: { onClose: () => void }) {
+export function PartnerModal({
+  onClose,
+  /** Which form is showing when the dialog opens — set by whichever button opened it. */
+  initialPath = "job-seeker",
+}: {
+  onClose: () => void;
+  initialPath?: Path;
+}) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
 
-  // Opens ON the job-seeker form, not on a chooser. The dialog exists to show
-  // a form; making the visitor pick an audience first put a menu in front of
-  // the thing they clicked for. The audience is a toggle above the fields
-  // instead, so a form is on screen the moment the modal opens.
-  const [path, setPath] = useState<Path>("job-seeker");
-  const [step, setStep] = useState<"details" | "channel" | "sent">("details");
+  const [path, setPath] = useState<Path>(initialPath);
+  const [step, setStep] = useState<"form" | "sent">("form");
 
-  // Job seeker — the two basic details the proposal names.
-  const [fullName, setFullName] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
+  // Job seeker.
+  const [applicant, setApplicant] = useState<ApplicantDetails>(EMPTY_APPLICANT);
+  const [applicantErrors, setApplicantErrors] = useState<ValidationErrors>({});
+  const cvInputRef = useRef<HTMLInputElement>(null);
 
-  // Employer — enough to make the request actionable in one reply. The
-  // client asked for the COMPANY rather than the individual: a staffing
-  // request is made by a business, and the company name is what the team
-  // needs to look the account up. A contact number sits beside the email so
-  // the reply can go out on whichever channel the employer actually answers.
-  const [companyName, setCompanyName] = useState("");
-  const [employerContactNumber, setEmployerContactNumber] = useState("");
-  const [workEmail, setWorkEmail] = useState("");
-  const [category, setCategory] = useState("");
-  const [details, setDetails] = useState("");
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // Employer.
+  const [employer, setEmployer] = useState<EmployerRequest>(EMPTY_EMPLOYER);
+  const [employerErrors, setEmployerErrors] = useState<EmployerErrors>({});
+  const [employerStatus, setEmployerStatus] = useState<SendStatus>("idle");
+  const [employerStatusMessage, setEmployerStatusMessage] = useState("");
 
   // Portalled to <body>, so this can only render once mounted on the client.
   // The component is only ever mounted from a click handler, never during the
@@ -89,21 +112,10 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
   const [mounted] = useState(() => typeof document !== "undefined");
 
   const copy = content.home.partnerModal;
-  const emailReady = hasValue(CONTACT.email);
   const whatsappReady = hasValue(CONTACT.whatsapp);
 
-  /**
-   * Manpower categories for the employer selector. The proposal lists "the
-   * list of manpower categories" as something the client still owes, so rather
-   * than invent one this reuses the SIXTEEN CLIENT-APPROVED INDUSTRIES already
-   * in the content layer — real approved data, and the closest match to what
-   * the selector is for. Swap this for the dedicated list when it arrives.
-   */
-  const categories = content.industries.items;
-
   useEffect(() => {
-    // Restore focus to whatever opened the modal, per the Milestone 3
-    // accessibility rule ("closes on Esc, restores focus on close").
+    // Restore focus to whatever opened the modal.
     const opener = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -155,72 +167,87 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
     };
   }, [onClose]);
 
-  /** Only reachable from the channel choice — the details form is the root. */
-  const back = useCallback(() => {
-    setErrors({});
-    setStep("details");
+  const switchPath = useCallback((next: Path) => {
+    setPath(next);
+    setStep("form");
+    setApplicantErrors({});
+    setEmployerErrors({});
+    setEmployerStatus("idle");
   }, []);
 
-  const switchPath = (next: Path) => {
-    setPath(next);
-    setStep("details");
-    setErrors({});
+  // ---- Job seeker ----------------------------------------------------------
+
+  const applicantField =
+    (key: keyof Omit<ApplicantDetails, "hasCv">) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setApplicant((current) => ({ ...current, [key]: value }));
+      setApplicantErrors((current) => ({ ...current, [key]: undefined }));
+    };
+
+  const onCvChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const hasCv = (event.target.files?.length ?? 0) > 0;
+    setApplicant((current) => ({ ...current, hasCv }));
+    setApplicantErrors((current) => ({ ...current, hasCv: undefined }));
   };
 
-  /** Step one of the job-seeker flow: validate, then offer the channels. */
   const submitJobSeeker = (event: React.FormEvent) => {
     event.preventDefault();
-    const next: Record<string, string> = {};
-    if (fullName.trim().length < 2) next.fullName = "Please enter your full name.";
-    if (!isPhone(contactNumber)) next.contactNumber = "Please enter a valid contact number.";
-    setErrors(next);
-    if (Object.keys(next).length > 0) return;
-    setStep("channel");
-  };
+    const found = validateApplicant(applicant);
+    setApplicantErrors(found);
+    if (Object.keys(found).length > 0) return;
 
-  const jobSeekerMessage = () =>
-    `Job application from the Taoohan website.\n\n` +
-    `Full name: ${fullName.trim()}\n` +
-    `Contact number: ${contactNumber.trim()}\n\n` +
-    `I would like to apply for opportunities. My CV is attached.`;
-
-  const sendWhatsApp = () => {
-    const href = whatsappHref(jobSeekerMessage());
+    // A missing WhatsApp business number is the one condition that can still
+    // block the redirect — everything else (including the CV limitation)
+    // must not.
+    const href = buildWhatsAppUrl(CONTACT.whatsapp, applicant);
     if (!href) return;
-    openChannel(href);
+    openInNewTab(href);
     setStep("sent");
   };
 
-  const sendJobSeekerEmail = () => {
-    const href = mailtoHref(`Job Application — ${fullName.trim()}`);
-    if (!href) return;
-    openChannel(`${href}&body=${encodeURIComponent(jobSeekerMessage())}`);
-    setStep("sent");
-  };
+  // ---- Employer --------------------------------------------------------------
 
-  /** The employer flow: validate, then open a fully composed email. */
-  const submitEmployer = (event: React.FormEvent) => {
+  const employerField =
+    (key: keyof Omit<EmployerRequest, "category">) =>
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = event.target.value;
+      setEmployer((current) => ({ ...current, [key]: value }));
+      setEmployerErrors((current) => ({ ...current, [key]: undefined }));
+    };
+
+  const submitEmployer = async (event: React.FormEvent) => {
     event.preventDefault();
-    const next: Record<string, string> = {};
-    if (companyName.trim().length < 2) next.companyName = "Please enter your company name.";
-    if (!isPhone(employerContactNumber))
-      next.employerContactNumber = "Please enter a valid contact number.";
-    if (!isEmail(workEmail)) next.workEmail = "Please enter a valid email address.";
-    if (!category) next.category = "Please choose a category.";
-    setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    const found = validateEmployerRequest(employer);
+    setEmployerErrors(found);
+    if (Object.keys(found).length > 0) return;
 
-    const href = mailtoHref(`Staffing & Manpower Request — ${companyName.trim()}`);
-    if (!href) return;
-    const body =
-      `Manpower request from the Taoohan website.\n\n` +
-      `Company name: ${companyName.trim()}\n` +
-      `Contact number: ${employerContactNumber.trim()}\n` +
-      `Email: ${workEmail.trim()}\n` +
-      `Category: ${category}\n` +
-      (details.trim() ? `\nDetails:\n${details.trim()}\n` : "");
-    openChannel(`${href}&body=${encodeURIComponent(body)}`);
-    setStep("sent");
+    setEmployerStatus("sending");
+    try {
+      const response = await fetch("/api/request-manpower", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(employer),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setEmployerStatus("error");
+        setEmployerStatusMessage(
+          typeof data?.error === "string"
+            ? data.error
+            : "We could not send your hiring request. Please try again shortly.",
+        );
+        return;
+      }
+      setEmployerStatus("sent");
+      setStep("sent");
+    } catch {
+      setEmployerStatus("error");
+      setEmployerStatusMessage(
+        "We could not reach the server. Please check your connection and try again.",
+      );
+    }
   };
 
   if (!mounted) return null;
@@ -229,14 +256,6 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
     "mt-1 w-full rounded-md border border-hairline bg-surface px-3 py-2 text-sm outline-none focus-visible:border-brand-500";
   const label = "text-xs font-medium text-ink-muted";
   const errorText = "mt-1 text-xs text-brand-800";
-
-  /** Shown wherever a destination slot is still empty. */
-  const blocked = (slot: "email" | "whatsapp") => (
-    <p data-empty-slot={slot} className="text-sm italic text-ink-muted">
-      Awaiting client details — this will send once the {slot === "email" ? "inbox" : "WhatsApp number"} is
-      confirmed.
-    </p>
-  );
 
   return createPortal(
     <div
@@ -276,7 +295,9 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
 
         {/* ---- Audience toggle ------------------------------------------
             Switches the fields below in place. `aria-pressed` rather than a
-            tablist: these swap the form, they do not reveal sibling panels. */}
+            tablist: these swap the form, they do not reveal sibling panels.
+            The label doubles as the form's own title — "I'm Looking for
+            Work" / "I'm Hiring Staff". */}
         {step !== "sent" && (
           <div className="mt-5 flex gap-2 rounded-pill bg-surface-muted p-1">
             {(
@@ -304,195 +325,313 @@ export function PartnerModal({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {/* ---- Job seeker, step 1: the basic details -------------------- */}
-        {path === "job-seeker" && step === "details" && (
+        {/* ---- Job seeker: "I'm Looking for Work" ------------------------ */}
+        {path === "job-seeker" && step === "form" && (
           <form className="mt-5 space-y-4" onSubmit={submitJobSeeker} noValidate>
             <div>
-              <h3 className="text-base font-semibold">{copy.jobSeeker.heading}</h3>
+              <h3 className="text-base font-semibold">{copy.jobSeeker.tabLabel}</h3>
               <p className="mt-1 text-sm text-ink-muted">{copy.jobSeeker.lead}</p>
             </div>
+
             <label className="block">
-              <span className={label}>Full name</span>
+              <span className={label}>Full Name</span>
               <input
                 name="fullName"
                 data-testid="field-full-name"
-                value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
-                aria-invalid={Boolean(errors.fullName)}
+                value={applicant.fullName}
+                onChange={applicantField("fullName")}
+                aria-invalid={Boolean(applicantErrors.fullName)}
                 className={field}
               />
-              {errors.fullName && <span className={errorText}>{errors.fullName}</span>}
+              {applicantErrors.fullName && (
+                <span className={errorText}>{applicantErrors.fullName}</span>
+              )}
             </label>
+
             <label className="block">
-              <span className={label}>Contact number</span>
+              <span className={label}>Contact Number / WhatsApp Number</span>
               <input
                 name="contactNumber"
                 type="tel"
                 inputMode="tel"
                 data-testid="field-contact-number"
-                value={contactNumber}
-                onChange={(event) => setContactNumber(event.target.value)}
-                aria-invalid={Boolean(errors.contactNumber)}
+                value={applicant.contactNumber}
+                onChange={applicantField("contactNumber")}
+                aria-invalid={Boolean(applicantErrors.contactNumber)}
                 className={field}
               />
-              {errors.contactNumber && <span className={errorText}>{errors.contactNumber}</span>}
+              {applicantErrors.contactNumber && (
+                <span className={errorText}>{applicantErrors.contactNumber}</span>
+              )}
             </label>
-            <p className="text-xs text-ink-muted">{copy.jobSeeker.privacyNote}</p>
-            <Button type="submit" size="md" data-testid="job-seeker-continue" className="w-full">
-              {copy.jobSeeker.submitLabel}
-            </Button>
+
+            <label className="block">
+              <span className={label}>Current Location</span>
+              <input
+                name="currentLocation"
+                data-testid="field-current-location"
+                value={applicant.currentLocation}
+                onChange={applicantField("currentLocation")}
+                aria-invalid={Boolean(applicantErrors.currentLocation)}
+                className={field}
+              />
+              {applicantErrors.currentLocation && (
+                <span className={errorText}>{applicantErrors.currentLocation}</span>
+              )}
+            </label>
+
+            <label className="block">
+              <span className={label}>Position They Are Looking For</span>
+              <input
+                name="position"
+                data-testid="field-position"
+                value={applicant.position}
+                onChange={applicantField("position")}
+                aria-invalid={Boolean(applicantErrors.position)}
+                className={field}
+              />
+              {applicantErrors.position && (
+                <span className={errorText}>{applicantErrors.position}</span>
+              )}
+            </label>
+
+            <label className="block">
+              <span className={label}>CV / Resume Upload</span>
+              <input
+                ref={cvInputRef}
+                name="cv"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                data-testid="field-cv"
+                onChange={onCvChange}
+                aria-invalid={Boolean(applicantErrors.hasCv)}
+                className={field}
+              />
+              {applicantErrors.hasCv && (
+                <span className={errorText}>{applicantErrors.hasCv}</span>
+              )}
+              <span className="mt-1 block text-xs text-ink-muted">
+                {copy.jobSeeker.cvNote}
+              </span>
+            </label>
+
+            {whatsappReady ? (
+              <Button
+                type="submit"
+                size="md"
+                data-testid="job-seeker-continue"
+                className="w-full"
+              >
+                {copy.jobSeeker.submitLabel}
+              </Button>
+            ) : (
+              <p data-empty-slot="whatsapp" className="text-sm italic text-ink-muted">
+                Awaiting client details — this will send once the WhatsApp number
+                is confirmed.
+              </p>
+            )}
           </form>
         )}
 
-        {/* ---- Job seeker, step 2: choose a channel --------------------- */}
-        {path === "job-seeker" && step === "channel" && (
-          <div className="mt-4 space-y-4">
-            <div>
-              <h3 className="text-base font-semibold">{copy.jobSeeker.channelHeading}</h3>
-              <p className="mt-1 text-sm text-ink-muted">{copy.jobSeeker.channelLead}</p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-card border border-hairline p-5">
-                {whatsappReady ? (
-                  <>
-                    <Button
-                      type="button"
-                      size="md"
-                      className="w-full"
-                      data-testid="channel-whatsapp"
-                      onClick={sendWhatsApp}
-                    >
-                      {copy.jobSeeker.whatsappLabel}
-                    </Button>
-                    <p className="mt-2 text-xs text-ink-muted">{copy.jobSeeker.whatsappNote}</p>
-                  </>
-                ) : (
-                  blocked("whatsapp")
-                )}
-              </div>
-              <div className="rounded-card border border-hairline p-5">
-                {emailReady ? (
-                  <>
-                    <Button
-                      type="button"
-                      size="md"
-                      variant="secondary"
-                      className="w-full"
-                      data-testid="channel-email"
-                      onClick={sendJobSeekerEmail}
-                    >
-                      {copy.jobSeeker.emailLabel}
-                    </Button>
-                    <p className="mt-2 text-xs text-ink-muted">{copy.jobSeeker.emailNote}</p>
-                  </>
-                ) : (
-                  blocked("email")
-                )}
-              </div>
-            </div>
-
-            <Button type="button" size="md" variant="secondary" onClick={back}>
-              Back
-            </Button>
-          </div>
-        )}
-
-        {/* ---- Employer: one form, email only --------------------------- */}
-        {path === "employer" && step === "details" && (
+        {/* ---- Employer: "I'm Hiring Staff" ------------------------------- */}
+        {path === "employer" && step === "form" && (
           <form className="mt-5 space-y-4" onSubmit={submitEmployer} noValidate>
             <div>
-              <h3 className="text-base font-semibold">{copy.employer.heading}</h3>
+              <h3 className="text-base font-semibold">{copy.employer.tabLabel}</h3>
               <p className="mt-1 text-sm text-ink-muted">{copy.employer.lead}</p>
             </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className={label}>Company name</span>
+                <span className={label}>Company Name</span>
                 <input
                   name="companyName"
                   data-testid="field-company-name"
-                  value={companyName}
-                  onChange={(event) => setCompanyName(event.target.value)}
-                  aria-invalid={Boolean(errors.companyName)}
+                  value={employer.companyName}
+                  onChange={employerField("companyName")}
+                  aria-invalid={Boolean(employerErrors.companyName)}
                   className={field}
                 />
-                {errors.companyName && <span className={errorText}>{errors.companyName}</span>}
+                {employerErrors.companyName && (
+                  <span className={errorText}>{employerErrors.companyName}</span>
+                )}
               </label>
+
               <label className="block">
-                <span className={label}>Contact number</span>
+                <span className={label}>Contact Person</span>
                 <input
-                  name="employerContactNumber"
+                  name="contactPerson"
+                  data-testid="field-contact-person"
+                  value={employer.contactPerson}
+                  onChange={employerField("contactPerson")}
+                  aria-invalid={Boolean(employerErrors.contactPerson)}
+                  className={field}
+                />
+                {employerErrors.contactPerson && (
+                  <span className={errorText}>{employerErrors.contactPerson}</span>
+                )}
+              </label>
+
+              <label className="block">
+                <span className={label}>Business Email</span>
+                <input
+                  name="businessEmail"
+                  type="email"
+                  data-testid="field-business-email"
+                  value={employer.businessEmail}
+                  onChange={employerField("businessEmail")}
+                  aria-invalid={Boolean(employerErrors.businessEmail)}
+                  className={field}
+                />
+                {employerErrors.businessEmail && (
+                  <span className={errorText}>{employerErrors.businessEmail}</span>
+                )}
+              </label>
+
+              <label className="block">
+                <span className={label}>Contact Number</span>
+                <input
+                  name="contactNumber"
                   type="tel"
                   inputMode="tel"
                   data-testid="field-employer-contact-number"
-                  value={employerContactNumber}
-                  onChange={(event) => setEmployerContactNumber(event.target.value)}
-                  aria-invalid={Boolean(errors.employerContactNumber)}
+                  value={employer.contactNumber}
+                  onChange={employerField("contactNumber")}
+                  aria-invalid={Boolean(employerErrors.contactNumber)}
                   className={field}
                 />
-                {errors.employerContactNumber && (
-                  <span className={errorText}>{errors.employerContactNumber}</span>
+                {employerErrors.contactNumber && (
+                  <span className={errorText}>{employerErrors.contactNumber}</span>
                 )}
               </label>
+
               <label className="block">
-                <span className={label}>Email</span>
+                <span className={label}>Country / Location</span>
                 <input
-                  name="workEmail"
-                  type="email"
-                  data-testid="field-work-email"
-                  value={workEmail}
-                  onChange={(event) => setWorkEmail(event.target.value)}
-                  aria-invalid={Boolean(errors.workEmail)}
+                  name="countryLocation"
+                  data-testid="field-country-location"
+                  value={employer.countryLocation}
+                  onChange={employerField("countryLocation")}
+                  aria-invalid={Boolean(employerErrors.countryLocation)}
                   className={field}
                 />
-                {errors.workEmail && <span className={errorText}>{errors.workEmail}</span>}
+                {employerErrors.countryLocation && (
+                  <span className={errorText}>{employerErrors.countryLocation}</span>
+                )}
               </label>
+
               <label className="block">
-                <span className={label}>Manpower category</span>
+                <span className={label}>Manpower Category / Industry</span>
                 <select
                   name="category"
                   data-testid="field-category"
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value)}
-                  aria-invalid={Boolean(errors.category)}
+                  value={employer.category}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setEmployer((current) => ({ ...current, category: value }));
+                    setEmployerErrors((current) => ({ ...current, category: undefined }));
+                  }}
+                  aria-invalid={Boolean(employerErrors.category)}
                   className={field}
                 >
                   <option value="">Select a category</option>
-                  {categories.map((item) => (
-                    <option key={item.key} value={item.name}>
-                      {item.name}
+                  {MANPOWER_CATEGORIES.map((category) => (
+                    <option key={category.key} value={category.key}>
+                      {category.label}
                     </option>
                   ))}
-                  {/* Last, and deliberately outside the approved list: without
-                      it the selector is a closed set and an employer whose
-                      requirement is not one of the sixteen has to abandon the
-                      form. The free-text box below is where they say which. */}
-                  <option value={OTHER_CATEGORY}>{OTHER_CATEGORY}</option>
                 </select>
-                {errors.category && <span className={errorText}>{errors.category}</span>}
+                {employerErrors.category && (
+                  <span className={errorText}>{employerErrors.category}</span>
+                )}
+              </label>
+
+              <label className="block">
+                <span className={label}>Roles / Positions Needed</span>
+                <input
+                  name="rolesNeeded"
+                  data-testid="field-roles-needed"
+                  value={employer.rolesNeeded}
+                  onChange={employerField("rolesNeeded")}
+                  aria-invalid={Boolean(employerErrors.rolesNeeded)}
+                  className={field}
+                />
+                {employerErrors.rolesNeeded && (
+                  <span className={errorText}>{employerErrors.rolesNeeded}</span>
+                )}
+              </label>
+
+              <label className="block">
+                <span className={label}>Number of Workers Needed</span>
+                <input
+                  name="numberOfWorkers"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  data-testid="field-number-of-workers"
+                  value={employer.numberOfWorkers}
+                  onChange={employerField("numberOfWorkers")}
+                  aria-invalid={Boolean(employerErrors.numberOfWorkers)}
+                  className={field}
+                />
+                {employerErrors.numberOfWorkers && (
+                  <span className={errorText}>{employerErrors.numberOfWorkers}</span>
+                )}
+              </label>
+
+              <label className="block">
+                <span className={label}>Employment Type (optional)</span>
+                <input
+                  name="employmentType"
+                  data-testid="field-employment-type"
+                  value={employer.employmentType}
+                  onChange={employerField("employmentType")}
+                  placeholder="e.g. Full-time, Contract, Temporary"
+                  className={field}
+                />
+              </label>
+
+              <label className="block">
+                <span className={label}>Expected Start Date (optional)</span>
+                <input
+                  name="expectedStartDate"
+                  type="date"
+                  data-testid="field-start-date"
+                  value={employer.expectedStartDate}
+                  onChange={employerField("expectedStartDate")}
+                  className={field}
+                />
               </label>
             </div>
 
             <label className="block">
-              <span className={label}>What roles do you need? (optional)</span>
+              <span className={label}>Additional Requirements / Message (optional)</span>
               <textarea
-                name="details"
+                name="message"
                 rows={3}
-                value={details}
-                onChange={(event) => setDetails(event.target.value)}
+                data-testid="field-message"
+                value={employer.message}
+                onChange={employerField("message")}
                 className={field}
               />
             </label>
 
-            {emailReady ? (
-              <>
-                <Button type="submit" size="md" data-testid="employer-submit" className="w-full">
-                  {copy.employer.ctaLabel}
-                </Button>
-                <p className="text-xs text-ink-muted">{copy.employer.note}</p>
-              </>
-            ) : (
-              blocked("email")
+            <Button
+              type="submit"
+              size="md"
+              data-testid="employer-submit"
+              className="w-full"
+              disabled={employerStatus === "sending"}
+            >
+              {employerStatus === "sending" ? "Sending…" : copy.employer.ctaLabel}
+            </Button>
+            <p className="text-xs text-ink-muted">{copy.employer.note}</p>
+
+            {employerStatus === "error" && (
+              <p role="alert" data-testid="employer-error" className="text-sm text-brand-800">
+                {employerStatusMessage}
+              </p>
             )}
           </form>
         )}

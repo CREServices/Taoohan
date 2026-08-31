@@ -1,17 +1,26 @@
 /**
- * Shared applicant-detail rules for the Apply Now flow.
+ * Shared job-seeker rules for the "I'm Looking for Work" flow.
  *
- * Kept as pure functions with no React and no Node imports so the SAME logic
- * validates on the client (instant feedback in the modal) and on the server
- * (the API route can never be bypassed by a crafted request).
+ * Kept as pure functions with no React and no Node imports so the same logic
+ * can validate on the client (instant feedback in the modal) and, if ever
+ * needed, on a server route — a crafted request can never bypass it.
  *
- * ⚠️ PHASE 1: applicant details are validated and handed off to WhatsApp or
- * email. They are NEVER written to a database or a file — that is Phase 2.
+ * ⚠️ PHASE 1: applicant details are validated and handed off to WhatsApp only.
+ * Nothing is written to a database or a file.
  */
 
 export type ApplicantDetails = {
   fullName: string;
   contactNumber: string;
+  currentLocation: string;
+  position: string;
+  /**
+   * Whether the applicant selected a CV/resume file. The FILE ITSELF is never
+   * uploaded anywhere — a `wa.me` deep link cannot carry an attachment, so
+   * this only gates submission ("you must pick a file before continuing")
+   * and tells the applicant to attach it manually once WhatsApp opens.
+   */
+  hasCv: boolean;
 };
 
 export type ValidationErrors = Partial<Record<keyof ApplicantDetails, string>>;
@@ -34,13 +43,25 @@ export function validateApplicant(details: ApplicantDetails): ValidationErrors {
 
   const contactNumber = details.contactNumber.trim();
   if (!contactNumber) {
-    errors.contactNumber = "Please enter your contact number.";
+    errors.contactNumber = "Please enter your contact / WhatsApp number.";
   } else if (!PHONE_ALLOWED.test(contactNumber)) {
     errors.contactNumber = "Use digits only, with optional +, spaces or dashes.";
   } else if (digitCount(contactNumber) < 7) {
     errors.contactNumber = "That contact number looks too short.";
   } else if (digitCount(contactNumber) > 15) {
     errors.contactNumber = "That contact number looks too long.";
+  }
+
+  if (!details.currentLocation.trim()) {
+    errors.currentLocation = "Please enter your current location.";
+  }
+
+  if (!details.position.trim()) {
+    errors.position = "Please enter the position you are looking for.";
+  }
+
+  if (!details.hasCv) {
+    errors.hasCv = "Please select your CV / resume before continuing.";
   }
 
   return errors;
@@ -50,24 +71,31 @@ export const isValidApplicant = (details: ApplicantDetails): boolean =>
   Object.keys(validateApplicant(details)).length === 0;
 
 /**
- * The message pre-filled into WhatsApp. Kept here (not in the component) so the
- * exact wording is testable.
+ * The message pre-filled into WhatsApp. Kept here (not in the component) so
+ * the exact wording is testable. Structure is fixed — do not reorder or
+ * reword the lines.
  */
 export function buildWhatsAppMessage(details: ApplicantDetails): string {
   return [
-    "Hello Taoohan, I would like to apply for a job.",
-    `Name: ${details.fullName.trim()}`,
-    `Contact number: ${details.contactNumber.trim()}`,
-    "I will attach my CV in this chat.",
+    "Hello Taoohan Recruitment Team,",
+    "",
+    "I would like to apply for a job opportunity.",
+    "",
+    `Full Name: ${details.fullName.trim()}`,
+    `Contact Number: ${details.contactNumber.trim()}`,
+    `Current Location: ${details.currentLocation.trim()}`,
+    `Position Looking For: ${details.position.trim()}`,
+    "",
+    "Thank you.",
   ].join("\n");
 }
 
 /**
  * Builds the wa.me deep link.
  *
- * Returns `null` when no business WhatsApp number is configured — the client
- * has not supplied one yet, and a link to an empty number would silently fail.
- * Callers must handle null by telling the user the channel is unavailable.
+ * Returns `null` when no business WhatsApp number is configured — callers
+ * must handle null by telling the applicant the channel is unavailable
+ * rather than building a link to an empty number.
  */
 export function buildWhatsAppUrl(
   businessNumber: string,

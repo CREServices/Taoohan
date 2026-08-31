@@ -58,7 +58,7 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      <Section tone="muted">
+      <Section tone="muted" reveal={false}>
         <div className="max-w-3xl">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {content.about.approachHeading}

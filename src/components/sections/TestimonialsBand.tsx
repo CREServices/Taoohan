@@ -55,7 +55,7 @@ export function TestimonialsBand({
   const grid = "mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3";
 
   return (
-    <Section spacing="tight">
+    <Section spacing="tight" reveal={false}>
       <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
         {heading}
       </h2>

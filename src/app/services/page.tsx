@@ -17,14 +17,14 @@ export default function ServicesPage() {
         lead={content.services.lead}
       />
 
-      <Section>
+      <Section reveal={false}>
         <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-700">
           {content.services.coreHeading}
         </h2>
         <FeatureGrid items={content.services.items} numbered backdrop className="mt-6" />
       </Section>
 
-      <Section tone="muted">
+      <Section tone="muted" reveal={false}>
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">
             {content.services.processHeading}
@@ -36,7 +36,7 @@ export default function ServicesPage() {
             {content.services.processLead}
           </p>
         </div>
-        <FeatureGrid items={content.services.steps} numbered backdrop className="mt-10" />
+        <FeatureGrid items={content.services.steps} numbered className="mt-10" />
       </Section>
 
       <CtaBand

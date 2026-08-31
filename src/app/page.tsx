@@ -31,7 +31,7 @@ export default function HomePage() {
       <FrostedHero />
 
       {/* -------------------------------------------------------- WHY TAOOHAN */}
-      <Section>
+      <Section reveal={false}>
         <div className="max-w-3xl">
           <p className="text-sm font-medium uppercase tracking-wide text-brand-700">
             {content.home.intro.eyebrow}
@@ -43,7 +43,7 @@ export default function HomePage() {
             {content.home.intro.lead}
           </p>
         </div>
-        <FeatureGrid items={content.home.features} backdrop className="mt-10" />
+        <FeatureGrid items={content.home.features} backdrop="full-image" className="mt-10" />
       </Section>
 
       {/* ------------------------------------------------------------ WHAT WE DO */}
@@ -65,7 +65,7 @@ export default function HomePage() {
       </Section>
 
       {/* -------------------------------------------------------------- SERVICES */}
-      <Section>
+      <Section reveal={false}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -86,7 +86,7 @@ export default function HomePage() {
       </Section>
 
       {/* ------------------------------------------------------------ INDUSTRIES */}
-      <Section tone="muted">
+      <Section tone="muted" reveal={false}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -116,7 +116,7 @@ export default function HomePage() {
       </Section>
 
       {/* ----------------------------------------------------------- TWO PATHWAYS */}
-      <Section>
+      <Section reveal={false}>
         <div className="grid gap-5 lg:grid-cols-2">
           {[content.home.employerCard, content.home.jobSeekerCard].map((card) => (
             <div

@@ -247,6 +247,40 @@
   opacity: 0.5;
 }
 
+/* ==========================================================================
+   WHY TAOOHAN BACKDROP — home page, "Why Taoohan" section ONLY
+   ==========================================================================
+   A dedicated, standalone treatment — NOT shared with `.frosted-backdrop`
+   above — because that shared class is sized (`inset: 0`, width-driven
+   background-size) to fit whichever grid happens to use it, and a single
+   ROW of cards is shorter than the logo mark renders at a width wide enough
+   to span three cards. The result was the mark's own box confining it to
+   the row's height and cropping its top and bottom — a background-image
+   never paints outside its own element's box, no matter how the image
+   itself is sized.
+
+   The fix here is to give the box the SAME aspect ratio as the source
+   artwork (logo-dark.png, 978×662) rather than sizing it off the grid. A
+   box shaped like the image can never crop it — `background-size: contain`
+   inside a same-ratio box always fills edge to edge with nothing left over
+   and nothing cut off, so the two overlapping circles always render whole. */
+
+.why-taoohan-backdrop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 0;
+  pointer-events: none;
+  width: min(70%, 34rem);
+  aspect-ratio: 978 / 662;
+  background-image: url("/logo/logo-dark.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  opacity: 0.5;
+}
+
 .frosted-backdrop-mobile {
   display: none;
 }

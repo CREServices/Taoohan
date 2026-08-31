@@ -29,7 +29,7 @@ export default function ForEmployersPage() {
         lead={content.employers.lead}
       />
 
-      <Section>
+      <Section reveal={false}>
         <div className="max-w-3xl">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {content.employers.processHeading}
@@ -41,7 +41,7 @@ export default function ForEmployersPage() {
         <FeatureGrid items={content.employers.steps} numbered backdrop className="mt-10" />
       </Section>
 
-      <Section tone="muted">
+      <Section tone="muted" reveal={false}>
         <div className="max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {content.employers.solutionsHeading}
