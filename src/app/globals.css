@@ -450,23 +450,15 @@
   opacity: 0.06;
 }
 
-/* Odd sections only, sides alternating. Because the marks sit vertically
-   centred rather than at the edges, two can never crowd a section boundary. */
+/* Odd sections only, and RIGHT side only — the left-side placement was
+   pulled entirely: on narrow screens the mark had nowhere to sit but
+   overlapping body copy, which read as clutter rather than texture. */
 section:nth-of-type(4n + 1) .brand-watermark {
   display: block;
   top: 50%;
   right: -5rem;
   translate: 0 -50%;
   rotate: -8deg;
-}
-
-section:nth-of-type(4n + 3) .brand-watermark {
-  display: block;
-  top: 50%;
-  left: -5rem;
-  translate: 0 -50%;
-  rotate: 7deg;
-  width: 18rem;
 }
 
 /* The dark bands swallow the mark, so it needs more presence there. */
@@ -491,11 +483,6 @@ section:has(.process-loop) .brand-watermark {
 
   section:nth-of-type(4n + 1) .brand-watermark {
     right: -4rem;
-  }
-
-  section:nth-of-type(4n + 3) .brand-watermark {
-    left: -4rem;
-    width: 12rem;
   }
 }
 /* Safety net. The boot script reads the motion preference once, at load. If the

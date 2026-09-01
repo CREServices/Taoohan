@@ -63,7 +63,10 @@ export default function IndustriesPage() {
                   } as React.CSSProperties
                 }
               />
-              <div className="group relative flex h-full flex-col overflow-hidden rounded-card border border-white/60 bg-white/55 p-7 shadow-[0_1px_2px_rgba(38,51,42,0.04),0_12px_28px_-16px_rgba(38,51,42,0.18)] backdrop-blur-md transition-all duration-300 ease-out supports-[backdrop-filter]:bg-white/40 supports-[backdrop-filter]:backdrop-blur-md hover:-translate-y-1 hover:border-brand-300/70 hover:bg-white/70 hover:shadow-[0_1px_2px_rgba(38,51,42,0.06),0_20px_40px_-16px_rgba(38,51,42,0.24)] sm:p-8">
+              {/* Glassmorphism — from https://css.glass, converted to Tailwind
+                  arbitrary values verbatim (bg/border-radius/box-shadow/
+                  backdrop-blur/border), scoped to Industries cards only. */}
+              <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(206,203,203,1)] bg-[rgba(206,203,203,0.27)] p-7 shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-[14px] transition-transform duration-300 ease-out hover:-translate-y-1 sm:p-8">
                 <span
                   aria-hidden="true"
                   className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-brand-400 via-brand-600 to-brand-400 transition-transform duration-500 ease-out group-hover:scale-x-100"
