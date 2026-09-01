@@ -67,7 +67,12 @@ next-env.d.ts
 # local tool state (beads database/lock files) — not source, never pushed.
 /.beads/
 
-# oversized source video (317MB) — exceeds GitHub's 100MB file limit.
-# Stays on disk; not referenced by any component, so nothing breaks by
-# leaving it untracked. Re-add via Git LFS if it needs to ship.
+# Oversized raw video masters dropped in public/video/ for re-encoding —
+# exceed GitHub's 100MB file limit. Only the encoded hero-1080/540 outputs
+# below this path are ever referenced by a component and tracked; a raw
+# master gets copied to raw-assets/ (also gitignored) and deleted from here
+# once it's been re-encoded. This blanket pattern is deliberately broader
+# than one filename so a future drop is never accidentally staged.
 /public/video/manpower.mp4
+/public/video/0901.mp4
+/public/video/[0-9]*.mp4
