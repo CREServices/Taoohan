@@ -17,7 +17,7 @@ export default function ServicesPage() {
         lead={content.services.lead}
       />
 
-      <Section reveal={false}>
+      <Section reveal={false} className="services-core-section">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-700">
           {content.services.coreHeading}
         </h2>

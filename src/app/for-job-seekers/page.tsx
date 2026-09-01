@@ -60,7 +60,7 @@ export default function ForJobSeekersPage() {
               items={content.jobSeekers.steps}
               numbered
               columns={2}
-              glow="neutral"
+              backdrop
             />
           </div>
           <div>

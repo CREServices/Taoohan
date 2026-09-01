@@ -31,7 +31,7 @@ export default function HomePage() {
       <FrostedHero />
 
       {/* -------------------------------------------------------- WHY TAOOHAN */}
-      <Section reveal={false}>
+      <Section reveal={false} className="home-why-section">
         <div className="max-w-3xl">
           <p className="text-sm font-medium uppercase tracking-wide text-brand-700">
             {content.home.intro.eyebrow}

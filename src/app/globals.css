@@ -289,34 +289,20 @@
   /* The row wordmark only ever covers the middle of a stack of full-width
      cards, so it is switched off entirely below the breakpoint rather than
      just resized. */
-  .frosted-backdrop {
+  .frosted-backdrop,
+  .frosted-backdrop-mobile,
+  .why-taoohan-backdrop,
+  .industry-rings-behind,
+  .industry-mark-behind {
     display: none;
   }
 
-  .frosted-backdrop-mobile {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    /* Three independent, non-repeating instances of the same mark — one per
-       stacked card. Positions are percentages of the wrapper's own height,
-       so as long as the three cards are roughly similar height (true for
-       this content) each mark lands near the middle of its card. Left/right
-       alternates so the three don't line up in a mechanical column, the same
-       idea the ambient .brand-watermark uses elsewhere on the page. */
-    background-image:
-      url("/logo/taoohan-mark.png"),
-      url("/logo/taoohan-mark.png"),
-      url("/logo/taoohan-mark.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
-    background-size: 8rem auto, 8rem auto, 8rem auto;
-    background-position:
-      82% 16%,
-      14% 50%,
-      78% 84%;
-    opacity: 0.16;
-  }
+  /* The small tiled mark (three copies of taoohan-mark.png, one per
+     stacked card) is switched off too — at this width it reads as small
+     dark watermark logos crowding the gaps between cards rather than as
+     texture. Stays `display: none` (its default above) on mobile; the
+     one large centered logo behind Why Taoohan (.why-taoohan-backdrop) is
+     a separate, unrelated element and is unaffected by this rule. */
 }
 
 /* ==========================================================================
@@ -416,6 +402,60 @@
 }
 
 /* ==========================================================================
+   INDUSTRY GROUP LOGO-BEHIND-CONTENT — "Industries We Serve" cards ONLY
+   ==========================================================================
+   Two distinct backdrops so the two 8-card groups do not share one image:
+
+     .industry-rings-behind  Facilities → Administration. Circular two-ring
+                             mark (taoohan-mark.png), a centred disc.
+
+     .industry-mark-behind   Construction → Retail. Wide wordmark,
+                             spanning the grid's own width (first card's
+                             left edge to last card's right edge).
+
+   Both sit BEHIND the group as a sibling of its <ul> (same reasoning as
+   .industry-glow — backdrop-filter only picks up what renders behind an
+   element's own box, never its own descendants). Each box is shaped to
+   the SAME aspect ratio as its source artwork, so `background-size:
+   contain` fills edge to edge with nothing cropped or squashed. */
+
+.industry-mark-behind {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  translate: 0 -50%;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  aspect-ratio: 956 / 173;
+  background-image: url("/logo/taoohan-wordmark.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  /* Slightly quieter than the circular mark: letterforms are denser
+     than two rings, and at full grid width they would otherwise compete
+     with the card titles in the gaps. */
+  opacity: 0.38;
+}
+
+.industry-rings-behind {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 0;
+  pointer-events: none;
+  width: min(92%, 48rem);
+  aspect-ratio: 949 / 506;
+  background-image: url("/logo/taoohan-mark.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  opacity: 0.5;
+}
+
+/* ==========================================================================
    BRAND WATERMARK
    ==========================================================================
    The brand mark sitting behind section content, so the brand is present
@@ -461,6 +501,23 @@ section:nth-of-type(4n + 1) .brand-watermark {
   rotate: -8deg;
 }
 
+/* The home page's Why Taoohan section keeps its card treatment clean; the
+   edge watermark is distracting beside the feature grid. */
+section.home-why-section .brand-watermark {
+  display: none;
+}
+
+/* Keep the Services card grid free of the separate right-edge watermark. */
+section.services-core-section .brand-watermark {
+  display: none;
+}
+
+/* Keep the Employers process cards free of the separate right-edge watermark. */
+section.employers-process-section .brand-watermark {
+  display: none;
+}
+
+
 /* The dark bands swallow the mark, so it needs more presence there. */
 section[data-tone="inverse"] .brand-watermark {
   opacity: 0.1;
@@ -473,9 +530,22 @@ section:has(.process-loop) .brand-watermark {
   display: none;
 }
 
+/* Industries We Serve already carries its own large mark behind each card
+   group — a second, smaller ambient mark at the section's edge reads as a
+   stray duplicate rather than texture. Suppress it here the same way. */
+section:has(.industry-mark-behind) .brand-watermark,
+section:has(.industry-rings-behind) .brand-watermark {
+  display: none;
+}
+
 /* Phones: smaller, and always pushed off an edge so it never sits squarely
    behind a narrow column of body text. */
 @media (max-width: 640px) {
+  /* Decorative edge marks add visual noise on compact layouts. */
+  section:nth-of-type(4n + 1) .brand-watermark {
+    display: none;
+  }
+
   .brand-watermark {
     width: 13rem;
     opacity: 0.05;

@@ -5,6 +5,7 @@ import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { FeatureIcon } from "@/components/sections/FeatureIcon";
+import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/industries"].label };
 
@@ -46,44 +47,71 @@ export default function IndustriesPage() {
             the 1600px `wide` cap used elsewhere for the header/hero) so each
             card gets more width — height is kept tight (original padding)
             rather than growing along with it. */}
-        <ul className="relative left-1/2 grid w-screen max-w-[1600px] -translate-x-1/2 items-stretch gap-6 px-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-          {content.industries.items.map((industry, index) => (
-            // A plain relative wrapper, not the card itself: the glow panel
-            // and the frosted card are SIBLINGS here. `backdrop-filter` only
-            // picks up what renders behind an element's own box, never its
-            // own descendants — so the glow has to sit next to the card, one
-            // level up, or the card would never blur it.
-            <li key={industry.key} className="relative">
-              <span
-                aria-hidden="true"
-                className="industry-glow"
-                style={
-                  {
-                    "--glow-delay": `${(index % 6) * -1.1}s`,
-                  } as React.CSSProperties
-                }
-              />
-              {/* Glassmorphism — from https://css.glass, converted to Tailwind
-                  arbitrary values verbatim (bg/border-radius/box-shadow/
-                  backdrop-blur/border), scoped to Industries cards only. */}
-              <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(206,203,203,1)] bg-[rgba(206,203,203,0.27)] p-7 shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-[14px] transition-transform duration-300 ease-out hover:-translate-y-1 sm:p-8">
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-brand-400 via-brand-600 to-brand-400 transition-transform duration-500 ease-out group-hover:scale-x-100"
-                />
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-200/70 bg-brand-50/80 text-brand-700 transition-colors duration-300 group-hover:border-brand-300 group-hover:bg-brand-100/80">
-                  <FeatureIcon itemKey={industry.key} className="h-6 w-6" />
-                </span>
-                <h2 className="mt-5 text-lg font-semibold leading-snug text-ink">
-                  {industry.name}
-                </h2>
-                <p className="mt-3 max-w-prose text-[0.95rem] leading-relaxed text-ink-muted">
-                  {industry.blurb}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {/* Split into two groups of 8 (two rows of four each at desktop).
+            First group (Facilities → Administration) uses the circular
+            two-ring mark; second group (Construction → Retail) uses the
+            wide wordmark so the two blocks do not share one backdrop.
+            Both boxes are shaped to their source artwork's own aspect
+            ratio so `background-size: contain` never crops or squashes
+            the PNG. */}
+        {(
+          [
+            { items: content.industries.items.slice(0, 8), className: "industry-rings-behind" },
+            { items: content.industries.items.slice(8, 16), className: "industry-mark-behind" },
+          ] as const
+        ).map((group, groupIndex) => (
+          <div
+            key={groupIndex}
+            className={cn(
+              "relative left-1/2 w-screen max-w-[1600px] -translate-x-1/2 px-5 sm:px-6 lg:px-8",
+              groupIndex > 0 && "mt-6",
+            )}
+          >
+            <span aria-hidden="true" className={group.className} />
+            <ul className="relative grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {group.items.map((industry, indexInGroup) => {
+                const index = groupIndex * 8 + indexInGroup;
+                return (
+                  // A plain relative wrapper, not the card itself: the glow
+                  // panel and the frosted card are SIBLINGS here.
+                  // `backdrop-filter` only picks up what renders behind an
+                  // element's own box, never its own descendants — so the
+                  // glow has to sit next to the card, one level up, or the
+                  // card would never blur it.
+                  <li key={industry.key} className="relative">
+                    <span
+                      aria-hidden="true"
+                      className="industry-glow"
+                      style={
+                        {
+                          "--glow-delay": `${(index % 6) * -1.1}s`,
+                        } as React.CSSProperties
+                      }
+                    />
+                    {/* Restored to the site's original glassmorphism
+                        treatment — the same one FeatureGrid's default
+                        (non-backdrop) cards use. */}
+                    <div className="group relative flex h-full flex-col overflow-hidden rounded-card border border-white/60 bg-white/55 p-7 shadow-[0_1px_2px_rgba(38,51,42,0.04),0_12px_28px_-16px_rgba(38,51,42,0.18)] backdrop-blur-md transition-all duration-300 ease-out supports-[backdrop-filter]:bg-white/40 supports-[backdrop-filter]:backdrop-blur-md hover:-translate-y-1 hover:border-brand-300/70 hover:bg-white/70 hover:shadow-[0_1px_2px_rgba(38,51,42,0.06),0_20px_40px_-16px_rgba(38,51,42,0.24)] sm:p-8">
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-brand-400 via-brand-600 to-brand-400 transition-transform duration-500 ease-out group-hover:scale-x-100"
+                      />
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-200/70 bg-brand-50/80 text-brand-700 transition-colors duration-300 group-hover:border-brand-300 group-hover:bg-brand-100/80">
+                        <FeatureIcon itemKey={industry.key} className="h-6 w-6" />
+                      </span>
+                      <h2 className="mt-5 text-lg font-semibold leading-snug text-ink">
+                        {industry.name}
+                      </h2>
+                      <p className="mt-3 max-w-prose text-[0.95rem] leading-relaxed text-ink-muted">
+                        {industry.blurb}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </Section>
 
       <Section tone="muted" spacing="tight">

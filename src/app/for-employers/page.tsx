@@ -29,7 +29,7 @@ export default function ForEmployersPage() {
         lead={content.employers.lead}
       />
 
-      <Section reveal={false}>
+      <Section reveal={false} className="employers-process-section">
         <div className="max-w-3xl">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {content.employers.processHeading}
