@@ -47,6 +47,7 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /blob-report/
+/tests/
 .claude/gate-state.json
 
 # Documents & Planning Files (non-source)
@@ -64,6 +65,8 @@ next-env.d.ts
 .claude/
 .qodo/
 .beads/
+CLAUDE.md
+RULES.md
 LOOP.md
 loop-*.md
 STATE.md
