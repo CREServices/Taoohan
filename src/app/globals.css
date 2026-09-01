@@ -272,13 +272,15 @@
   translate: -50% -50%;
   z-index: 0;
   pointer-events: none;
-  width: min(70%, 34rem);
+  /* Span the entire three-card row rather than sitting behind only the
+     middle card. */
+  width: 100%;
   aspect-ratio: 978 / 662;
-  background-image: url("/logo/logo-dark.png");
+  background-image: url("/logo/taoohan-dark.png");
   background-repeat: no-repeat;
   background-size: contain;
   background-position: center;
-  opacity: 0.5;
+  opacity: 0.38;
 }
 
 .frosted-backdrop-mobile {
@@ -507,6 +509,48 @@ section.home-why-section .brand-watermark {
   display: none;
 }
 
+/* Home second section: keep the client-requested PNG backdrop, but use the
+   stronger mockup-style glass so the three cards still read as cards. */
+section.home-why-section .home-why-grid {
+  border-radius: var(--radius-card);
+}
+
+section.home-why-section .home-why-grid [data-testid="feature-grid"] > li {
+  border-color: rgb(255 255 255 / 0.7);
+  background-color: rgb(255 255 255 / 0.45);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255),
+    inset 0 -2px 0 rgb(38 51 42 / 0.08),
+    inset 0 0 0 1px rgb(255 255 255 / 0.46),
+    0 -6px 18px -16px rgb(38 51 42 / 0.2),
+    0 4px 10px rgb(38 51 42 / 0.1),
+    0 22px 48px -14px rgb(38 51 42 / 0.34);
+  backdrop-filter: blur(16px);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  section.home-why-section .home-why-grid [data-testid="feature-grid"] > li {
+    background-color: rgb(255 255 255 / 0.3);
+  }
+}
+
+section.home-why-section .home-why-grid [data-testid="feature-grid"] > li:hover {
+  background-color: rgb(255 255 255 / 0.45);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255),
+    inset 0 -2px 0 rgb(38 51 42 / 0.1),
+    inset 0 0 0 1px rgb(255 255 255 / 0.52),
+    0 -7px 20px -16px rgb(38 51 42 / 0.24),
+    0 5px 12px rgb(38 51 42 / 0.12),
+    0 30px 60px -16px rgb(38 51 42 / 0.4);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  section.home-why-section .home-why-grid [data-testid="feature-grid"] > li:hover {
+    background-color: rgb(255 255 255 / 0.35);
+  }
+}
+
 /* Keep the Services card grid free of the separate right-edge watermark. */
 section.services-core-section .brand-watermark {
   display: none;
@@ -553,6 +597,78 @@ section:has(.industry-rings-behind) .brand-watermark {
 
   section:nth-of-type(4n + 1) .brand-watermark {
     right: -4rem;
+  }
+}
+
+/* ==========================================================================
+   TEMPORARY WORKFORCE CIRCLE MOCKUPS
+   ==========================================================================
+   Used only by /mockups/workforce-circles. These replace the current logo
+   artwork with two pale circles so the client can compare directions without
+   changing the live Workforce section.
+   ========================================================================== */
+
+.workforce-circle-mockup {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  padding: 0.25rem;
+}
+
+.workforce-circle {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  border: 4.5rem solid rgb(95 175 115 / 0.16);
+  background: rgb(204 227 195 / 0.12);
+  filter: blur(0.5px);
+}
+
+.workforce-circle-mockup--option-a .workforce-circle--one {
+  width: min(42vw, 32rem);
+  aspect-ratio: 1;
+  left: 28%;
+  top: 52%;
+  translate: -50% -50%;
+}
+
+.workforce-circle-mockup--option-a .workforce-circle--two {
+  width: min(44vw, 34rem);
+  aspect-ratio: 1;
+  left: 61%;
+  top: 50%;
+  translate: -50% -50%;
+  border-color: rgb(95 175 115 / 0.2);
+  background: rgb(243 248 241 / 0.24);
+}
+
+.workforce-circle-mockup--option-b .workforce-circle {
+  border-width: 5.5rem;
+  border-color: rgb(204 227 195 / 0.24);
+  background: transparent;
+}
+
+.workforce-circle-mockup--option-b .workforce-circle--one {
+  width: min(50vw, 40rem);
+  aspect-ratio: 1;
+  left: 36%;
+  top: 55%;
+  translate: -50% -50%;
+}
+
+.workforce-circle-mockup--option-b .workforce-circle--two {
+  width: min(52vw, 42rem);
+  aspect-ratio: 1;
+  left: 68%;
+  top: 52%;
+  translate: -50% -50%;
+  border-color: rgb(95 175 115 / 0.14);
+}
+
+@media (max-width: 640px) {
+  .workforce-circle {
+    display: none;
   }
 }
 /* Safety net. The boot script reads the motion preference once, at load. If the

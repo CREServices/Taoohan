@@ -69,7 +69,7 @@ export function FeatureGrid({
   glow,
 }: FeatureGridProps) {
   const cardClassName = cn(
-    "group relative flex h-full flex-col overflow-hidden rounded-card border p-7 sm:p-8",
+    "group relative z-10 flex h-full flex-col overflow-hidden rounded-card border p-7 sm:p-8",
     "transition-all duration-300 ease-out",
     "hover:-translate-y-1 hover:border-brand-300/70",
     // Over a backdrop or a glow the fill has to stay thin enough for what's
@@ -80,9 +80,9 @@ export function FeatureGrid({
       ? cn(
           "border-white/70 bg-white/45 supports-[backdrop-filter]:bg-white/30",
           "backdrop-blur-lg supports-[backdrop-filter]:backdrop-blur-lg",
-          "shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(38,51,42,0.04),0_16px_36px_-18px_rgba(38,51,42,0.22)]",
-          "hover:bg-white/55",
-          "hover:shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(38,51,42,0.06),0_26px_50px_-18px_rgba(38,51,42,0.3)]",
+          "shadow-[inset_0_2px_0_rgba(255,255,255,1),inset_0_-2px_0_rgba(38,51,42,0.08),inset_0_0_0_1px_rgba(255,255,255,0.46),0_-6px_18px_-16px_rgba(38,51,42,0.2),0_4px_10px_rgba(38,51,42,0.1),0_22px_48px_-14px_rgba(38,51,42,0.34)]",
+          "hover:bg-white/45 supports-[backdrop-filter]:hover:bg-white/35",
+          "hover:shadow-[inset_0_2px_0_rgba(255,255,255,1),inset_0_-2px_0_rgba(38,51,42,0.1),inset_0_0_0_1px_rgba(255,255,255,0.52),0_-7px_20px_-16px_rgba(38,51,42,0.24),0_5px_12px_rgba(38,51,42,0.12),0_30px_60px_-16px_rgba(38,51,42,0.4)]",
         )
       : cn(
           "border-white/60 bg-white/55 supports-[backdrop-filter]:bg-white/40",
@@ -183,7 +183,7 @@ export function FeatureGrid({
 
   if (backdrop === "full-image") {
     return (
-      <div className={cn("relative", className)}>
+      <div className={cn("relative overflow-hidden", className)}>
         {/* Decorative: the mark carries no meaning the heading does not
             already give, and exists so the cards in front of it have
             something to refract. One variant only — unlike `.frosted-backdrop`

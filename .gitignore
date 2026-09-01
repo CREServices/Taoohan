@@ -49,6 +49,33 @@ next-env.d.ts
 /blob-report/
 .claude/gate-state.json
 
+# Documents & Planning Files (non-source)
+*.pdf
+*.doc
+*.docx
+*.rtf
+*.odt
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+
+# AI/Internal Workflow Files
+.claude/
+.qodo/
+.beads/
+LOOP.md
+loop-*.md
+STATE.md
+
+# Planning & Asset Folders
+milestone2-deck/
+raw-assets/
+
+# Transcription & Internal Scripts
+*transcript*
+*coaching-script*
+
 # raw source media — original uncompressed uploads, never shipped or committed.
 # The compressed/served versions live under public/.
 /raw-assets/
