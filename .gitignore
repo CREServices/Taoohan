@@ -47,7 +47,6 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /blob-report/
-/tests/
 .claude/gate-state.json
 
 # Documents & Planning Files (non-source)
