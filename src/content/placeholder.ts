@@ -75,7 +75,6 @@ export const placeholderContent: SiteContent = {
         tabLabel: "Placeholder Job Seeker Tab",
         formHeading: "Placeholder Job Seeker Heading",
         submitLabel: "Placeholder Submit",
-        cvNote: placeholderBody,
         successNote: placeholderBody,
         reminderHeading: "Placeholder Reminder Heading",
         reminderBody: placeholderBody,

@@ -133,8 +133,6 @@ export type SiteContent = {
         /** The form's own title — "I'm Looking for Work". */
         formHeading: string;
         submitLabel: string;
-        /** Sits under the file picker, describing how the CV is sent. */
-        cvNote: string;
         successNote: string;
         /** Heading of the step that precedes the WhatsApp hand-off. */
         reminderHeading: string;

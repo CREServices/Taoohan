@@ -85,8 +85,6 @@ export const taoohanContent: SiteContent = {
         tabLabel: "Job Seekers",
         formHeading: "I'm Looking for Work",
         submitLabel: "Continue to WhatsApp",
-        cvNote:
-          "PDF, DOC or DOCX. You will attach this file yourself in the WhatsApp chat — we will remind you on the next step.",
         successNote:
           "WhatsApp should now be open with your details ready to send. Remember to attach your CV before sending.",
         reminderHeading: "Please attach your CV in WhatsApp",
