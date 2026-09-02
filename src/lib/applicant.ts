@@ -15,50 +15,9 @@ export type ApplicantDetails = {
   contactNumber: string;
   currentLocation: string;
   position: string;
-  /**
-   * Whether the applicant selected a CV/resume file.
-   *
-   * The FILE ITSELF never leaves the browser: a `wa.me` deep link cannot
-   * carry a binary attachment, and that is a real limit of the click-to-chat
-   * API. Picking a file only gates submission, and the flow then stops on a
-   * reminder step telling the applicant to attach it in the chat before
-   * sending. Nothing here claims the CV was sent automatically.
-   */
-  hasCv: boolean;
 };
 
 export type ValidationErrors = Partial<Record<keyof ApplicantDetails, string>>;
-
-/**
- * Accepted CV formats. The file is never uploaded, so this is guidance
- * rather than a security control — it stops someone attaching a screenshot
- * when a document is what the recruiter needs.
- */
-export const CV_ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"] as const;
-
-/**
- * Validates the chosen CV by name and size only, never touching File/Blob,
- * so this stays a pure function like the rest of the module.
- *
- * Returns an error message, or null when the file is acceptable.
- */
-export function validateCvFile(
-  file: { name: string; size: number } | null,
-): string | null {
-  if (!file) return "Please select your CV / resume before continuing.";
-
-  const name = file.name.toLowerCase();
-  const allowed = CV_ALLOWED_EXTENSIONS.some((ext) => name.endsWith(ext));
-  if (!allowed) {
-    return "Your CV must be a PDF, DOC or DOCX file.";
-  }
-
-  if (file.size <= 0) {
-    return "That file appears to be empty. Please choose another.";
-  }
-
-  return null;
-}
 
 /** Digits, spaces, and the usual phone punctuation. */
 const PHONE_ALLOWED = /^[+()\d\s-]+$/;
@@ -93,10 +52,6 @@ export function validateApplicant(details: ApplicantDetails): ValidationErrors {
 
   if (!details.position.trim()) {
     errors.position = "Please enter the position you are looking for.";
-  }
-
-  if (!details.hasCv) {
-    errors.hasCv = "Please select your CV / resume before continuing.";
   }
 
   return errors;

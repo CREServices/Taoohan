@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/Button";
 import {
   buildWhatsAppUrl,
   validateApplicant,
-  validateCvFile,
   type ApplicantDetails,
   type ValidationErrors,
 } from "@/lib/applicant";
@@ -26,20 +25,19 @@ import {
  * flows for the same two audiences.
  *
  *   JOB SEEKER — "I'm Looking for Work". ONE form: full name, contact /
- *   WhatsApp number, current location, position looking for, and a required
- *   CV/resume file picker. Validated, then handed straight to the official
- *   Taoohan WhatsApp with the message pre-filled — there is no email option
- *   on this side any more and no intermediate "choose a channel" step.
+ *   WhatsApp number, current location and position looking for. Validated,
+ *   then handed to the official Taoohan WhatsApp with the message
+ *   pre-filled — there is no email option on this side and no intermediate
+ *   "choose a channel" step.
  *
- *   CV HANDLING: `wa.me` deep links cannot carry a file attachment — that is
- *   a real limitation of the WhatsApp Web/click-to-chat API, not something
- *   this form works around. The file picker gates submission (you must
- *   select a CV before continuing) but the file never leaves the browser.
+ *   CV HANDLING: there is deliberately NO file picker here. `wa.me` deep
+ *   links cannot carry a file attachment — a real limitation of the
+ *   click-to-chat API — so a picker could only ever collect a file the form
+ *   is unable to send, which is worse than not asking at all.
  *
- *   So submitting does not jump straight to WhatsApp. It stops on a REMINDER
- *   step which says, plainly, that the CV has to be attached by hand in the
- *   chat — and only the "Continue" there opens WhatsApp. Nothing in this
- *   flow claims the CV was sent automatically.
+ *   Instead, submitting stops on a REMINDER step which says plainly that the
+ *   CV must be attached by hand in the chat, and only the "Continue" there
+ *   opens WhatsApp.
  *
  *   That step is also what makes the hand-off reliable: Continue is a real
  *   anchor, tapped directly by the applicant, so there is no scripted
@@ -63,7 +61,6 @@ const EMPTY_APPLICANT: ApplicantDetails = {
   contactNumber: "",
   currentLocation: "",
   position: "",
-  hasCv: false,
 };
 
 const EMPTY_EMPLOYER: EmployerRequest = {
@@ -108,7 +105,6 @@ export function PartnerModal({
   // Job seeker.
   const [applicant, setApplicant] = useState<ApplicantDetails>(EMPTY_APPLICANT);
   const [applicantErrors, setApplicantErrors] = useState<ValidationErrors>({});
-  const cvInputRef = useRef<HTMLInputElement>(null);
 
   // Employer.
   const [employer, setEmployer] = useState<EmployerRequest>(EMPTY_EMPLOYER);
@@ -188,7 +184,7 @@ export function PartnerModal({
   // ---- Job seeker ----------------------------------------------------------
 
   const applicantField =
-    (key: keyof Omit<ApplicantDetails, "hasCv">) =>
+    (key: keyof ApplicantDetails) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
       setApplicant((current) => ({ ...current, [key]: value }));
@@ -203,49 +199,19 @@ export function PartnerModal({
    * error message.
    */
   const numericField =
-    (key: keyof Omit<ApplicantDetails, "hasCv">) =>
+    (key: keyof ApplicantDetails) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value.replace(/\D/g, "");
       setApplicant((current) => ({ ...current, [key]: value }));
       setApplicantErrors((current) => ({ ...current, [key]: undefined }));
     };
 
-  /**
-   * The CV uploads the moment it is chosen, while the applicant is still
-   * filling in the rest of the form — NOT on submit.
-   *
-   * That timing is the whole reason the hand-off works on a phone. Submit
-   * can then open WhatsApp synchronously inside the tap, because the
-   * download URL is already known; opening it after an `await` puts it
-   * outside the user gesture, which is exactly what popup blockers stop.
-   */
-  const onCvChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    setApplicant((current) => ({ ...current, hasCv: Boolean(file) }));
-
-    // Surface a wrong file type straight away, rather than letting the
-    // applicant fill the rest of the form and fail at submit.
-    const fileError = file
-      ? validateCvFile({ name: file.name, size: file.size })
-      : null;
-    setApplicantErrors((current) => ({
-      ...current,
-      hasCv: fileError ?? undefined,
-    }));
-  };
-
   const submitJobSeeker = (event: React.FormEvent) => {
     event.preventDefault();
 
-    const file = cvInputRef.current?.files?.[0] ?? null;
     const found = validateApplicant(applicant);
-    const fileError = validateCvFile(
-      file ? { name: file.name, size: file.size } : null,
-    );
-    if (fileError) found.hasCv = fileError;
-
     setApplicantErrors(found);
-    if (Object.keys(found).length > 0 || !file) return;
+    if (Object.keys(found).length > 0) return;
 
     // A missing WhatsApp business number is the one condition that blocks the
     // hand-off entirely.
@@ -468,28 +434,6 @@ export function PartnerModal({
               {applicantErrors.position && (
                 <span className={errorText}>{applicantErrors.position}</span>
               )}
-            </label>
-
-            <label className="block">
-              <span className={label}>
-                CV / Resume Upload<span className={required}> *</span>
-              </span>
-              <input
-                ref={cvInputRef}
-                name="cv"
-                type="file"
-                accept=".pdf,.doc,.docx"
-                data-testid="field-cv"
-                onChange={onCvChange}
-                aria-invalid={Boolean(applicantErrors.hasCv)}
-                className={field}
-              />
-              {applicantErrors.hasCv && (
-                <span className={errorText}>{applicantErrors.hasCv}</span>
-              )}
-              <span className="mt-1 block text-xs text-ink-muted">
-                {copy.jobSeeker.cvNote}
-              </span>
             </label>
 
             {whatsappReady ? (
