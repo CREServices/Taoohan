@@ -77,6 +77,9 @@ export const placeholderContent: SiteContent = {
         submitLabel: "Placeholder Submit",
         cvNote: placeholderBody,
         successNote: placeholderBody,
+        cvUploading: "Placeholder CV uploading note.",
+        cvUploaded: "Placeholder CV uploaded note.",
+        cvFailed: "Placeholder CV upload failed note.",
       },
       employer: {
         tabLabel: "Placeholder Employer Tab",

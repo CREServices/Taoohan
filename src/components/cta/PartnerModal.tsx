@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import {
   buildWhatsAppUrl,
   validateApplicant,
+  validateCvFile,
   type ApplicantDetails,
   type ValidationErrors,
 } from "@/lib/applicant";
@@ -31,12 +32,20 @@ import {
  *   on this side any more and no intermediate "choose a channel" step.
  *
  *   CV HANDLING: `wa.me` deep links cannot carry a file attachment — that is
- *   a real limitation of the WhatsApp Web/click-to-chat API, not something
- *   this form works around. The file picker still gates submission (you must
- *   select a CV before continuing), the redirect to WhatsApp is never
- *   blocked by the attachment limitation, and the applicant is told plainly,
- *   both before and after sending, that they need to attach the CV manually
- *   in the chat. Nothing here claims the CV was uploaded automatically.
+ *   a real limitation of the WhatsApp Web/click-to-chat API. So the CV is
+ *   uploaded to blob storage (POST /api/submit-cv) and the pre-filled
+ *   WhatsApp message carries a DOWNLOAD LINK to it, right below the
+ *   applicant's details. The recruiter gets everything in the one chat.
+ *
+ *   The upload never blocks the hand-off: if storage is unreachable, the
+ *   message is still sent with the details and the CV line falls back to
+ *   "attached manually in this chat", with the modal saying so plainly. The
+ *   flow never claims a link that does not exist.
+ *
+ *   POPUP TIMING: the WhatsApp tab is opened synchronously inside the click,
+ *   before the upload starts, and navigated once the URL is known. Opening it
+ *   after an `await` would put it outside the user gesture, which is exactly
+ *   what popup blockers stop.
  *
  *   EMPLOYER — "I'm Hiring Staff". ONE form, submitted directly from the
  *   site (POST to /api/request-manpower, which emails the confirmed Taoohan
@@ -49,6 +58,8 @@ import {
 
 type Path = "job-seeker" | "employer";
 type SendStatus = "idle" | "sending" | "sent" | "error";
+/** Whether the CV made it to storage, and so whether WhatsApp got a link. */
+type CvStatus = "idle" | "uploading" | "uploaded" | "failed";
 
 const EMPTY_APPLICANT: ApplicantDetails = {
   fullName: "",
@@ -87,6 +98,23 @@ function openInNewTab(href: string) {
   anchor.click();
 }
 
+/**
+ * Claims a tab while the click is still on the stack, so the CV upload can
+ * finish before we know where to send it. `noopener` is deliberately NOT
+ * passed: it makes window.open return null, and the handle is the whole
+ * point. Returns null if a blocker refused it — callers fall back to
+ * openInNewTab.
+ */
+function openPendingTab(): Window | null {
+  const tab = window.open("", "_blank");
+  tab?.document?.write(
+    "<!doctype html><meta charset='utf-8'><title>Opening WhatsApp…</title>" +
+      "<body style=\"font:14px system-ui;padding:2rem;color:#444\">Uploading your CV and opening WhatsApp…</body>",
+  );
+  tab?.document?.close();
+  return tab;
+}
+
 export function PartnerModal({
   onClose,
   /** Which form is showing when the dialog opens — set by whichever button opened it. */
@@ -105,6 +133,8 @@ export function PartnerModal({
   const [applicant, setApplicant] = useState<ApplicantDetails>(EMPTY_APPLICANT);
   const [applicantErrors, setApplicantErrors] = useState<ValidationErrors>({});
   const cvInputRef = useRef<HTMLInputElement>(null);
+  /** Drives the note under the success message — see the "sent" step. */
+  const [cvStatus, setCvStatus] = useState<CvStatus>("idle");
 
   // Employer.
   const [employer, setEmployer] = useState<EmployerRequest>(EMPTY_EMPLOYER);
@@ -177,6 +207,7 @@ export function PartnerModal({
     setApplicantErrors({});
     setEmployerErrors({});
     setEmployerStatus("idle");
+    setCvStatus("idle");
   }, []);
 
   // ---- Job seeker ----------------------------------------------------------
@@ -205,24 +236,74 @@ export function PartnerModal({
     };
 
   const onCvChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const hasCv = (event.target.files?.length ?? 0) > 0;
-    setApplicant((current) => ({ ...current, hasCv }));
-    setApplicantErrors((current) => ({ ...current, hasCv: undefined }));
+    const file = event.target.files?.[0] ?? null;
+    setApplicant((current) => ({ ...current, hasCv: Boolean(file) }));
+    // Surface a wrong type or oversized file straight away, rather than
+    // letting the applicant fill the rest of the form and fail at submit.
+    const fileError = file
+      ? validateCvFile({ name: file.name, size: file.size })
+      : null;
+    setApplicantErrors((current) => ({
+      ...current,
+      hasCv: fileError ?? undefined,
+    }));
   };
 
   const submitJobSeeker = (event: React.FormEvent) => {
     event.preventDefault();
+
+    const file = cvInputRef.current?.files?.[0] ?? null;
     const found = validateApplicant(applicant);
+    const fileError = validateCvFile(
+      file ? { name: file.name, size: file.size } : null,
+    );
+    if (fileError) found.hasCv = fileError;
+
     setApplicantErrors(found);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0 || !file) return;
 
     // A missing WhatsApp business number is the one condition that can still
-    // block the redirect — everything else (including the CV limitation)
-    // must not.
-    const href = buildWhatsAppUrl(CONTACT.whatsapp, applicant);
-    if (!href) return;
-    openInNewTab(href);
+    // block the hand-off — everything else (a failed upload included) must not.
+    if (!buildWhatsAppUrl(CONTACT.whatsapp, applicant)) return;
+
+    // Claimed now, navigated below: see POPUP TIMING in the file header.
+    const tab = openPendingTab();
     setStep("sent");
+    setCvStatus("uploading");
+
+    void (async () => {
+      let cvUrl: string | null = null;
+
+      try {
+        const body = new FormData();
+        body.append("fullName", applicant.fullName);
+        body.append("contactNumber", applicant.contactNumber);
+        body.append("currentLocation", applicant.currentLocation);
+        body.append("position", applicant.position);
+        body.append("cv", file);
+
+        const response = await fetch("/api/submit-cv", { method: "POST", body });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && typeof data?.url === "string") {
+          cvUrl = data.url;
+        }
+      } catch {
+        // Swallowed on purpose — the fallback below is the handling.
+      }
+
+      setCvStatus(cvUrl ? "uploaded" : "failed");
+
+      // Built only now, so the message reflects whether the link really exists.
+      const href = buildWhatsAppUrl(CONTACT.whatsapp, applicant, cvUrl);
+      if (!href) return;
+
+      if (tab && !tab.closed) {
+        tab.location.href = href;
+      } else {
+        // The blocker refused the placeholder tab; try the anchor route.
+        openInNewTab(href);
+      }
+    })();
   };
 
   // ---- Employer --------------------------------------------------------------
@@ -702,6 +783,20 @@ export function PartnerModal({
             <p role="status" data-testid="partner-sent" className="text-sm font-medium text-brand-700">
               {path === "job-seeker" ? copy.jobSeeker.successNote : copy.employer.successNote}
             </p>
+
+            {/* The CV line states only what actually happened — a link that
+                reached storage, or a plain request to attach it manually. */}
+            {path === "job-seeker" && cvStatus !== "idle" && (
+              <p
+                data-testid="cv-status"
+                data-cv-status={cvStatus}
+                className="text-sm text-ink-muted"
+              >
+                {cvStatus === "uploading" && copy.jobSeeker.cvUploading}
+                {cvStatus === "uploaded" && copy.jobSeeker.cvUploaded}
+                {cvStatus === "failed" && copy.jobSeeker.cvFailed}
+              </p>
+            )}
             <Button type="button" size="md" variant="secondary" onClick={onClose}>
               Close
             </Button>

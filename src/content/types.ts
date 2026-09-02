@@ -133,9 +133,15 @@ export type SiteContent = {
         /** The form's own title — "I'm Looking for Work". */
         formHeading: string;
         submitLabel: string;
-        /** Shown once WhatsApp has opened, explaining manual CV attachment. */
+        /** Sits under the file picker, describing how the CV is sent. */
         cvNote: string;
         successNote: string;
+        /** CV upload in flight, shown beneath the success note. */
+        cvUploading: string;
+        /** Upload succeeded — WhatsApp carries a download link to the CV. */
+        cvUploaded: string;
+        /** Upload failed — the applicant must attach the CV in the chat. */
+        cvFailed: string;
       };
       employer: {
         /** Short audience toggle label at the top of the form — "Employers". */

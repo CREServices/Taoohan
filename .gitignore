@@ -43,6 +43,12 @@ next-env.d.ts
 # Allow the example env file to be committed
 !.env.local.example
 
+# CVs uploaded through the job-seeker form while running locally. Production
+# stores these in Vercel Blob instead; this directory only ever exists on a
+# developer's machine and must never be committed — it holds real applicant
+# documents.
+/.cv-uploads/
+
 # playwright + gate loop artifacts
 /test-results/
 /playwright-report/
@@ -106,3 +112,6 @@ raw-assets/
 /public/video/manpower.mp4
 /public/video/0901.mp4
 /public/video/[0-9]*.mp4
+
+# push tooling - internal workflow, never shipped
+/fresh-push.sh

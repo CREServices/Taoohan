@@ -86,9 +86,14 @@ export const taoohanContent: SiteContent = {
         formHeading: "I'm Looking for Work",
         submitLabel: "Continue to WhatsApp",
         cvNote:
-          "If your CV / resume could not be attached automatically, please attach it manually once WhatsApp opens.",
+          "PDF, DOC or DOCX, up to 10MB. Your CV is uploaded and a download link is added to your WhatsApp message automatically.",
         successNote:
-          "WhatsApp should now be open with your details ready to send. If your CV was not attached automatically, attach it manually in the chat before sending.",
+          "WhatsApp should now be open with your details ready to send.",
+        cvUploading: "Uploading your CV and preparing your message…",
+        cvUploaded:
+          "Your CV was uploaded and a download link has been added to the message. Just press send in WhatsApp.",
+        cvFailed:
+          "We could not upload your CV, so no link was added. Please attach the file manually in the chat before sending.",
       },
       employer: {
         tabLabel: "Employers",
