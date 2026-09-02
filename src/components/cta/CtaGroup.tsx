@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { CTA } from "@/config/site.config";
 import { Button } from "@/components/ui/Button";
-import { ApplyNowModal } from "@/components/flows/ApplyNowModal";
-import { RequestManpowerModal } from "@/components/flows/RequestManpowerModal";
+import { PartnerModal } from "./PartnerModal";
 import { cn } from "@/lib/cn";
 
 type CtaGroupProps = {
@@ -29,14 +28,17 @@ type CtaGroupProps = {
 /**
  * The two primary calls to action.
  *
- * - JOB SEEKER ("Submit Your CV") — Developer 1 scope. Milestone 3 wired this
- *   to the real two-step Apply Now flow (WhatsApp deep link or Nodemailer
- *   email). Nothing is stored; the modal hands off and forgets.
+ * Both open the SAME "Become Our Partner" dialog (`PartnerModal`) that the
+ * hero's own CTA uses — one interaction pattern for the two audiences,
+ * rather than a separate dialog per entry point. Which form is showing when
+ * the dialog opens is set by which button was clicked.
  *
- * - EMPLOYER ("Request Staffing & Manpower") — Developer 2 scope. Milestone 3
- *   replaced Developer 1's placeholder handler with the real two-step employer
- *   request flow (SMTP via /api/request-manpower, with a pre-filled mailto:
- *   fallback). Email only, by agreement — no WhatsApp on the employer side.
+ * - JOB SEEKER ("Submit Your CV") opens on "I'm Looking for Work" — full
+ *   name, contact/WhatsApp number, current location, position, CV upload —
+ *   then hands off to the official Taoohan WhatsApp.
+ * - EMPLOYER ("Request Staffing & Manpower") opens on "I'm Hiring Staff",
+ *   submitted directly from the site by email (POST /api/request-manpower) —
+ *   never a redirect to the employer's own email application.
  */
 export function CtaGroup({
   size = "md",
@@ -45,8 +47,7 @@ export function CtaGroup({
   only,
   compact = false,
 }: CtaGroupProps) {
-  const [applyOpen, setApplyOpen] = useState(false);
-  const [requestOpen, setRequestOpen] = useState(false);
+  const [open, setOpen] = useState<"job-seeker" | "employer" | null>(null);
 
   const showJobSeeker = only !== "employer";
   const showEmployer = only !== "jobSeeker";
@@ -79,7 +80,7 @@ export function CtaGroup({
             data-testid="cta-job-seeker"
             data-cta={CTA.jobSeeker.key}
             aria-haspopup="dialog"
-            onClick={() => setApplyOpen(true)}
+            onClick={() => setOpen("job-seeker")}
           >
             {compact ? CTA.jobSeeker.shortLabel : CTA.jobSeeker.label}
           </Button>
@@ -92,26 +93,15 @@ export function CtaGroup({
             data-testid="cta-employer"
             data-cta={CTA.employer.key}
             aria-haspopup="dialog"
-            onClick={() => setRequestOpen(true)}
+            onClick={() => setOpen("employer")}
           >
             {compact ? CTA.employer.shortLabel : CTA.employer.label}
           </Button>
         )}
       </div>
 
-      {/* The `cta-notice` live region that used to announce the employer
-          placeholder is gone: the button now opens a real dialog, which
-          announces itself. */}
-
-      {showJobSeeker && (
-        <ApplyNowModal open={applyOpen} onClose={() => setApplyOpen(false)} />
-      )}
-
-      {showEmployer && (
-        <RequestManpowerModal
-          open={requestOpen}
-          onClose={() => setRequestOpen(false)}
-        />
+      {open && (
+        <PartnerModal initialPath={open} onClose={() => setOpen(null)} />
       )}
     </div>
   );

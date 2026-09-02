@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { CONTACT, hasValue } from "@/config/contact";
+import { MANPOWER_CATEGORIES } from "@/config/manpower";
 import {
   validateEmployerRequest,
   buildEmployerSubject,
@@ -8,15 +10,23 @@ import {
 } from "@/lib/employer";
 
 /**
- * Employer staffing request handoff — Developer 2 scope, Milestone 3.
+ * Employer hiring-request handoff — "I'm Hiring Staff" form.
  *
- * Deliberately mirrors `api/apply/route.ts` (Developer 1's job-seeker route) so
- * there is one credential story on the site rather than two:
+ * The client's brief for this form is explicit: the employer must NEVER be
+ * redirected to their own email application (no `mailto:`). The website
+ * handles the submission directly, sending it on to the confirmed Taoohan
+ * business inbox via SMTP.
  *
- * ⚠️ CREDENTIALS: every SMTP value is read from environment variables at
- * request time. Nothing is hardcoded, nothing is committed. Fill them in
- * `.env.local` locally (git-ignored) and in Vercel → Settings → Environment
- * Variables for the deployment. See `.env.local.example`.
+ * ⚠️ CREDENTIALS: the SMTP LOGIN (host/port/user/pass/from) is read from
+ * environment variables at request time — nothing hardcoded, nothing
+ * committed. Fill them in `.env.local` locally (git-ignored) and in the
+ * deployment's environment variables. See `.env.local.example`.
+ *
+ * The RECIPIENT, however, is the already-confirmed business address in
+ * `src/config/contact.ts` (`CONTACT.email` — "General inquiries, employer
+ * requests, business questions"), not a separate invented env var. An
+ * operator can still override it with REQUEST_TO_EMAIL / APPLY_TO_EMAIL if
+ * the client ever wants staffing enquiries routed to a different inbox.
  *
  * ⚠️ PHASE 1 — NO STORAGE: this route emails the request onward and keeps
  * nothing. No database, no file writes, no logging of employer details.
@@ -25,7 +35,7 @@ import {
 // Nodemailer needs the Node runtime, not the edge runtime.
 export const runtime = "nodejs";
 
-/** SMTP transport keys — identical set to the job-seeker route. */
+/** SMTP transport keys — the "how to send" half of the configuration. */
 const REQUIRED_SMTP = [
   "SMTP_HOST",
   "SMTP_PORT",
@@ -35,22 +45,27 @@ const REQUIRED_SMTP = [
 ] as const;
 
 /**
- * Where employer requests land. `REQUEST_TO_EMAIL` lets the client route
- * staffing enquiries to a different inbox than job applications; when it is not
- * set, both land in `APPLY_TO_EMAIL`.
+ * Where employer requests land. An env override takes priority — for a
+ * client who wants staffing enquiries kept separate from job applications —
+ * but falls back to the already-confirmed `CONTACT.email`, so this route
+ * works out of the box once SMTP login credentials exist, with nothing
+ * invented for the recipient.
  */
 const recipient = (): string =>
   process.env.REQUEST_TO_EMAIL?.trim() ||
   process.env.APPLY_TO_EMAIL?.trim() ||
-  "";
+  (hasValue(CONTACT.email) ? CONTACT.email.trim() : "");
 
 const missingEnv = (): string[] => {
   const missing: string[] = REQUIRED_SMTP.filter(
     (key) => !process.env[key]?.trim(),
   );
-  if (!recipient()) missing.push("REQUEST_TO_EMAIL or APPLY_TO_EMAIL");
+  if (!recipient()) missing.push("REQUEST_TO_EMAIL, APPLY_TO_EMAIL, or CONTACT.email");
   return missing;
 };
+
+const categoryLabel = (key: string): string =>
+  MANPOWER_CATEGORIES.find((category) => category.key === key)?.label ?? key;
 
 export async function POST(request: Request) {
   // ---- 1. Parse ----------------------------------------------------------
@@ -69,15 +84,16 @@ export async function POST(request: Request) {
 
   const details: EmployerRequest = {
     companyName: asString(payload.companyName),
-    contactName: asString(payload.contactName),
-    email: asString(payload.email),
-    phone: asString(payload.phone),
-    categories: Array.isArray(payload.categories)
-      ? payload.categories.filter(
-          (item): item is string => typeof item === "string",
-        )
-      : [],
-    details: asString(payload.details),
+    contactPerson: asString(payload.contactPerson),
+    businessEmail: asString(payload.businessEmail),
+    contactNumber: asString(payload.contactNumber),
+    countryLocation: asString(payload.countryLocation),
+    category: asString(payload.category),
+    rolesNeeded: asString(payload.rolesNeeded),
+    numberOfWorkers: asString(payload.numberOfWorkers),
+    employmentType: asString(payload.employmentType),
+    expectedStartDate: asString(payload.expectedStartDate),
+    message: asString(payload.message),
   };
 
   // ---- 2. Validate (server-side, never trusting the client) --------------
@@ -95,7 +111,9 @@ export async function POST(request: Request) {
       {
         ok: false,
         error:
-          "Email requests are not configured yet. Please use the button to open this in your own email app, or contact us directly.",
+          "Hiring requests are not configured yet. Please contact us directly at " +
+          (hasValue(CONTACT.email) ? CONTACT.email : CONTACT.phone) +
+          ".",
         missingConfiguration: missing,
       },
       { status: 503 },
@@ -122,9 +140,9 @@ export async function POST(request: Request) {
       to: recipient(),
       // Replies go straight back to the employer rather than to the site's
       // no-reply sender.
-      replyTo: details.email.trim(),
+      replyTo: details.businessEmail.trim(),
       subject: buildEmployerSubject(details),
-      text: buildEmployerEmailBody(details),
+      text: buildEmployerEmailBody(details, categoryLabel(details.category)),
     });
   } catch {
     // Deliberately not logging the error object: it can contain credentials
@@ -133,7 +151,7 @@ export async function POST(request: Request) {
       {
         ok: false,
         error:
-          "We could not send your request just now. Please open it in your own email app instead.",
+          "We could not send your hiring request just now. Please try again shortly or contact us directly.",
       },
       { status: 502 },
     );

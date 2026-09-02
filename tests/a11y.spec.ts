@@ -57,34 +57,32 @@ for (const item of NAV) {
   });
 }
 
-test("the open Apply Now dialog is accessible", async ({ page }) => {
-  await page.goto("/for-job-seekers");
-  await page
-    .getByTestId("cta-job-seeker")
-    .filter({ visible: true })
-    .first()
-    .click();
-  await expect(page.getByTestId("apply-modal")).toBeVisible();
+test("the open Become Our Partner modal is accessible", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("cta-partner").first().click();
+  await expect(page.getByTestId("partner-modal")).toBeVisible();
 
-  // Step 1 — the form fields.
+  // Step 1 — the job-seeker form fields.
   let result = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa"])
     .analyze();
   expect(
     result.violations.map((violation) => `${violation.id}: ${violation.help}`),
-    "Apply Now step 1",
+    "Partner modal — job-seeker form",
   ).toEqual([]);
 
-  // Step 2 — the channel choice.
-  await page.getByLabel("Full name").fill("Maria Santos");
-  await page.getByLabel("Contact number").fill("09171234567");
-  await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page.getByTestId("apply-step-2")).toBeVisible();
+  // Step 2 — the WhatsApp reminder.
+  await page.getByTestId("field-full-name").fill("Maria Santos");
+  await page.getByTestId("field-contact-number").fill("971501234567");
+  await page.getByTestId("field-current-location").fill("Dubai, UAE");
+  await page.getByTestId("field-position").fill("Administrative Assistant");
+  await page.getByTestId("job-seeker-continue").click();
+  await expect(page.getByTestId("cv-reminder")).toBeVisible();
 
   result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(
     result.violations.map((violation) => `${violation.id}: ${violation.help}`),
-    "Apply Now step 2",
+    "Partner modal — CV reminder step",
   ).toEqual([]);
 });
 
@@ -100,4 +98,47 @@ test("the open mobile menu is accessible", async ({ page }, testInfo) => {
     .analyze();
 
   expect(violations.map((violation) => violation.id)).toEqual([]);
+});
+
+/**
+ * The "Become Our Partner" dialog carries the two Milestone 3 submission
+ * forms, so it is scanned in every state that renders inputs — the build guide
+ * requires "all fields labeled", and a dialog is exactly where labelling and
+ * focus order tend to rot unnoticed.
+ */
+test("the Become Our Partner dialog is accessible in every step", async ({
+  page,
+}) => {
+  const scan = async (label: string) => {
+    const { violations } = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa"])
+      .analyze();
+    expect(
+      violations.map((violation) => violation.id),
+      `accessibility violations with the dialog on ${label}`,
+    ).toEqual([]);
+  };
+
+  await page.goto("/");
+  await page.getByTestId("cta-partner").first().click();
+  await expect(page.getByTestId("partner-modal")).toBeVisible();
+  await scan("the path chooser");
+
+  // Job seeker: the single "I'm Looking for Work" form, then the same form
+  // showing its errors.
+  await page.getByTestId("partner-path-job-seeker").click();
+  await scan("the job-seeker form");
+  await page.getByTestId("job-seeker-continue").click();
+  await expect(page.getByText("Please enter your full name.")).toBeVisible();
+  await scan("the job-seeker validation errors");
+
+  // Employer: the "I'm Hiring Staff" form, including its select. The
+  // audience toggle swaps the job-seeker form for the employer one in
+  // place — there is no intermediate step to go back through.
+  await page.getByTestId("partner-path-employer").click();
+  await expect(page.getByTestId("field-category")).toBeVisible();
+  await scan("the employer request form");
+  await page.getByTestId("employer-submit").click();
+  await expect(page.getByText("Please enter your company name.")).toBeVisible();
+  await scan("the employer validation errors");
 });

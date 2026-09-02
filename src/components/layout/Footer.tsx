@@ -1,48 +1,30 @@
 import Link from "next/link";
 import { NAV } from "@/config/site.config";
-import { CONTACT, activeSocials, hasValue } from "@/config/contact";
+import { CONTACT, hasValue } from "@/config/contact";
 import { content } from "@/content";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "./Logo";
 
 /**
- * A contact line. When the client has not supplied the value yet we render a
- * clearly-marked empty slot instead of inventing data or leaving a blank row.
+ * Footer.
+ *
+ * MILESTONE 2: contact details are the client-confirmed values (no more
+ * empty slots for Email/Phone/WhatsApp). The Office column (Address, Hours)
+ * is REMOVED per the client's Developer Notes. Social links stay HIDDEN —
+ * TBD, no placeholder links.
  */
-function ContactRow({ label, value }: { label: string; value: string }) {
-  const filled = hasValue(value);
-  return (
-    <li className="text-sm">
-      <span className="block text-ink-inverse/60">{label}</span>
-      {filled ? (
-        <span className="text-ink-inverse">{value}</span>
-      ) : (
-        <span
-          data-empty-slot={label.toLowerCase()}
-          className="text-ink-inverse/70 italic"
-        >
-          Awaiting client details
-        </span>
-      )}
-    </li>
-  );
-}
-
 export function Footer() {
-  const socials = activeSocials();
-  const year = new Date().getFullYear();
-
   return (
     <footer className="bg-surface-inverse text-ink-inverse">
       <Container>
-        <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-16 lg:py-16">
+        <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-3 lg:gap-16 lg:py-16">
           {/* Brand + tagline */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2">
               <Logo variant="onDark" />
             </div>
             <p className="mt-3 max-w-xs text-sm text-ink-inverse/70">
-              {content.brand.tagline}
+              {content.footer.tagline}
             </p>
           </div>
 
@@ -64,39 +46,46 @@ export function Footer() {
             </ul>
           </nav>
 
-          {/* Contact — every value is currently an empty slot */}
+          {/* Contact — client-confirmed details */}
           <div>
             <h2 className="text-sm font-semibold">{content.labels.footerContact}</h2>
             <ul className="mt-4 space-y-3">
-              <ContactRow label="Email" value={CONTACT.email} />
-              <ContactRow label="Phone" value={CONTACT.phone} />
-              <ContactRow label="WhatsApp" value={CONTACT.whatsapp} />
+              <li className="text-sm">
+                <span className="block text-ink-inverse/60">Email</span>
+                {hasValue(CONTACT.email) ? (
+                  <span className="text-ink-inverse">{CONTACT.email}</span>
+                ) : (
+                  <span data-empty-slot="email" className="italic text-ink-inverse/70">
+                    Awaiting client details
+                  </span>
+                )}
+              </li>
+              <li className="text-sm">
+                <span className="block text-ink-inverse/60">Phone</span>
+                <span className="text-ink-inverse">{CONTACT.phone}</span>
+              </li>
+              <li className="text-sm">
+                <span className="block text-ink-inverse/60">WhatsApp</span>
+                {hasValue(CONTACT.whatsapp) ? (
+                  <span className="text-ink-inverse">{CONTACT.whatsapp}</span>
+                ) : (
+                  <span data-empty-slot="whatsapp" className="italic text-ink-inverse/70">
+                    Awaiting client details
+                  </span>
+                )}
+              </li>
             </ul>
-          </div>
-
-          {/* Office */}
-          <div>
-            <h2 className="text-sm font-semibold">{content.labels.footerOffice}</h2>
-            <ul className="mt-4 space-y-3">
-              <ContactRow label="Address" value={CONTACT.address} />
-              <ContactRow label="Hours" value={CONTACT.hours} />
-            </ul>
-            {socials.length > 0 && (
-              <ul className="mt-4 flex gap-4">
-                {socials.map((social) => (
-                  <li key={social.key}>
-                    <a
-                      href={social.href}
-                      className="text-sm text-ink-inverse/70 transition-colors hover:text-ink-inverse"
-                    >
-                      {social.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+            {/*
+              Social Media — HIDDEN. Client: TBD, do not create placeholder
+              links. Re-enable once SOCIALS in src/config/contact.ts has
+              real entries.
+            */}
           </div>
         </div>
+
+        {/*
+          Office (Address, Hours) — REMOVED per the client's Developer Notes.
+        */}
 
         {/* Disclaimer + copyright */}
         <div className="border-t border-ink-inverse/15 py-6">
@@ -107,7 +96,10 @@ export function Footer() {
             {content.disclaimer}
           </p>
           <p className="mt-3 text-xs text-ink-inverse/50">
-            © {year} {content.brand.name}. All rights reserved.
+            © {content.copyright.year} {content.copyright.holder}
+          </p>
+          <p className="mt-1 text-xs text-ink-inverse/50">
+            {content.copyright.developedBy}
           </p>
         </div>
       </Container>

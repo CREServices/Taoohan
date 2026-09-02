@@ -6,37 +6,45 @@
    Every colour used anywhere in the UI resolves back to a token below. No
    component hardcodes a hex value or a stock Tailwind colour like `bg-blue-600`.
 
-   ✅ MILESTONE 2: the brand colour is now LOCKED to the client's choice —
-   "Green (fresh, growth, approachable)" from the intake form. Swapping to any
-   other brand colour later means editing only the eleven `--color-brand-*`
-   lines below; no component, page or test changes.
+   ✅ MILESTONE 2: brand palette LOCKED to the client-approved hex values
+   (minimalist, sweetgreen.com-inspired — not dark/corporate green). Swapping
+   the palette later means editing only the tokens below; no component, page
+   or test changes.
+     Primary    Fresh Sage Green   #5FAF73
+     Secondary  Soft Light Mint    #CCE3C3
+     Accent/BG  Very Light Frost   #F3F8F1
+     Typography Dark Forest Slate  #26332A
+     Base       Pure White         #FFFFFF
    ========================================================================== */
 
 @theme {
-  /* --- BRAND RAMP: approved green (fresh, growth, approachable) ---------- */
-  --color-brand-50: oklch(0.979 0.021 166.113);
-  --color-brand-100: oklch(0.95 0.052 163.051);
-  --color-brand-200: oklch(0.905 0.093 164.15);
-  --color-brand-300: oklch(0.845 0.143 164.978);
-  --color-brand-400: oklch(0.765 0.177 163.223);
-  --color-brand-500: oklch(0.696 0.17 162.48);
-  --color-brand-600: oklch(0.596 0.145 163.225);
-  --color-brand-700: oklch(0.508 0.118 165.612);
-  --color-brand-800: oklch(0.432 0.095 166.913);
-  --color-brand-900: oklch(0.378 0.077 168.94);
-  --color-brand-950: oklch(0.262 0.051 172.552);
+  /* --- BRAND RAMP: client-approved sage green ----------------------------
+     brand-500 is the exact approved Fresh Sage Green (#5FAF73). The rest of
+     the ramp is generated around it so existing hover/active states
+     (brand-600/700/800/900) keep working without touching every component. */
+  --color-brand-50: #F3F8F1;
+  --color-brand-100: #E4F0E0;
+  --color-brand-200: #CCE3C3;
+  --color-brand-300: #A9D3A0;
+  --color-brand-400: #82C084;
+  --color-brand-500: #5FAF73;
+  --color-brand-600: #4C9761;
+  --color-brand-700: #3D7A4F;
+  --color-brand-800: #335F41;
+  --color-brand-900: #2B4A36;
+  --color-brand-950: #1A2E20;
 
-  /* --- SURFACES & INK ---------------------------------------------------
-     Neutrals carry a slight green cast so the dark bands sit with the brand
-     rather than looking like a separate grey theme. Every pairing used in the
-     UI is contrast-checked by the automated accessibility gate. */
-  --color-surface: oklch(1 0 0);
-  --color-surface-muted: oklch(0.982 0.006 165);
-  --color-surface-inverse: oklch(0.235 0.033 170);
-  --color-ink: oklch(0.216 0.024 170);
-  --color-ink-muted: oklch(0.451 0.021 170);
-  --color-ink-inverse: oklch(1 0 0);
-  --color-hairline: oklch(0.921 0.012 165);
+  /* --- SURFACES & INK -----------------------------------------------------
+     Base white + Very Light Frost carry most surfaces; Dark Forest Slate
+     carries all text (never pure black). Every pairing used in the UI is
+     contrast-checked by the automated accessibility gate. */
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F3F8F1;
+  --color-surface-inverse: #26332A;
+  --color-ink: #26332A;
+  --color-ink-muted: #5B6B5F;
+  --color-ink-inverse: #FFFFFF;
+  --color-hairline: #CCE3C3;
 
   /* --- TYPOGRAPHY ------------------------------------------------------- */
   /* Poppins is loaded via next/font in layout.tsx and exposed as --font-poppins. */
@@ -189,9 +197,303 @@
 }
 
 /* ==========================================================================
+   PARTNER MODAL — reminder step
+   ==========================================================================
+   The step that replaces the form before the WhatsApp hand-off. The panel
+   swaps in place, so without an entrance the change reads as a jump-cut.
+   Children are staggered a little behind the heading — enough to feel
+   deliberate, short enough that nobody waits on it.
+
+   The global prefers-reduced-motion reset in @layer base already flattens
+   these to 0.01ms, so there is no separate opt-out to maintain here. */
+.partner-reminder > * {
+  animation: reminder-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.partner-reminder > *:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.partner-reminder > *:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+@keyframes reminder-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   FROSTED CARD BACKDROP
+   ==========================================================================
+   A large, faint brand mark sitting BEHIND a frosted card grid.
+
+   This is what makes the glassmorphism visible. `backdrop-filter` blurs
+   whatever is behind an element, so over a flat white page there is nothing
+   to blur and a frosted card renders as a plain white box. Putting a mark
+   underneath gives the glass something to refract: where a card covers it
+   the mark goes soft and pale, and in the gaps between cards it stays crisp.
+   That difference along each card edge IS the effect.
+
+   Two variants, because the grid's own layout changes shape at the same
+   breakpoint the cards do:
+
+     .frosted-backdrop        ROW layout (sm: and up, 2-3 cards side by side).
+                               One wide mark centred across the row, so
+                               every card has part of it underneath.
+
+     .frosted-backdrop-mobile STACKED layout (below sm, cards full-width in a
+                               single column). A single centred mark would
+                               only reach whichever card sits in the middle of
+                               the stack, leaving the first and last with
+                               nothing behind them — so this tiles the small
+                               brand mark down the FULL height of the stack
+                               instead, guaranteeing every card crosses it.
+
+   Both use the brand's own artwork rather than invented decoration, and both
+   are decorative only: rendered aria-hidden, carrying no meaning the
+   headings do not already give. */
+
+.frosted-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* The brand's own logo mark (two overlapping circles) rather than
+     invented decoration. Capped to a fixed max width so the FULL mark is
+     always visible, never cropped at the row's edges, while still wide
+     enough to span across all three cards in a row. */
+  background-image: url("/logo/logo-dark.png");
+  background-repeat: no-repeat;
+  background-size: min(85%, 38rem) auto;
+  background-position: center;
+  /* Strong enough to read clearly between the cards — the effect depends on
+     the uncovered part being legible — while staying far below the body copy
+     that sits in front of it. The accessibility gate checks contrast on every
+     page, so this cannot drift into unreadable territory unnoticed. */
+  opacity: 0.5;
+}
+
+/* ==========================================================================
+   WHY TAOOHAN BACKDROP — home page, "Why Taoohan" section ONLY
+   ==========================================================================
+   A dedicated, standalone treatment — NOT shared with `.frosted-backdrop`
+   above — because that shared class is sized (`inset: 0`, width-driven
+   background-size) to fit whichever grid happens to use it, and a single
+   ROW of cards is shorter than the logo mark renders at a width wide enough
+   to span three cards. The result was the mark's own box confining it to
+   the row's height and cropping its top and bottom — a background-image
+   never paints outside its own element's box, no matter how the image
+   itself is sized.
+
+   The fix here is to give the box the SAME aspect ratio as the source
+   artwork (logo-dark.png, 978×662) rather than sizing it off the grid. A
+   box shaped like the image can never crop it — `background-size: contain`
+   inside a same-ratio box always fills edge to edge with nothing left over
+   and nothing cut off, so the two overlapping circles always render whole. */
+
+.why-taoohan-backdrop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 0;
+  pointer-events: none;
+  /* Span the entire three-card row rather than sitting behind only the
+     middle card. */
+  width: 100%;
+  aspect-ratio: 978 / 662;
+  background-image: url("/logo/taoohan-dark.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  opacity: 0.38;
+}
+
+.frosted-backdrop-mobile {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  /* The row wordmark only ever covers the middle of a stack of full-width
+     cards, so it is switched off entirely below the breakpoint rather than
+     just resized. */
+  .frosted-backdrop,
+  .frosted-backdrop-mobile,
+  .why-taoohan-backdrop,
+  .industry-rings-behind,
+  .industry-mark-behind {
+    display: none;
+  }
+
+  /* The small tiled mark (three copies of taoohan-mark.png, one per
+     stacked card) is switched off too — at this width it reads as small
+     dark watermark logos crowding the gaps between cards rather than as
+     texture. Stays `display: none` (its default above) on mobile; the
+     one large centered logo behind Why Taoohan (.why-taoohan-backdrop) is
+     a separate, unrelated element and is unaffected by this rule. */
+}
+
+/* ==========================================================================
+   CARD GLOW
+   ==========================================================================
+   A soft brand-green PANEL sized to match the card it sits behind, giving
+   the glass something to refract. Shared by any multi-row card grid — the
+   numbered Core Services grid (6 cards) and similar `glow`-enabled
+   FeatureGrid instances use it.
+
+   This is deliberately a DIFFERENT technique from the home page's value-prop
+   backdrop (one wordmark shared across a single 3-card row): a grid with more
+   than one row reflows its row/column split at every breakpoint, so a single
+   shared background behind the whole grid would constantly fall out of
+   alignment with whichever cards actually sit on it. Scoping the panel to
+   EACH card instead means it holds up at any row/column arrangement for
+   free — mobile needs no separate handling.
+
+   Also why this can't just be a heavier white background: a card can only
+   refract light through backdrop-filter if something visibly different sits
+   behind it. Two flat whites, however heavy the shadow between them, remain
+   two flat whites — that reads as elevation, not glass.
+
+   Kept deliberately restrained: low opacity and inset from the card's own
+   edges so it never pokes out past the glass — the same "colour behind
+   frosted glass" read used by .industry-glow, just in the brand green rather
+   than a neutral grey. */
+
+.card-glow {
+  position: absolute;
+  inset: 1.5rem;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: calc(var(--radius-card) - 0.4rem);
+  background: linear-gradient(135deg, var(--color-brand-300), var(--color-brand-400));
+  opacity: 0.28;
+  filter: blur(6px);
+}
+
+@media (max-width: 640px) {
+  /* Cards are much narrower on phones; the same inset would leave too thin
+     a sliver of panel showing, so it pulls in less on small screens. */
+  .card-glow {
+    inset: 1rem;
+    opacity: 0.24;
+  }
+}
+
+/* ==========================================================================
+   INDUSTRY PANEL GLOW — "Industries We Serve" cards ONLY
+   ==========================================================================
+   Unlike .card-glow above (one small corner accent, shared brand green,
+   reused by other grids), this is scoped ONLY to the industries grid and is
+   a full colour PANEL sized to match the card it sits behind, not a small
+   corner blob. The frosted card is a sibling layered on top via z-index, so
+   its backdrop-filter can actually pick up this panel's colour and refract
+   it — the same reason .card-glow has to be a sibling, not a descendant.
+
+   Every card uses the SAME flat neutral panel colour (#f6f6f6) rather than a
+   per-industry hue — a deliberately uniform, understated backing rather than
+   a colour-coded one.
+
+   Kept deliberately soft: low opacity, heavily blurred, and inset slightly
+   from the card's own edges so it never pokes out past the glass — a clean
+   "colour behind frosted glass" read rather than a coloured border. */
+
+.industry-glow {
+  position: absolute;
+  inset: 1.5rem;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: calc(var(--radius-card) - 0.4rem);
+  background: #e4e4e4;
+  opacity: 0.58;
+  filter: blur(6px);
+  animation: industry-glow-breathe 7s ease-in-out infinite;
+  animation-delay: var(--glow-delay, 0s);
+}
+
+@keyframes industry-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .industry-glow {
+    animation: none;
+    opacity: 0.56;
+  }
+}
+
+/* ==========================================================================
+   INDUSTRY GROUP LOGO-BEHIND-CONTENT — "Industries We Serve" cards ONLY
+   ==========================================================================
+   Two distinct backdrops so the two 8-card groups do not share one image:
+
+     .industry-rings-behind  Facilities → Administration. Circular two-ring
+                             mark (taoohan-mark.png), a centred disc.
+
+     .industry-mark-behind   Construction → Retail. Wide wordmark,
+                             spanning the grid's own width (first card's
+                             left edge to last card's right edge).
+
+   Both sit BEHIND the group as a sibling of its <ul> (same reasoning as
+   .industry-glow — backdrop-filter only picks up what renders behind an
+   element's own box, never its own descendants). Each box is shaped to
+   the SAME aspect ratio as its source artwork, so `background-size:
+   contain` fills edge to edge with nothing cropped or squashed. */
+
+.industry-mark-behind {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  translate: 0 -50%;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  aspect-ratio: 956 / 173;
+  background-image: url("/logo/taoohan-wordmark.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  /* Slightly quieter than the circular mark: letterforms are denser
+     than two rings, and at full grid width they would otherwise compete
+     with the card titles in the gaps. */
+  opacity: 0.38;
+}
+
+.industry-rings-behind {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 0;
+  pointer-events: none;
+  width: min(92%, 48rem);
+  aspect-ratio: 949 / 506;
+  background-image: url("/logo/taoohan-mark.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  opacity: 0.5;
+}
+
+/* ==========================================================================
    BRAND WATERMARK
    ==========================================================================
-   The infinity mark sitting behind section content, so the brand is present
+   The brand mark sitting behind section content, so the brand is present
    down the page rather than only in the header and footer.
 
    Rendered by <Section>. Position, size and rotation vary by `:nth-of-type`,
@@ -213,15 +515,19 @@
   z-index: 0;
   pointer-events: none;
   width: 22rem;
-  aspect-ratio: 884 / 516;
-  background-image: url("/logo/infinity.png");
+  aspect-ratio: 949 / 506;
+  background-image: url("/logo/taoohan-mark.png");
   background-repeat: no-repeat;
   background-size: contain;
-  opacity: 0.09;
+  /* Tuned for the CURRENT mark. The previous artwork was a thin outline
+     infinity and carried 0.09 comfortably; this one is two solid rings, so
+     the same value read as a grey blob competing with body copy. */
+  opacity: 0.06;
 }
 
-/* Odd sections only, sides alternating. Because the marks sit vertically
-   centred rather than at the edges, two can never crowd a section boundary. */
+/* Odd sections only, and RIGHT side only — the left-side placement was
+   pulled entirely: on narrow screens the mark had nowhere to sit but
+   overlapping body copy, which read as clutter rather than texture. */
 section:nth-of-type(4n + 1) .brand-watermark {
   display: block;
   top: 50%;
@@ -230,89 +536,174 @@ section:nth-of-type(4n + 1) .brand-watermark {
   rotate: -8deg;
 }
 
-section:nth-of-type(4n + 3) .brand-watermark {
-  display: block;
-  top: 50%;
-  left: -5rem;
-  translate: 0 -50%;
-  rotate: 7deg;
-  width: 18rem;
+/* The home page's Why Taoohan section keeps its card treatment clean; the
+   edge watermark is distracting beside the feature grid. */
+section.home-why-section .brand-watermark {
+  display: none;
 }
+
+/* Home second section: keep the client-requested PNG backdrop, but use the
+   stronger mockup-style glass so the three cards still read as cards. */
+section.home-why-section .home-why-grid {
+  border-radius: var(--radius-card);
+}
+
+section.home-why-section .home-why-grid [data-testid="feature-grid"] > li {
+  border-color: rgb(255 255 255 / 0.7);
+  background-color: rgb(255 255 255 / 0.45);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255),
+    inset 0 -2px 0 rgb(38 51 42 / 0.08),
+    inset 0 0 0 1px rgb(255 255 255 / 0.46),
+    0 -6px 18px -16px rgb(38 51 42 / 0.2),
+    0 4px 10px rgb(38 51 42 / 0.1),
+    0 22px 48px -14px rgb(38 51 42 / 0.34);
+  backdrop-filter: blur(16px);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  section.home-why-section .home-why-grid [data-testid="feature-grid"] > li {
+    background-color: rgb(255 255 255 / 0.3);
+  }
+}
+
+section.home-why-section .home-why-grid [data-testid="feature-grid"] > li:hover {
+  background-color: rgb(255 255 255 / 0.45);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255),
+    inset 0 -2px 0 rgb(38 51 42 / 0.1),
+    inset 0 0 0 1px rgb(255 255 255 / 0.52),
+    0 -7px 20px -16px rgb(38 51 42 / 0.24),
+    0 5px 12px rgb(38 51 42 / 0.12),
+    0 30px 60px -16px rgb(38 51 42 / 0.4);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  section.home-why-section .home-why-grid [data-testid="feature-grid"] > li:hover {
+    background-color: rgb(255 255 255 / 0.35);
+  }
+}
+
+/* Keep the Services card grid free of the separate right-edge watermark. */
+section.services-core-section .brand-watermark {
+  display: none;
+}
+
+/* Keep the Employers process cards free of the separate right-edge watermark. */
+section.employers-process-section .brand-watermark {
+  display: none;
+}
+
 
 /* The dark bands swallow the mark, so it needs more presence there. */
 section[data-tone="inverse"] .brand-watermark {
-  opacity: 0.14;
+  opacity: 0.1;
+}
+
+/* The process loop is itself drawn on the mark's shape, so a watermark of the
+   same mark behind it read as a smudge rather than as texture. Suppress it on
+   whichever section carries the loop instead of hand-tuning nth-of-type. */
+section:has(.process-loop) .brand-watermark {
+  display: none;
+}
+
+/* Industries We Serve already carries its own large mark behind each card
+   group — a second, smaller ambient mark at the section's edge reads as a
+   stray duplicate rather than texture. Suppress it here the same way. */
+section:has(.industry-mark-behind) .brand-watermark,
+section:has(.industry-rings-behind) .brand-watermark {
+  display: none;
 }
 
 /* Phones: smaller, and always pushed off an edge so it never sits squarely
    behind a narrow column of body text. */
 @media (max-width: 640px) {
+  /* Decorative edge marks add visual noise on compact layouts. */
+  section:nth-of-type(4n + 1) .brand-watermark {
+    display: none;
+  }
+
   .brand-watermark {
     width: 13rem;
-    opacity: 0.07;
+    opacity: 0.05;
   }
 
   section:nth-of-type(4n + 1) .brand-watermark {
     right: -4rem;
   }
-
-  section:nth-of-type(4n + 3) .brand-watermark {
-    left: -4rem;
-    width: 12rem;
-  }
 }
 
-/* --- Overlay entrances -----------------------------------------------------
-   Used by the mobile menu panel and both dialogs. These are applied through
-   Tailwind's `motion-safe:` variant, so a visitor who has asked for reduced
-   motion gets the overlay instantly rather than a shortened animation. */
+/* ==========================================================================
+   TEMPORARY WORKFORCE CIRCLE MOCKUPS
+   ==========================================================================
+   Used only by /mockups/workforce-circles. These replace the current logo
+   artwork with two pale circles so the client can compare directions without
+   changing the live Workforce section.
+   ========================================================================== */
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.workforce-circle-mockup {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  padding: 0.25rem;
 }
 
-/* The menu panel is anchored to the header, so it grows downward out of it. */
-@keyframes slide-down {
-  from {
-    opacity: 0;
-    transform: translateY(-0.75rem);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.workforce-circle {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  border: 4.5rem solid rgb(95 175 115 / 0.16);
+  background: rgb(204 227 195 / 0.12);
+  filter: blur(0.5px);
 }
 
-/* Dialogs rise and settle — a touch of scale reads as "arriving", without the
-   bounce that makes repeated use feel slow. */
-@keyframes dialog-in {
-  from {
-    opacity: 0;
-    transform: translateY(1rem) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.workforce-circle-mockup--option-a .workforce-circle--one {
+  width: min(42vw, 32rem);
+  aspect-ratio: 1;
+  left: 28%;
+  top: 52%;
+  translate: -50% -50%;
 }
 
-/* On phones both dialogs are bottom sheets, so they come up from the edge. */
-@keyframes sheet-up {
-  from {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.workforce-circle-mockup--option-a .workforce-circle--two {
+  width: min(44vw, 34rem);
+  aspect-ratio: 1;
+  left: 61%;
+  top: 50%;
+  translate: -50% -50%;
+  border-color: rgb(95 175 115 / 0.2);
+  background: rgb(243 248 241 / 0.24);
 }
 
+.workforce-circle-mockup--option-b .workforce-circle {
+  border-width: 5.5rem;
+  border-color: rgb(204 227 195 / 0.24);
+  background: transparent;
+}
+
+.workforce-circle-mockup--option-b .workforce-circle--one {
+  width: min(50vw, 40rem);
+  aspect-ratio: 1;
+  left: 36%;
+  top: 55%;
+  translate: -50% -50%;
+}
+
+.workforce-circle-mockup--option-b .workforce-circle--two {
+  width: min(52vw, 42rem);
+  aspect-ratio: 1;
+  left: 68%;
+  top: 52%;
+  translate: -50% -50%;
+  border-color: rgb(95 175 115 / 0.14);
+}
+
+@media (max-width: 640px) {
+  .workforce-circle {
+    display: none;
+  }
+}
 /* Safety net. The boot script reads the motion preference once, at load. If the
    visitor changes that OS setting mid-session, this guarantees nothing is left
    stranded at opacity 0 waiting for a scroll that will no longer animate. */
@@ -323,5 +714,321 @@ section[data-tone="inverse"] .brand-watermark {
     transform: none !important;
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   RECRUITMENT PROCESS LOOP — About page, first section, right side only.
+   ==========================================================================
+   Self-contained: nothing here is reused elsewhere, and nothing outside this
+   block affects it. The component drives its own IntersectionObserver (see
+   RecruitmentProcessLoop.tsx) rather than the site-wide [data-reveal] system,
+   because it needs a repeating sequence — ribbon fill → marker → legend row,
+   six times over — instead of a single fade/rise.
+
+   Colours are all --color-* tokens, including inside the SVG, so the brand
+   swap the brief requires still reaches the artwork. */
+
+.process-loop {
+  width: 100%;
+}
+
+.process-loop-scene {
+  position: relative;
+  transform-style: preserve-3d;
+  opacity: 0;
+  transition:
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 600ms ease;
+}
+
+.process-loop-scene--active {
+  opacity: 1;
+}
+
+.process-loop-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ALL PAINTING FOR THE SVG LIVES HERE, not on the elements. The gate treats
+   any mention of a --color-brand-* token outside this file as a second
+   definition of the brand colour and cannot tell a var() reference from a
+   redefinition, so the component ships geometry and state classes only. That
+   is also why the ribbon gradient's stops are styled rather than given
+   stop-color attributes. */
+
+.process-loop-bloom,
+.process-loop-track,
+.process-loop-fill,
+.process-loop-core,
+.process-loop-spark {
+  fill: none;
+  stroke-linecap: round;
+}
+
+/* Deepens left to right, so the ribbon gains weight as the sequence moves
+   from sourcing toward placement. */
+.process-loop-ribbon-from {
+  stop-color: var(--color-brand-300);
+}
+
+.process-loop-ribbon-via {
+  stop-color: var(--color-brand-500);
+}
+
+.process-loop-ribbon-to {
+  stop-color: var(--color-brand-700);
+}
+
+/* The three ribbon layers that grow together — bloom beneath, gradient body,
+   and a thin core highlight that keeps the band from reading flat. Sharing
+   one transition keeps them locked to the same edge as the fill advances.
+
+   It is stroke-DASHARRAY that animates, not the offset. The ribbon starts at
+   step one's position rather than at the path's `M` point, so the drawn run
+   is a two-value pattern pinned there by a constant negative offset, and what
+   grows is the length of that run. Sliding a fixed-length dash — the offset
+   approach — can only ever start a fill at the path's own start point. */
+.process-loop-bloom,
+.process-loop-fill,
+.process-loop-core {
+  transition: stroke-dasharray 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.process-loop-bloom {
+  stroke: var(--color-brand-400);
+  stroke-width: 22;
+  opacity: 0.45;
+}
+
+/* The untravelled ribbon. */
+.process-loop-track {
+  stroke: var(--color-brand-100);
+  stroke-width: 17;
+}
+
+/* The travelled ribbon, grown to the active step. */
+.process-loop-fill {
+  stroke: url(#process-loop-ribbon);
+  stroke-width: 17;
+}
+
+/* A thin core highlight down the middle, which is what stops the ribbon
+   reading as a flat band. */
+.process-loop-core {
+  stroke: var(--color-surface);
+  stroke-width: 3.5;
+  stroke-opacity: 0.35;
+}
+
+/* The travelling light. It does NOT circle continuously: it glides to the
+   active step, rests there for the whole hold, then moves on when the step
+   does. Same easing and duration as the ribbon fill, so on the first lap the
+   two arrive together and the light reads as the head of the fill. */
+.process-loop-spark {
+  stroke: var(--color-brand-200);
+  stroke-width: 6;
+  opacity: 0.9;
+  transition: stroke-dashoffset 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Step markers ------------------------------------------------------- */
+
+.process-loop-node {
+  opacity: 0;
+  transform: scale(0.5);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 400ms ease var(--node-delay, 0ms),
+    transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1) var(--node-delay, 0ms);
+}
+
+.process-loop-node--in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.process-loop-node--current {
+  transform: scale(1.12);
+}
+
+.process-loop-node-disc {
+  fill: var(--color-surface);
+  stroke: var(--color-brand-200);
+  stroke-width: 2;
+  transition:
+    fill 400ms ease,
+    stroke 400ms ease;
+}
+
+.process-loop-node--done .process-loop-node-disc {
+  fill: var(--color-brand-600);
+  stroke: var(--color-brand-600);
+}
+
+.process-loop-node--current .process-loop-node-disc {
+  fill: var(--color-brand-700);
+  stroke: var(--color-brand-700);
+}
+
+.process-loop-node-label {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--color-ink-muted);
+  transition: fill 400ms ease;
+}
+
+.process-loop-node--done .process-loop-node-label {
+  fill: var(--color-ink-inverse);
+}
+
+.process-loop-node-halo {
+  fill: none;
+  stroke: var(--color-brand-500);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: process-loop-halo 2s ease-out infinite;
+}
+
+@keyframes process-loop-halo {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+/* --- Legend ------------------------------------------------------------- */
+
+/* A real <ol>, not decoration: it carries the same step titles the markers
+   are numbered for, so nothing shown visually is withheld from assistive
+   tech. The drawing above it is aria-hidden. */
+.process-loop-legend {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem 1.25rem;
+  list-style: none;
+  padding: 0;
+}
+
+@media (min-width: 30rem) {
+  .process-loop-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Column-major: the steps run DOWN the first column and then down the
+       second (1,2,3 | 4,5,6), which is how a numbered list is read when it is
+       split in two. The default row-major flow would deal them out across the
+       rows instead (1,2 | 3,4 | 5,6), putting step 2 beside step 1 and step 4
+       below it — an order nobody reads. `--legend-rows` comes from the
+       component so the split stays even for lists other than six. */
+    grid-template-rows: repeat(var(--legend-rows, 3), auto);
+    grid-auto-flow: column;
+  }
+}
+
+.process-loop-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.process-loop-legend-number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 999px;
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    background-color 400ms ease,
+    color 400ms ease;
+}
+
+.process-loop-legend-item--current .process-loop-legend-number {
+  background: var(--color-brand-700);
+  color: var(--color-ink-inverse);
+}
+
+.process-loop-legend-title {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--color-ink-muted);
+  transition: color 400ms ease;
+}
+
+.process-loop-legend-item--current .process-loop-legend-title {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/* Reduced motion: the sequence never runs, so this block has to paint the
+   finished state outright — a fully travelled ribbon with every marker
+   complete — rather than leaving the component frozen on step one. The
+   !important overrides are deliberate: the dash offsets are inline styles
+   driven by the active step, and this is what outranks them. Nothing here
+   may leave an element stranded at opacity 0. */
+@media (prefers-reduced-motion: reduce) {
+  .process-loop-scene {
+    opacity: 1;
+    transform: none !important;
+    transition: none;
+  }
+
+  /* The finished state, painted outright rather than animated to: the
+     ribbon reads fully travelled instead of frozen on step one. `none`
+     removes the dash pattern entirely, which is what "the whole loop is
+     drawn" means under the dash-length model above. */
+  .process-loop-scene--active .process-loop-bloom,
+  .process-loop-scene--active .process-loop-fill,
+  .process-loop-scene--active .process-loop-core {
+    stroke-dasharray: none !important;
+  }
+
+  .process-loop-node--in .process-loop-node-disc {
+    fill: var(--color-brand-600);
+    stroke: var(--color-brand-600);
+  }
+
+  .process-loop-node--in .process-loop-node-label {
+    fill: var(--color-ink-inverse);
+  }
+
+  .process-loop-bloom,
+  .process-loop-fill,
+  .process-loop-core,
+  .process-loop-node,
+  .process-loop-node-disc,
+  .process-loop-node-label,
+  .process-loop-legend-number,
+  .process-loop-legend-title {
+    transition: none;
+  }
+
+  .process-loop-node {
+    opacity: 1;
+    transform: none;
+  }
+
+  .process-loop-spark {
+    display: none;
+  }
+
+  .process-loop-node-halo {
+    animation: none;
+    opacity: 0;
   }
 }

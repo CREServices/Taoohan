@@ -171,12 +171,12 @@ export function Header() {
       {/*
         Mobile / tablet panel — same NAV array, same order.
 
-        PORTALLED TO <body>, for the reason ApplyNowModal documents: this
-        header sets `backdrop-blur`, and a backdrop-filter creates a containing
-        block for fixed descendants. Rendered inside the header, the overlay's
-        `fixed` positioning resolved against the 64px header box instead of the
-        viewport — so `top-16 bottom-0` computed to a height of exactly 0, and
-        the backdrop was invisible and untappable.
+        PORTALLED TO <body>: this header sets `backdrop-blur`, and a
+        backdrop-filter creates a containing block for fixed descendants.
+        Rendered inside the header, the overlay's `fixed` positioning
+        resolved against the 64px header box instead of the viewport — so
+        `top-16 bottom-0` computed to a height of exactly 0, and the backdrop
+        was invisible and untappable.
 
         `top` matches the header height at each breakpoint (h-16 / lg:h-20).
       */}

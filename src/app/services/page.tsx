@@ -17,27 +17,31 @@ export default function ServicesPage() {
         lead={content.services.lead}
       />
 
-      {/* The full list renders from the content layer — the card count follows
-          the data, so adding or removing a service needs no layout change. */}
-      <Section>
-        <FeatureGrid items={content.services.items} />
+      <Section reveal={false} className="services-core-section">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-700">
+          {content.services.coreHeading}
+        </h2>
+        <FeatureGrid items={content.services.items} numbered backdrop className="mt-6" />
       </Section>
 
-      <Section tone="muted">
+      <Section tone="muted" reveal={false}>
         <div className="max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            {content.employers.heading}
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">
+            {content.services.processHeading}
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+            {content.services.processTitle}
           </h2>
           <p className="mt-4 text-base leading-relaxed text-ink-muted">
-            {content.employers.body}
+            {content.services.processLead}
           </p>
         </div>
-        <FeatureGrid items={content.employers.steps} numbered className="mt-10" />
+        <FeatureGrid items={content.services.steps} numbered className="mt-10" />
       </Section>
 
       <CtaBand
-        heading={content.services.heading}
-        body={content.services.lead}
+        heading={content.services.ctaHeading}
+        body={content.services.ctaBody}
       />
     </>
   );

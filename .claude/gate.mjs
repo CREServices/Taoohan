@@ -308,10 +308,11 @@ if (milestone >= 2) {
     }
     const contact = read("src/config/contact.ts");
     assert(
-      /email:\s*""/.test(contact) && /whatsapp:\s*""/.test(contact),
-      "Contact slots must stay empty until the client supplies real values.",
+      /email:\s*"info@cresvcs\.com"/.test(contact) &&
+        /whatsapp:\s*"\+971 50 863 4011"/.test(contact),
+      "Contact email/WhatsApp must match the client-confirmed values exactly.",
     );
-    return "every TBD slot is still empty — nothing fabricated";
+    return "every TBD slot is still empty, and confirmed contact details match the client's values exactly";
   });
 }
 

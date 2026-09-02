@@ -1,38 +1,47 @@
 import type { Metadata } from "next";
 import { content } from "@/content";
 import { NAV_BY_HREF } from "@/config/site.config";
-import { CONTACT, SOCIALS, hasValue } from "@/config/contact";
+import { mailtoHref, whatsappHref, hasValue } from "@/config/contact";
 import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { CtaBand } from "@/components/sections/CtaBand";
-import { CtaGroup } from "@/components/cta/CtaGroup";
-import { EmptySlot } from "@/components/ui/EmptySlot";
+import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/contact"].label };
 
-/** One row of contact detail, or a marked empty slot when still blocked. */
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border-b border-hairline py-4 last:border-0">
-      <dt className="text-sm text-ink-muted">{label}</dt>
-      <dd className="mt-1 text-base">
-        {hasValue(value) ? (
-          value
-        ) : (
-          <span
-            data-empty-slot={label.toLowerCase()}
-            className="italic text-ink-muted"
-          >
-            Awaiting client details
-          </span>
-        )}
-      </dd>
-    </div>
-  );
-}
-
+/**
+ * Contact Us page.
+ *
+ * MILESTONE 2: Address and Office Hours sections are REMOVED per the
+ * client's Developer Notes ("Remove the Address section for now" / "Remove
+ * the Office Hours section for now"). Social Media stays HIDDEN — links are
+ * TBD and the client explicitly asked that no placeholder links be created.
+ */
 export default function ContactPage() {
-  const socialsPending = SOCIALS.every((social) => !hasValue(social.href));
+  const channels = [
+    {
+      key: "email",
+      label: "Email",
+      value: content.contact.channels.email.label,
+      note: content.contact.channels.email.note,
+      href: mailtoHref(),
+    },
+    {
+      key: "phone",
+      label: "Phone",
+      value: content.contact.channels.phone.label,
+      note: content.contact.channels.phone.note,
+      href: `tel:${content.contact.channels.phone.label.replace(/\s+/g, "")}`,
+    },
+    {
+      key: "whatsapp",
+      label: "WhatsApp",
+      value: content.contact.channels.whatsapp.label,
+      note: content.contact.channels.whatsapp.note,
+      href: whatsappHref(),
+      cta: content.contact.channels.whatsapp.ctaLabel,
+    },
+  ];
 
   return (
     <>
@@ -43,42 +52,66 @@ export default function ContactPage() {
       />
 
       <Section>
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-7">
-            <p className="text-base leading-relaxed text-ink-muted">
-              {content.contact.body}
-            </p>
+        <div className="max-w-3xl">
+          <p className="text-base leading-relaxed text-ink-muted">
+            {content.contact.body}
+          </p>
+        </div>
 
-            {/* Every value below is an empty typed slot — client marked all
-                contact fields "TBD" on the intake form. Nothing invented. */}
-            <dl className="mt-8">
-              <DetailRow label="Email" value={CONTACT.email} />
-              <DetailRow label="Phone" value={CONTACT.phone} />
-              <DetailRow label="WhatsApp" value={CONTACT.whatsapp} />
-              <DetailRow label="Address" value={CONTACT.address} />
-              <DetailRow label="Office hours" value={CONTACT.hours} />
-            </dl>
-
-            {socialsPending && (
-              <EmptySlot
-                className="mt-8"
-                label="social media links"
-                note="Not yet supplied by the client."
-              />
-            )}
-          </div>
-
-          <aside className="lg:col-span-5">
-            <div className="rounded-card border border-hairline bg-surface-muted p-8">
-              <h2 className="text-xl font-semibold tracking-tight">
-                {content.home.intro.heading}
+        <ul className="mt-10 grid gap-5 sm:grid-cols-3">
+          {channels.map((channel) => (
+            <li key={channel.key} className="rounded-card border border-hairline p-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-700">
+                {channel.label}
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-ink-muted">
-                {content.home.intro.lead}
+              {channel.href && hasValue(channel.value) ? (
+                <a
+                  href={channel.href}
+                  className="mt-2 block text-lg font-semibold text-ink hover:text-brand-700"
+                >
+                  {channel.value}
+                </a>
+              ) : (
+                <span
+                  data-empty-slot={channel.label.toLowerCase()}
+                  className="mt-2 block text-sm italic text-ink-muted"
+                >
+                  Awaiting client details
+                </span>
+              )}
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                {channel.note}
               </p>
-              <CtaGroup className="mt-6" size="lg" />
-            </div>
-          </aside>
+              {channel.cta && channel.href && (
+                <Button href={channel.href} size="md" className="mt-4">
+                  {channel.cta}
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {/*
+          Social Media — HIDDEN. Client: "Social media links are TBD ...
+          please do not create or add placeholder social media links."
+          Re-enable once the client supplies confirmed accounts/links.
+        */}
+
+        {/*
+          Address and Office Hours — REMOVED per the client's Developer
+          Notes ("Remove the Address section for now" / "Remove the Office
+          Hours section for now").
+        */}
+      </Section>
+
+      <Section tone="muted" spacing="tight">
+        <div className="max-w-2xl">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {content.contact.secondaryHeading}
+          </h2>
+          <p className="mt-3 text-base leading-relaxed text-ink-muted">
+            {content.contact.secondaryBody}
+          </p>
         </div>
       </Section>
 

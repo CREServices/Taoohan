@@ -1,13 +1,9 @@
-import type {
-  AnchorHTMLAttributes,
-  ButtonHTMLAttributes,
-  ReactNode,
-} from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "secondary" | "inverse" | "quiet";
-type Size = "md" | "lg";
+type Size = "md" | "lg" | "xl";
 
 const base =
   "inline-flex items-center justify-center gap-2 rounded-pill font-medium " +
@@ -17,7 +13,12 @@ const base =
   "text-center whitespace-normal sm:whitespace-nowrap";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand-900 text-ink-inverse hover:bg-brand-800",
+  // brand-700, not brand-500/600: white text needs a 4.5:1 contrast ratio
+  // (WCAG AA, normal text) against its background. brand-500 (2.2:1) and
+  // brand-600 (3.6:1) both fail axe's color-contrast check; brand-700
+  // (5.1:1) is the darkest-but-still-sage step that passes, confirmed by
+  // the a11y suite in tests/a11y.spec.ts.
+  primary: "bg-brand-700 text-ink-inverse hover:bg-brand-800",
   secondary: "border border-hairline bg-surface text-ink hover:bg-surface-muted",
   inverse: "bg-surface text-ink hover:bg-surface-muted",
   quiet: "text-ink hover:bg-surface-muted",
@@ -26,6 +27,10 @@ const variants: Record<Variant, string> = {
 const sizes: Record<Size, string> = {
   md: "px-5 py-2.5 text-sm",
   lg: "px-6 py-3 text-base",
+  // A step up from `lg` — for the home hero CTA, to stay proportionate as
+  // the panel around it grows. Not used anywhere else, so this never
+  // changes any other "lg" button on the site.
+  xl: "px-7 py-3.5 text-base",
 };
 
 type CommonProps = {

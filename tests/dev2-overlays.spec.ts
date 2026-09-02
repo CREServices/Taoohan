@@ -139,10 +139,10 @@ test.describe("nested overlays keep the page locked", () => {
       .getByTestId("mobile-menu")
       .getByTestId("cta-job-seeker")
       .click();
-    await expect(page.getByTestId("apply-modal")).toBeVisible();
+    await expect(page.getByTestId("partner-modal")).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(page.getByTestId("apply-modal")).toHaveCount(0);
+    await expect(page.getByTestId("partner-modal")).toHaveCount(0);
 
     // Menu still open, so the page must still be locked AND unmoved.
     await expect(page.getByTestId("mobile-menu")).toBeVisible();
@@ -169,11 +169,11 @@ test.describe("dialogs do not move the page", () => {
     const before = await page.evaluate(() => window.scrollY);
 
     await cta.click();
-    await expect(page.getByTestId("apply-modal")).toBeVisible();
+    await expect(page.getByTestId("partner-modal")).toBeVisible();
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
 
     await page.keyboard.press("Escape");
-    await expect(page.getByTestId("apply-modal")).toHaveCount(0);
+    await expect(page.getByTestId("partner-modal")).toHaveCount(0);
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 });

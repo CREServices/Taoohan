@@ -33,25 +33,50 @@ export const NAV: readonly NavItem[] = [
 ] as const;
 
 /**
- * Call-to-action wording. Client-confirmed button names.
- * `href` is intentionally absent — Milestone 1 wires these to placeholder
- * handlers only. Real routing (WhatsApp deep link / Nodemailer) is Milestone 3.
+ * Call-to-action wording. Client-confirmed button names, from the approved
+ * "Taoohan Website Content & Copy" document.
+ * `href` is intentionally absent — real routing (WhatsApp deep link /
+ * Nodemailer) is Milestone 3. The home hero's single CTA (`heroPartner`)
+ * opens the Milestone 2 lead-capture modal, built in this milestone.
  */
 export const CTA = {
-  /** Job-seeker CTA — Developer 1 scope, real flow lands in Milestone 3. */
+  /** Job-seeker CTA — used on Services, For Job Seekers, Home CTA band, etc. */
   jobSeeker: {
     key: "apply-now",
     label: "Submit Your CV",
     /** Short label used where horizontal space is tight (mobile header). */
     shortLabel: "Submit CV",
   },
-  /** Employer CTA — flow logic is Developer 2 scope. Button placement only. */
+  /** Employer CTA — used on Services, For Employers, Industries, Home CTA band, etc. */
   employer: {
     key: "request-manpower",
     label: "Request Staffing & Manpower",
     shortLabel: "Request Staff",
   },
+  /**
+   * Home hero — the client asked for a SINGLE button here instead of the two
+   * above ("so it doesn't feel redundant"). Opens the lead-capture modal,
+   * which offers both the job-alerts signup and the employer hiring-request
+   * paths in one place.
+   */
+  heroPartner: {
+    key: "become-partner",
+    label: "Become Our Partner",
+  },
 } as const;
+
+/**
+ * Appended to the client-approved manpower categories in the employer form's
+ * selector, always last.
+ *
+ * Without it that selector is a closed set of sixteen industries, and an
+ * employer whose requirement falls outside them has no way to finish the
+ * form. It lives here rather than in the content layer because it is NOT an
+ * approved industry and must never be mistaken for one on the Industries
+ * page; the free-text box under the selector is where the real requirement
+ * gets described.
+ */
+export const OTHER_CATEGORY = "Others";
 
 export const SITE = {
   /** Legal/company name. */

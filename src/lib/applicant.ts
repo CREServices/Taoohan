@@ -1,17 +1,20 @@
 /**
- * Shared applicant-detail rules for the Apply Now flow.
+ * Shared job-seeker rules for the "I'm Looking for Work" flow.
  *
- * Kept as pure functions with no React and no Node imports so the SAME logic
- * validates on the client (instant feedback in the modal) and on the server
- * (the API route can never be bypassed by a crafted request).
+ * Kept as pure functions with no React and no Node imports so the same logic
+ * can validate on the client (instant feedback in the modal) and, if ever
+ * needed, on a server route — a crafted request can never bypass it.
  *
- * ⚠️ PHASE 1: applicant details are validated and handed off to WhatsApp or
- * email. They are NEVER written to a database or a file — that is Phase 2.
+ * ⚠️ PHASE 1: the job-seeker flow is WhatsApp only — it never sends email.
+ * Details are validated and handed to WhatsApp as a pre-filled message.
+ * Nothing is uploaded, stored, or written to a database.
  */
 
 export type ApplicantDetails = {
   fullName: string;
   contactNumber: string;
+  currentLocation: string;
+  position: string;
 };
 
 export type ValidationErrors = Partial<Record<keyof ApplicantDetails, string>>;
@@ -34,13 +37,21 @@ export function validateApplicant(details: ApplicantDetails): ValidationErrors {
 
   const contactNumber = details.contactNumber.trim();
   if (!contactNumber) {
-    errors.contactNumber = "Please enter your contact number.";
+    errors.contactNumber = "Please enter your contact / WhatsApp number.";
   } else if (!PHONE_ALLOWED.test(contactNumber)) {
     errors.contactNumber = "Use digits only, with optional +, spaces or dashes.";
   } else if (digitCount(contactNumber) < 7) {
     errors.contactNumber = "That contact number looks too short.";
   } else if (digitCount(contactNumber) > 15) {
     errors.contactNumber = "That contact number looks too long.";
+  }
+
+  if (!details.currentLocation.trim()) {
+    errors.currentLocation = "Please enter your current location.";
+  }
+
+  if (!details.position.trim()) {
+    errors.position = "Please enter the position you are looking for.";
   }
 
   return errors;
@@ -50,24 +61,37 @@ export const isValidApplicant = (details: ApplicantDetails): boolean =>
   Object.keys(validateApplicant(details)).length === 0;
 
 /**
- * The message pre-filled into WhatsApp. Kept here (not in the component) so the
- * exact wording is testable.
+ * The message pre-filled into WhatsApp. Kept here (not in the component) so
+ * the exact wording is testable. Structure is fixed — do not reorder or
+ * reword the lines.
+ *
+ * The CV line is a standing note to the recruiter that the document is
+ * coming as an attachment in the same chat — the applicant is reminded to
+ * add it on the step before this message is handed over.
  */
 export function buildWhatsAppMessage(details: ApplicantDetails): string {
   return [
-    "Hello Taoohan, I would like to apply for a job.",
-    `Name: ${details.fullName.trim()}`,
-    `Contact number: ${details.contactNumber.trim()}`,
-    "I will attach my CV in this chat.",
+    "Hello Taoohan Recruitment Team,",
+    "",
+    "I would like to apply for a job opportunity.",
+    "",
+    `Full Name: ${details.fullName.trim()}`,
+    `Contact Number: ${details.contactNumber.trim()}`,
+    `Current Location: ${details.currentLocation.trim()}`,
+    `Position Looking For: ${details.position.trim()}`,
+    "",
+    "CV / Resume: attached in this chat.",
+    "",
+    "Thank you.",
   ].join("\n");
 }
 
 /**
  * Builds the wa.me deep link.
  *
- * Returns `null` when no business WhatsApp number is configured — the client
- * has not supplied one yet, and a link to an empty number would silently fail.
- * Callers must handle null by telling the user the channel is unavailable.
+ * Returns `null` when no business WhatsApp number is configured — callers
+ * must handle null by telling the applicant the channel is unavailable
+ * rather than building a link to an empty number.
  */
 export function buildWhatsAppUrl(
   businessNumber: string,

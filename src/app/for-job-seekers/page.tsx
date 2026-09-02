@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
 import { content } from "@/content";
 import { NAV_BY_HREF } from "@/config/site.config";
+import { CONTACT, hasValue, whatsappHref } from "@/config/contact";
 import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { FeatureGrid } from "@/components/sections/FeatureGrid";
 import { CtaBand } from "@/components/sections/CtaBand";
-import { CtaGroup } from "@/components/cta/CtaGroup";
+import { RecruitmentProcessLoop } from "@/components/sections/RecruitmentProcessLoop";
+import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
   title: NAV_BY_HREF["/for-job-seekers"].label,
 };
 
-/**
- * Job-seeker page — Developer 1's core flow.
- *
- * ⚠️ MILESTONE 1: the "Submit Your CV" button here is a PLACEHOLDER. The real
- * two-step Apply Now modal (details → WhatsApp or Email via Nodemailer) is
- * built in Milestone 3. The instruction list below is already data-driven so
- * Milestone 3 only has to supply real strings.
- */
 export default function ForJobSeekersPage() {
+  const whatsappLink = whatsappHref("Hi, I'd like to submit my CV.");
+
   return (
     <>
       <PageHero
@@ -28,45 +24,114 @@ export default function ForJobSeekersPage() {
         lead={content.jobSeekers.lead}
       />
 
-      <Section>
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-7">
-            <p className="text-base leading-relaxed text-ink-muted">
-              {content.jobSeekers.body}
-            </p>
+      <Section containerSize="wide" reveal={false}>
+        <div className="max-w-3xl">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            {content.jobSeekers.journeyHeading}
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-ink-muted">
+            {content.jobSeekers.journeyLead}
+          </p>
+        </div>
+        {/*
+          The journey, twice over and deliberately so: the cards on the left
+          say what happens to a candidate, and the loop on the right shows the
+          recruitment process those steps run through. They are different
+          lists — four candidate-facing steps against the client's six
+          approved process steps — so neither restates the other.
+
+          The cards run TWO ACROSS, so the four of them are two rows rather
+          than four — a single stacked column made this one section taller
+          than the rest of the page put together.
+
+          UNEVEN split (3fr/2fr) inside the WIDE container, not the even half
+          the About page's loop uses: the card side needed the extra room —
+          two cards per row inside a plain half-width column left short body
+          copy wrapping over five-plus lines. Widening the whole section
+          (rather than just re-splitting a max-w-7xl one) is what lets the
+          loop side still render at a comfortable size instead of shrinking to
+          make room for the cards. `items-start`, not centered: the composition
+          reads as two aligned columns starting from the same top edge, not a
+          shorter block floating centred against a taller one.
+        */}
+        <div className="mt-10 grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-start lg:gap-16">
+          <div>
             <FeatureGrid
               items={content.jobSeekers.steps}
               numbered
               columns={2}
-              className="mt-10"
+              backdrop
             />
           </div>
+          <div>
+            {/*
+              `start="left"` — step one sits at the loop's leftmost point and
+              the sequence drops to the bottom of the ring before rising
+              through the crossing. The About page keeps the default centre
+              start; the two pages differ on purpose.
+            */}
+            <RecruitmentProcessLoop
+              steps={content.services.steps}
+              start="left"
+              className="mx-auto max-w-md lg:max-w-none"
+            />
+          </div>
+        </div>
+      </Section>
 
-          {/* How to apply — instructions come from the content layer. */}
+      <Section tone="muted">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-7">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-700">
+              {content.jobSeekers.applyHeading}
+            </h2>
+            <ol className="mt-6 space-y-6">
+              {content.jobSeekers.applySteps.map((step, index) => (
+                <li key={step.key} className="flex gap-4">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-brand-700 text-sm font-semibold text-ink-inverse">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h3 className="text-base font-semibold">{step.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+                      {step.body}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
           <aside className="lg:col-span-5">
-            <div className="rounded-card border border-hairline bg-surface-muted p-8 lg:sticky lg:top-28">
+            <div className="rounded-card border border-hairline bg-surface p-8 lg:sticky lg:top-28">
               <h2 className="text-xl font-semibold tracking-tight">
-                {content.labels.howToApply}
+                {content.jobSeekers.applySidebarHeading}
               </h2>
-              <ol className="mt-5 space-y-4">
-                {content.jobSeekers.applyInstructions.map((instruction, index) => (
-                  <li key={index} className="flex gap-3 text-sm leading-relaxed">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-brand-900 text-xs font-semibold text-ink-inverse">
-                      {index + 1}
-                    </span>
-                    <span className="text-ink-muted">{instruction}</span>
-                  </li>
-                ))}
-              </ol>
-              <CtaGroup className="mt-7" size="lg" only="jobSeeker" />
+              {hasValue(CONTACT.whatsapp) ? (
+                <>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+                    Send your CV directly to our official WhatsApp number: {CONTACT.whatsapp}.
+                  </p>
+                  <Button href={whatsappLink!} size="lg" className="mt-6 w-full">
+                    Message Us on WhatsApp
+                  </Button>
+                </>
+              ) : (
+                <p
+                  data-empty-slot="whatsapp"
+                  className="mt-3 text-sm italic text-ink-muted"
+                >
+                  Awaiting client details
+                </p>
+              )}
             </div>
           </aside>
         </div>
       </Section>
 
       <CtaBand
-        heading={content.jobSeekers.heading}
-        body={content.jobSeekers.lead}
+        heading={content.jobSeekers.ctaHeading}
+        body={content.jobSeekers.ctaBody}
         only="jobSeeker"
       />
     </>

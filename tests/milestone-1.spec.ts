@@ -6,7 +6,7 @@ import { showsFullNav } from "./support/viewport";
 /**
  * MILESTONE 1 ACCEPTANCE CHECKLIST — AS EXECUTABLE TESTS.
  *
- * Each `test` below maps to a line in the Milestone 1 checklist in 18-08-26.md.
+ * Each `test` below maps to a line in the Milestone 1 acceptance checklist.
  * This file is the loop's gate: the milestone is only "done" when this suite is
  * green across all three viewport projects. A model asserting "looks fine" is
  * not evidence; a green run is.
@@ -257,28 +257,6 @@ test.describe("calls to action", () => {
     }
   });
 
-  test("the employer CTA opens the request dialog and does NOT navigate", async ({
-    page,
-  }) => {
-    // Updated by Developer 2 in Milestone 3. This asserted the placeholder
-    // handler ("still being built") that Developer 1 left in place while the
-    // employer flow was unbuilt. That flow now exists, so the button opens the
-    // Request Manpower dialog instead. The rest of the guarantee is unchanged
-    // and still worth asserting: opening it must not navigate or log errors.
-    const errors = watchConsole(page);
-    await page.goto("/for-employers");
-
-    const before = page.url();
-
-    const group = page.getByTestId("cta-group").filter({ visible: true }).first();
-    await group.getByTestId("cta-employer").click();
-
-    await expect(page.getByTestId("request-modal")).toBeVisible();
-
-    expect(page.url()).toBe(before);
-    expect(errors).toEqual([]);
-  });
-
   test("CTAs are buttons, not links — no real flow is wired yet", async ({
     page,
   }) => {
@@ -313,16 +291,21 @@ test.describe("copy volume", () => {
     expect(headline.toLowerCase()).toContain("placeholder");
   });
 
-  test("services page renders the full 11-item list from the content layer", async ({
+  test("services page renders the full 6-item list from the content layer", async ({
     page,
   }) => {
+    // Milestone 2 superseded the 11-item intake-form list with the
+    // client-approved 6-service structure — see the note on CLIENT_VERBATIM
+    // in milestone-2.spec.ts.
     await page.goto("/services");
     const cards = page.locator('[data-testid="feature-grid"]').first().locator("li");
-    await expect(cards).toHaveCount(11);
+    await expect(cards).toHaveCount(6);
   });
 
-  test("industries page renders the full 12-item list", async ({ page }) => {
+  test("industries page renders the full 16-item list", async ({ page }) => {
+    // Milestone 2 superseded the 12-item intake-form list with the
+    // client-approved 16-industry structure.
     await page.goto("/industries");
-    await expect(page.locator("main ul li h2")).toHaveCount(12);
+    await expect(page.locator("main ul li h2")).toHaveCount(16);
   });
 });
