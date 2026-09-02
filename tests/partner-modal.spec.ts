@@ -88,7 +88,10 @@ test.describe("Become Our Partner modal", () => {
     await expect(modal.getByTestId("field-contact-number")).toBeVisible();
     await expect(modal.getByTestId("field-current-location")).toBeVisible();
     await expect(modal.getByTestId("field-position")).toBeVisible();
-    await expect(modal.getByTestId("field-cv")).toBeVisible();
+    // Deliberately NO file picker: wa.me cannot carry an attachment, so a
+    // picker could only collect a file the form is unable to send. The
+    // reminder step carries the instruction instead.
+    await expect(modal.getByTestId("field-cv")).toHaveCount(0);
     await expect(
       modal.getByTestId("job-seeker-continue"),
     ).toHaveText("Continue to WhatsApp");
@@ -109,9 +112,6 @@ test.describe("Become Our Partner modal", () => {
     await expect(page.getByText("Please enter your current location.")).toBeVisible();
     await expect(
       page.getByText("Please enter the position you are looking for."),
-    ).toBeVisible();
-    await expect(
-      page.getByText("Please select your CV / resume before continuing."),
     ).toBeVisible();
     await expect(modal.getByTestId("partner-sent")).toHaveCount(0);
 
@@ -138,9 +138,6 @@ test.describe("Become Our Partner modal", () => {
     await expect(modal.getByTestId("field-contact-number")).toHaveValue("971501234567");
     await modal.getByTestId("field-current-location").fill("Dubai, UAE");
     await modal.getByTestId("field-position").fill("Administrative Assistant");
-    await modal
-      .getByTestId("field-cv")
-      .setInputFiles({ name: "cv.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4") });
 
     await modal.getByTestId("job-seeker-continue").click();
 

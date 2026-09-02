@@ -87,9 +87,9 @@ export const taoohanContent: SiteContent = {
         submitLabel: "Continue to WhatsApp",
         successNote:
           "WhatsApp should now be open with your details ready to send. Remember to attach your CV before sending.",
-        reminderHeading: "Please attach your CV in WhatsApp",
+        reminderHeading: "One last step",
         reminderBody:
-          "WhatsApp cannot receive your CV from this form, so please attach the file yourself in the chat, together with the message we have prepared for you. Tap Continue to open WhatsApp.",
+          "Please attach your CV directly in the WhatsApp chat so our team can review it.",
         reminderContinueLabel: "Continue to WhatsApp",
         reminderBackLabel: "Back",
         openWhatsApp: "Open WhatsApp again",
