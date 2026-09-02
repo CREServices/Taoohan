@@ -697,28 +697,28 @@ export function PartnerModal({
           >
             <h3
               id={headingId}
-              className="text-xl font-semibold tracking-tight"
+              className="text-2xl font-semibold tracking-tight sm:text-3xl"
             >
               {copy.jobSeeker.reminderHeading}
             </h3>
-            <p className="mt-3 max-w-md text-sm text-ink-muted">
+            <p className="mt-3 max-w-lg text-base leading-relaxed text-ink-muted sm:text-lg">
               {copy.jobSeeker.reminderBody}
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener"
                 data-testid="reminder-continue"
                 onClick={() => setStep("sent")}
-                className="inline-flex items-center rounded-pill bg-brand-700 px-6 py-2.5 text-sm font-medium text-ink-inverse transition-colors hover:bg-brand-800"
+                className="inline-flex items-center rounded-pill bg-brand-700 px-7 py-3 text-base font-medium text-ink-inverse transition-colors hover:bg-brand-800"
               >
                 {copy.jobSeeker.reminderContinueLabel}
               </a>
               <Button
                 type="button"
-                size="md"
+                size="lg"
                 variant="secondary"
                 onClick={() => setStep("form")}
               >
