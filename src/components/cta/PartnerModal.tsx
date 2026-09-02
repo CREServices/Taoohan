@@ -32,23 +32,19 @@ import {
  *   on this side any more and no intermediate "choose a channel" step.
  *
  *   CV HANDLING: `wa.me` deep links cannot carry a file attachment — that is
- *   a real limitation of the WhatsApp Web/click-to-chat API. So the CV is
- *   uploaded to blob storage (POST /api/submit-cv) and the pre-filled
- *   WhatsApp message carries a DOWNLOAD LINK to it, right below the
- *   applicant's details. The recruiter gets everything in the one chat.
+ *   a real limitation of the WhatsApp Web/click-to-chat API, not something
+ *   this form works around. The file picker gates submission (you must
+ *   select a CV before continuing) but the file never leaves the browser.
  *
- *   The upload never blocks the hand-off: if storage is unreachable, the
- *   message is still sent with the details and the CV line falls back to
- *   "attached manually in this chat", with the modal saying so plainly. The
- *   flow never claims a link that does not exist.
+ *   So submitting does not jump straight to WhatsApp. It stops on a REMINDER
+ *   step which says, plainly, that the CV has to be attached by hand in the
+ *   chat — and only the "Continue" there opens WhatsApp. Nothing in this
+ *   flow claims the CV was sent automatically.
  *
- *   POPUP TIMING: the CV uploads the moment it is CHOSEN, not on submit, so
- *   the download URL is already known by the time the applicant presses the
- *   button and WhatsApp can be opened synchronously inside that tap. Opening
- *   it after an `await` puts it outside the user gesture, which is what
- *   popup blockers stop — and most applicants are on a phone, where those
- *   blockers are strictest. The "sent" step also renders a plain anchor as a
- *   fallback, the one route a blocker cannot refuse.
+ *   That step is also what makes the hand-off reliable: Continue is a real
+ *   anchor, tapped directly by the applicant, so there is no scripted
+ *   window.open for a popup blocker to refuse. Most applicants are on a
+ *   phone, where those blockers are strictest.
  *
  *   EMPLOYER — "I'm Hiring Staff". ONE form, submitted directly from the
  *   site (POST to /api/request-manpower, which emails the confirmed Taoohan
@@ -61,8 +57,6 @@ import {
 
 type Path = "job-seeker" | "employer";
 type SendStatus = "idle" | "sending" | "sent" | "error";
-/** Whether the CV made it to storage, and so whether WhatsApp got a link. */
-type CvStatus = "idle" | "uploading" | "uploaded" | "failed";
 
 const EMPTY_APPLICANT: ApplicantDetails = {
   fullName: "",
@@ -92,54 +86,6 @@ const EMPTY_EMPLOYER: EmployerRequest = {
   message: "",
 };
 
-/** Opens a link (WhatsApp) without leaving the current page behind a blocker. */
-function openInNewTab(href: string) {
-  const anchor = document.createElement("a");
-  anchor.href = href;
-  anchor.target = "_blank";
-  anchor.rel = "noopener";
-  anchor.click();
-}
-
-/**
- * Uploads the CV and returns its download URL, or null if that failed.
- *
- * The file travels ALONE: the applicant's typed details belong in the
- * WhatsApp message, not on the server. Sending them here would also mean the
- * upload could only start once every field was filled, and the upload has to
- * begin the moment the file is chosen — see POPUP TIMING in the header.
- */
-async function uploadCv(file: File): Promise<string | null> {
-  // Preferred path: browser straight to Blob storage. A Vercel serverless
-  // request body is capped at 4.5MB, so routing a 10MB CV through the
-  // function would simply fail — this bypasses the function entirely and
-  // carries the full size the form allows.
-  try {
-    const { upload } = await import("@vercel/blob/client");
-    const extension = file.name.toLowerCase().match(/\.[a-z]+$/)?.[0] ?? ".pdf";
-    const blob = await upload(`cv/${crypto.randomUUID()}${extension}`, file, {
-      access: "public",
-      handleUploadUrl: "/api/submit-cv",
-      contentType: file.type || "application/octet-stream",
-    });
-    return blob.url;
-  } catch {
-    // No Blob store configured (development), or the handshake failed — fall
-    // through to posting the file through the route itself.
-  }
-
-  try {
-    const body = new FormData();
-    body.append("cv", file);
-
-    const response = await fetch("/api/submit-cv", { method: "POST", body });
-    const data = await response.json().catch(() => ({}));
-    return response.ok && typeof data?.url === "string" ? data.url : null;
-  } catch {
-    return null;
-  }
-}
-
 export function PartnerModal({
   onClose,
   /** Which form is showing when the dialog opens — set by whichever button opened it. */
@@ -152,16 +98,17 @@ export function PartnerModal({
   const headingId = useId();
 
   const [path, setPath] = useState<Path>(initialPath);
-  const [step, setStep] = useState<"form" | "sent">("form");
+  /**
+   * "reminder" sits between the form and the hand-off: it is where the
+   * applicant is told to attach the CV themselves, and where the tap that
+   * opens WhatsApp actually happens.
+   */
+  const [step, setStep] = useState<"form" | "reminder" | "sent">("form");
 
   // Job seeker.
   const [applicant, setApplicant] = useState<ApplicantDetails>(EMPTY_APPLICANT);
   const [applicantErrors, setApplicantErrors] = useState<ValidationErrors>({});
   const cvInputRef = useRef<HTMLInputElement>(null);
-  /** Drives the note under the success message — see the "sent" step. */
-  const [cvStatus, setCvStatus] = useState<CvStatus>("idle");
-  /** The uploaded CV's download URL, folded into the WhatsApp message. */
-  const [cvUrl, setCvUrl] = useState<string | null>(null);
 
   // Employer.
   const [employer, setEmployer] = useState<EmployerRequest>(EMPTY_EMPLOYER);
@@ -176,11 +123,8 @@ export function PartnerModal({
 
   const copy = content.home.partnerModal;
   const whatsappReady = hasValue(CONTACT.whatsapp);
-  /**
-   * Derived, not stored: recomputed each render so the link always reflects
-   * the latest details AND the CV URL as soon as the upload resolves.
-   */
-  const whatsappUrl = buildWhatsAppUrl(CONTACT.whatsapp, applicant, cvUrl);
+  /** Derived, not stored, so it always reflects the latest typed details. */
+  const whatsappUrl = buildWhatsAppUrl(CONTACT.whatsapp, applicant);
 
   useEffect(() => {
     // Restore focus to whatever opened the modal.
@@ -239,7 +183,6 @@ export function PartnerModal({
     setApplicantErrors({});
     setEmployerErrors({});
     setEmployerStatus("idle");
-    setCvStatus("idle");
   }, []);
 
   // ---- Job seeker ----------------------------------------------------------
@@ -279,10 +222,9 @@ export function PartnerModal({
   const onCvChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     setApplicant((current) => ({ ...current, hasCv: Boolean(file) }));
-    setCvUrl(null);
 
-    // Surface a wrong type or oversized file straight away, rather than
-    // letting the applicant fill the rest of the form and fail at submit.
+    // Surface a wrong file type straight away, rather than letting the
+    // applicant fill the rest of the form and fail at submit.
     const fileError = file
       ? validateCvFile({ name: file.name, size: file.size })
       : null;
@@ -290,18 +232,6 @@ export function PartnerModal({
       ...current,
       hasCv: fileError ?? undefined,
     }));
-
-    if (!file || fileError) {
-      setCvStatus("idle");
-      return;
-    }
-
-    setCvStatus("uploading");
-    void (async () => {
-      const url = await uploadCv(file);
-      setCvUrl(url);
-      setCvStatus(url ? "uploaded" : "failed");
-    })();
   };
 
   const submitJobSeeker = (event: React.FormEvent) => {
@@ -317,22 +247,14 @@ export function PartnerModal({
     setApplicantErrors(found);
     if (Object.keys(found).length > 0 || !file) return;
 
-    // The CV is uploaded on selection, so by now `cvUrl` is normally already
-    // known and the whole hand-off stays synchronous — inside the tap, where
-    // a popup blocker cannot interfere.
-    const href = buildWhatsAppUrl(CONTACT.whatsapp, applicant, cvUrl);
-    // A missing WhatsApp business number is the one condition that can still
-    // block the hand-off — everything else (a failed upload included) must not.
-    if (!href) return;
+    // A missing WhatsApp business number is the one condition that blocks the
+    // hand-off entirely.
+    if (!whatsappUrl) return;
 
-    setStep("sent");
-
-    // Still uploading — a slow connection, or a CV picked a moment ago. Don't
-    // open anything yet: the "sent" step renders a real link to tap once the
-    // upload settles, which is more reliable than a tab opened from a timer.
-    if (cvStatus === "uploading") return;
-
-    openInNewTab(href);
+    // Stop here, on the reminder. WhatsApp opens from the Continue anchor on
+    // that step, not from this submit — the CV has to be attached by hand and
+    // the applicant needs telling before they get there.
+    setStep("reminder");
   };
 
   // ---- Employer --------------------------------------------------------------
@@ -443,7 +365,7 @@ export function PartnerModal({
             tablist: these swap the form, they do not reveal sibling panels.
             The label doubles as the form's own title — "I'm Looking for
             Work" / "I'm Hiring Staff". */}
-        {step !== "sent" && (
+        {step === "form" && (
           <div className="mt-5 flex gap-2 rounded-pill bg-surface-muted p-1">
             {(
               [
@@ -564,20 +486,6 @@ export function PartnerModal({
               />
               {applicantErrors.hasCv && (
                 <span className={errorText}>{applicantErrors.hasCv}</span>
-              )}
-              {/* Upload progress, right where the file was chosen — it starts
-                  on selection, so without this the applicant has no idea
-                  anything is happening until they press send. */}
-              {cvStatus !== "idle" && (
-                <span
-                  data-testid="cv-upload-state"
-                  data-cv-status={cvStatus}
-                  className="mt-1 block text-xs font-medium text-brand-700"
-                >
-                  {cvStatus === "uploading" && copy.jobSeeker.cvUploading}
-                  {cvStatus === "uploaded" && copy.jobSeeker.cvUploaded}
-                  {cvStatus === "failed" && copy.jobSeeker.cvFailed}
-                </span>
               )}
               <span className="mt-1 block text-xs text-ink-muted">
                 {copy.jobSeeker.cvNote}
@@ -820,6 +728,45 @@ export function PartnerModal({
           </form>
         )}
 
+        {/* ---- Reminder: attach the CV by hand --------------------------
+            The last thing between the applicant and WhatsApp, and the only
+            place the manual attachment is spelled out. Continue is a real
+            anchor, so the chat opens on the applicant's own tap — nothing
+            scripted for a phone's popup blocker to refuse. */}
+        {step === "reminder" && whatsappUrl && (
+          <div className="mt-5 space-y-4" data-testid="cv-reminder">
+            <div className="rounded-card border border-hairline bg-surface-muted p-4">
+              <h3 className="text-base font-semibold">
+                {copy.jobSeeker.reminderHeading}
+              </h3>
+              <p className="mt-2 text-sm text-ink-muted">
+                {copy.jobSeeker.reminderBody}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener"
+                data-testid="reminder-continue"
+                onClick={() => setStep("sent")}
+                className="inline-flex items-center rounded-pill bg-brand-700 px-5 py-2.5 text-sm font-medium text-ink-inverse transition-colors hover:bg-brand-800"
+              >
+                {copy.jobSeeker.reminderContinueLabel}
+              </a>
+              <Button
+                type="button"
+                size="md"
+                variant="secondary"
+                onClick={() => setStep("form")}
+              >
+                {copy.jobSeeker.reminderBackLabel}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* ---- Hand-off complete --------------------------------------- */}
         {step === "sent" && (
           <div className="mt-4 space-y-4">
@@ -827,36 +774,18 @@ export function PartnerModal({
               {path === "job-seeker" ? copy.jobSeeker.successNote : copy.employer.successNote}
             </p>
 
-            {/* The CV line states only what actually happened — a link that
-                reached storage, or a plain request to attach it manually. */}
-            {path === "job-seeker" && cvStatus !== "idle" && (
-              <p
-                data-testid="cv-status"
-                data-cv-status={cvStatus}
-                className="text-sm text-ink-muted"
-              >
-                {cvStatus === "uploading" && copy.jobSeeker.cvUploading}
-                {cvStatus === "uploaded" && copy.jobSeeker.cvUploaded}
-                {cvStatus === "failed" && copy.jobSeeker.cvFailed}
-              </p>
-            )}
-
-            {/* A real anchor, not a scripted window.open — the one route a
-                popup blocker cannot refuse, and the only thing standing
-                between a blocked tab and a lost applicant. Rebuilt on every
-                render so it picks up the CV link the moment the upload
-                lands, even if the applicant is already on this step. */}
+            {/* Kept reachable: if the chat did not open, or the applicant
+                closed it before sending, this is the way back without
+                retyping the form. */}
             {path === "job-seeker" && whatsappUrl && (
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener"
                 data-testid="whatsapp-fallback"
-                className="inline-flex items-center gap-2 rounded-pill bg-brand-700 px-5 py-2.5 text-sm font-medium text-ink-inverse transition-colors hover:bg-brand-800"
+                className="inline-flex items-center rounded-pill bg-brand-700 px-5 py-2.5 text-sm font-medium text-ink-inverse transition-colors hover:bg-brand-800"
               >
-                {cvStatus === "uploading"
-                  ? copy.jobSeeker.openWhatsAppWaiting
-                  : copy.jobSeeker.openWhatsApp}
+                {copy.jobSeeker.openWhatsApp}
               </a>
             )}
             <Button type="button" size="md" variant="secondary" onClick={onClose}>

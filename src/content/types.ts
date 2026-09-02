@@ -136,16 +136,16 @@ export type SiteContent = {
         /** Sits under the file picker, describing how the CV is sent. */
         cvNote: string;
         successNote: string;
-        /** CV upload in flight, shown beneath the success note. */
-        cvUploading: string;
-        /** Upload succeeded — WhatsApp carries a download link to the CV. */
-        cvUploaded: string;
-        /** Upload failed — the applicant must attach the CV in the chat. */
-        cvFailed: string;
-        /** Label on the WhatsApp link shown after sending. */
+        /** Heading of the step that precedes the WhatsApp hand-off. */
+        reminderHeading: string;
+        /** Tells the applicant to attach the CV themselves, in the chat. */
+        reminderBody: string;
+        /** The link that actually opens WhatsApp. */
+        reminderContinueLabel: string;
+        /** Returns to the form without opening anything. */
+        reminderBackLabel: string;
+        /** Label on the WhatsApp link shown after the hand-off. */
         openWhatsApp: string;
-        /** Same link, while the CV upload is still in flight. */
-        openWhatsAppWaiting: string;
       };
       employer: {
         /** Short audience toggle label at the top of the form — "Employers". */

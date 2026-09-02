@@ -6,9 +6,8 @@
  * needed, on a server route — a crafted request can never bypass it.
  *
  * ⚠️ PHASE 1: the job-seeker flow is WhatsApp only — it never sends email.
- * Details are validated, the CV is uploaded to blob storage, and both are
- * handed to WhatsApp as one pre-filled message carrying a download link to
- * the CV. Nothing is written to a database.
+ * Details are validated and handed to WhatsApp as a pre-filled message.
+ * Nothing is uploaded, stored, or written to a database.
  */
 
 export type ApplicantDetails = {
@@ -19,11 +18,11 @@ export type ApplicantDetails = {
   /**
    * Whether the applicant selected a CV/resume file.
    *
-   * A `wa.me` deep link cannot carry a binary attachment — that is a real
-   * limit of the click-to-chat API. So the file is uploaded to blob storage
-   * via `POST /api/submit-cv` and the WhatsApp message carries a download
-   * LINK to it, alongside the details above. Everything still reaches the
-   * team through WhatsApp; nothing is emailed.
+   * The FILE ITSELF never leaves the browser: a `wa.me` deep link cannot
+   * carry a binary attachment, and that is a real limit of the click-to-chat
+   * API. Picking a file only gates submission, and the flow then stops on a
+   * reminder step telling the applicant to attach it in the chat before
+   * sending. Nothing here claims the CV was sent automatically.
    */
   hasCv: boolean;
 };
@@ -31,15 +30,15 @@ export type ApplicantDetails = {
 export type ValidationErrors = Partial<Record<keyof ApplicantDetails, string>>;
 
 /**
- * CV upload limits. Shared so the modal and the API route enforce exactly the
- * same rule — a crafted request can never smuggle past what the picker allows.
+ * Accepted CV formats. The file is never uploaded, so this is guidance
+ * rather than a security control — it stops someone attaching a screenshot
+ * when a document is what the recruiter needs.
  */
-export const CV_MAX_BYTES = 10 * 1024 * 1024;
 export const CV_ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"] as const;
 
 /**
- * Validates the chosen CV by name and size only — no File/Blob type, so the
- * same check runs in the browser and on the server.
+ * Validates the chosen CV by name and size only, never touching File/Blob,
+ * so this stays a pure function like the rest of the module.
  *
  * Returns an error message, or null when the file is acceptable.
  */
@@ -56,10 +55,6 @@ export function validateCvFile(
 
   if (file.size <= 0) {
     return "That file appears to be empty. Please choose another.";
-  }
-
-  if (file.size > CV_MAX_BYTES) {
-    return `Your CV must be ${CV_MAX_BYTES / (1024 * 1024)}MB or smaller.`;
   }
 
   return null;
@@ -115,19 +110,11 @@ export const isValidApplicant = (details: ApplicantDetails): boolean =>
  * the exact wording is testable. Structure is fixed — do not reorder or
  * reword the lines.
  *
- * `cvUrl` is the uploaded CV's download link. When it is absent — the upload
- * failed, or storage is not configured — the CV lines are replaced by a note
- * asking the applicant to attach the file in the chat, so the message is
- * never left claiming a link that does not exist.
+ * The CV line is a standing note to the recruiter that the document is
+ * coming as an attachment in the same chat — the applicant is reminded to
+ * add it on the step before this message is handed over.
  */
-export function buildWhatsAppMessage(
-  details: ApplicantDetails,
-  cvUrl?: string | null,
-): string {
-  const cvLines = cvUrl
-    ? ["", "CV / Resume:", cvUrl]
-    : ["", "CV / Resume: attached manually in this chat."];
-
+export function buildWhatsAppMessage(details: ApplicantDetails): string {
   return [
     "Hello Taoohan Recruitment Team,",
     "",
@@ -137,7 +124,8 @@ export function buildWhatsAppMessage(
     `Contact Number: ${details.contactNumber.trim()}`,
     `Current Location: ${details.currentLocation.trim()}`,
     `Position Looking For: ${details.position.trim()}`,
-    ...cvLines,
+    "",
+    "CV / Resume: attached in this chat.",
     "",
     "Thank you.",
   ].join("\n");
@@ -153,13 +141,12 @@ export function buildWhatsAppMessage(
 export function buildWhatsAppUrl(
   businessNumber: string,
   details: ApplicantDetails,
-  cvUrl?: string | null,
 ): string | null {
   // wa.me requires digits only: no "+", spaces or dashes.
   const digits = businessNumber.replace(/\D/g, "");
   if (!digits) return null;
 
   return `https://wa.me/${digits}?text=${encodeURIComponent(
-    buildWhatsAppMessage(details, cvUrl),
+    buildWhatsAppMessage(details),
   )}`;
 }
