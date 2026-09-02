@@ -150,7 +150,16 @@ test.describe("Become Our Partner modal", () => {
       context.waitForEvent("page"),
       modal.getByTestId("reminder-continue").click(),
     ]);
-    await popup.waitForLoadState("domcontentloaded").catch(() => {});
+    // A new tab starts on an internal placeholder (Chromium reports its URL
+    // as "chromewebdata") before it navigates to the anchor's real href —
+    // waiting for that specific URL, rather than just "some load event",
+    // avoids reading the popup's URL mid-transition. "commit" (navigation
+    // committed to the new URL) is used instead of the default "load": the
+    // WhatsApp landing page never reaches network-idle/load, apparently kept
+    // busy by its own analytics, but the URL is already final well before
+    // that — confirmed by direct probe (~1s to commit vs 20s+ timeout on
+    // "load" while the URL was correct the whole time).
+    await popup.waitForURL(/wa\.me|whatsapp\.com/, { waitUntil: "commit" });
 
     // wa.me is a redirect shortlink — real WhatsApp resolves it to
     // api.whatsapp.com, so only the destination and the carried `text`
