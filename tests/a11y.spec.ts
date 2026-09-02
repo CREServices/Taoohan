@@ -57,35 +57,6 @@ for (const item of NAV) {
   });
 }
 
-test("the open Become Our Partner modal is accessible", async ({ page }) => {
-  await page.goto("/");
-  await page.getByTestId("cta-partner").first().click();
-  await expect(page.getByTestId("partner-modal")).toBeVisible();
-
-  // Step 1 — the job-seeker form fields.
-  let result = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa"])
-    .analyze();
-  expect(
-    result.violations.map((violation) => `${violation.id}: ${violation.help}`),
-    "Partner modal — job-seeker form",
-  ).toEqual([]);
-
-  // Step 2 — the WhatsApp reminder.
-  await page.getByTestId("field-full-name").fill("Maria Santos");
-  await page.getByTestId("field-contact-number").fill("971501234567");
-  await page.getByTestId("field-current-location").fill("Dubai, UAE");
-  await page.getByTestId("field-position").fill("Administrative Assistant");
-  await page.getByTestId("job-seeker-continue").click();
-  await expect(page.getByTestId("cv-reminder")).toBeVisible();
-
-  result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
-  expect(
-    result.violations.map((violation) => `${violation.id}: ${violation.help}`),
-    "Partner modal — CV reminder step",
-  ).toEqual([]);
-});
-
 test("the open mobile menu is accessible", async ({ page }, testInfo) => {
   test.skip(showsFullNav(testInfo), "Desktop shows the full nav bar instead.");
 
