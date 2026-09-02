@@ -88,12 +88,14 @@ export const taoohanContent: SiteContent = {
         cvNote:
           "PDF, DOC or DOCX, up to 10MB. Your CV is uploaded and a download link is added to your WhatsApp message automatically.",
         successNote:
-          "WhatsApp should now be open with your details ready to send.",
+          "WhatsApp should now be open with your details ready to send. If it did not open, use the button below.",
         cvUploading: "Uploading your CV and preparing your message…",
         cvUploaded:
           "Your CV was uploaded and a download link has been added to the message. Just press send in WhatsApp.",
         cvFailed:
           "We could not upload your CV, so no link was added. Please attach the file manually in the chat before sending.",
+        openWhatsApp: "Open WhatsApp",
+        openWhatsAppWaiting: "Open WhatsApp (still uploading your CV…)",
       },
       employer: {
         tabLabel: "Employers",

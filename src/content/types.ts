@@ -142,6 +142,10 @@ export type SiteContent = {
         cvUploaded: string;
         /** Upload failed — the applicant must attach the CV in the chat. */
         cvFailed: string;
+        /** Label on the WhatsApp link shown after sending. */
+        openWhatsApp: string;
+        /** Same link, while the CV upload is still in flight. */
+        openWhatsAppWaiting: string;
       };
       employer: {
         /** Short audience toggle label at the top of the form — "Employers". */

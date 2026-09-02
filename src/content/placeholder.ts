@@ -80,6 +80,8 @@ export const placeholderContent: SiteContent = {
         cvUploading: "Placeholder CV uploading note.",
         cvUploaded: "Placeholder CV uploaded note.",
         cvFailed: "Placeholder CV upload failed note.",
+        openWhatsApp: "Placeholder Open WhatsApp",
+        openWhatsAppWaiting: "Placeholder Open WhatsApp Waiting",
       },
       employer: {
         tabLabel: "Placeholder Employer Tab",

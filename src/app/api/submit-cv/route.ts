@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  validateApplicant,
-  validateCvFile,
-  type ApplicantDetails,
-} from "@/lib/applicant";
+import { validateCvFile } from "@/lib/applicant";
 import { storeCv } from "@/lib/cv-storage";
 
 /**
@@ -15,9 +11,15 @@ import { storeCv } from "@/lib/cv-storage";
  * into the pre-filled WhatsApp message alongside the applicant's details — so
  * the recruiter receives everything in one chat, the CV included as a link.
  *
- * The applicant's details are re-validated here rather than trusted from the
- * client: this endpoint is reachable directly, and an unvalidated file write
- * is not something to leave open.
+ * The FILE ONLY is posted here — the applicant's typed details never reach
+ * the server, they go straight into the WhatsApp message. That also lets the
+ * upload start the moment the CV is chosen, rather than waiting for every
+ * field to be filled, which is what keeps the WhatsApp hand-off inside the
+ * user's tap and clear of popup blockers.
+ *
+ * The file is still re-validated here rather than trusted from the client:
+ * this endpoint is reachable directly, and an unvalidated file write is not
+ * something to leave open.
  *
  * ⚠️ PHASE 1 — NO DATABASE. The CV is stored under a random id and nothing
  * else is recorded: no applicant row, no log of the details, no index tying
@@ -27,9 +29,6 @@ import { storeCv } from "@/lib/cv-storage";
 
 // Blob storage and the local fallback both need Node, not the edge runtime.
 export const runtime = "nodejs";
-
-const asString = (value: FormDataEntryValue | null): string =>
-  typeof value === "string" ? value : "";
 
 export async function POST(request: Request) {
   // ---- 1. Parse ----------------------------------------------------------
@@ -43,21 +42,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const details: ApplicantDetails = {
-    fullName: asString(form.get("fullName")),
-    contactNumber: asString(form.get("contactNumber")),
-    currentLocation: asString(form.get("currentLocation")),
-    position: asString(form.get("position")),
-    // Presence of the file is what decides this, not a client-sent flag.
-    hasCv: form.get("cv") instanceof File,
-  };
-
-  // ---- 2. Validate (server-side, never trusting the client) --------------
-  const errors = validateApplicant(details);
-  if (Object.keys(errors).length > 0) {
-    return NextResponse.json({ ok: false, errors }, { status: 400 });
-  }
-
+  // ---- 2. Validate the file (server-side, never trusting the client) -----
   const cv = form.get("cv");
   if (!(cv instanceof File)) {
     return NextResponse.json(
