@@ -30,6 +30,18 @@ import { CV_ALLOWED_EXTENSIONS } from "@/lib/applicant";
 /** Local driver's directory, relative to the project root. */
 const LOCAL_DIR = path.join(process.cwd(), ".cv-uploads");
 
+/**
+ * Media types accepted for a CV, matching CV_ALLOWED_EXTENSIONS.
+ *
+ * Enforced when the client-upload token is minted, so the limit holds at
+ * Vercel's edge rather than depending on the browser having behaved.
+ */
+export const CV_ALLOWED_MIME = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+] as const;
+
 export const usingBlobStore = (): boolean =>
   Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
 

@@ -110,6 +110,24 @@ function openInNewTab(href: string) {
  * begin the moment the file is chosen — see POPUP TIMING in the header.
  */
 async function uploadCv(file: File): Promise<string | null> {
+  // Preferred path: browser straight to Blob storage. A Vercel serverless
+  // request body is capped at 4.5MB, so routing a 10MB CV through the
+  // function would simply fail — this bypasses the function entirely and
+  // carries the full size the form allows.
+  try {
+    const { upload } = await import("@vercel/blob/client");
+    const extension = file.name.toLowerCase().match(/\.[a-z]+$/)?.[0] ?? ".pdf";
+    const blob = await upload(`cv/${crypto.randomUUID()}${extension}`, file, {
+      access: "public",
+      handleUploadUrl: "/api/submit-cv",
+      contentType: file.type || "application/octet-stream",
+    });
+    return blob.url;
+  } catch {
+    // No Blob store configured (development), or the handshake failed — fall
+    // through to posting the file through the route itself.
+  }
+
   try {
     const body = new FormData();
     body.append("cv", file);
