@@ -307,10 +307,21 @@ export function PartnerModal({
         data-testid="partner-modal"
         className="my-auto w-full max-w-2xl rounded-card border border-hairline bg-surface p-6 shadow-xl outline-none sm:p-8"
       >
-        <div className="flex items-start justify-between gap-4">
-          <h2 id={headingId} className="text-2xl font-semibold tracking-tight">
-            {copy.heading}
-          </h2>
+        {/* On the reminder step the title and lead are dropped — that step
+            speaks for itself and the pitch is behind them by then. The
+            dialog still needs an accessible name, so `headingId` moves onto
+            the reminder's own heading rather than being left dangling. */}
+        <div
+          className={
+            "flex items-start gap-4 " +
+            (step === "reminder" ? "justify-end" : "justify-between")
+          }
+        >
+          {step !== "reminder" && (
+            <h2 id={headingId} className="text-2xl font-semibold tracking-tight">
+              {copy.heading}
+            </h2>
+          )}
           <button
             type="button"
             aria-label="Close"
@@ -324,7 +335,9 @@ export function PartnerModal({
           </button>
         </div>
 
-        <p className="mt-2 text-sm text-ink-muted">{copy.lead}</p>
+        {step !== "reminder" && (
+          <p className="mt-2 text-sm text-ink-muted">{copy.lead}</p>
+        )}
 
         {/* ---- Audience toggle ------------------------------------------
             Switches the fields below in place. `aria-pressed` rather than a
@@ -678,24 +691,28 @@ export function PartnerModal({
             anchor, so the chat opens on the applicant's own tap — nothing
             scripted for a phone's popup blocker to refuse. */}
         {step === "reminder" && whatsappUrl && (
-          <div className="mt-5 space-y-4" data-testid="cv-reminder">
-            <div className="rounded-card border border-hairline bg-surface-muted p-4">
-              <h3 className="text-base font-semibold">
-                {copy.jobSeeker.reminderHeading}
-              </h3>
-              <p className="mt-2 text-sm text-ink-muted">
-                {copy.jobSeeker.reminderBody}
-              </p>
-            </div>
+          <div
+            className="partner-reminder mt-2 flex flex-col items-center text-center"
+            data-testid="cv-reminder"
+          >
+            <h3
+              id={headingId}
+              className="text-xl font-semibold tracking-tight"
+            >
+              {copy.jobSeeker.reminderHeading}
+            </h3>
+            <p className="mt-3 max-w-md text-sm text-ink-muted">
+              {copy.jobSeeker.reminderBody}
+            </p>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener"
                 data-testid="reminder-continue"
                 onClick={() => setStep("sent")}
-                className="inline-flex items-center rounded-pill bg-brand-700 px-5 py-2.5 text-sm font-medium text-ink-inverse transition-colors hover:bg-brand-800"
+                className="inline-flex items-center rounded-pill bg-brand-700 px-6 py-2.5 text-sm font-medium text-ink-inverse transition-colors hover:bg-brand-800"
               >
                 {copy.jobSeeker.reminderContinueLabel}
               </a>
