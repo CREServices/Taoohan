@@ -121,16 +121,20 @@ export async function POST(request: Request) {
   }
 
   // ---- 4. Send -----------------------------------------------------------
-  const port = Number(process.env.SMTP_PORT);
+  const port = Number(process.env.SMTP_PORT?.trim());
+  const smtpUser = process.env.SMTP_USER!.trim();
+  // Google displays app passwords in four groups for readability. Vercel
+  // values are easy to paste in that format, but SMTP needs the raw value.
+  const smtpPass = process.env.SMTP_PASS!.replace(/\s+/g, "");
 
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+    host: process.env.SMTP_HOST!.trim(),
     port,
     // 465 is implicit TLS; 587 upgrades via STARTTLS.
     secure: port === 465,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: smtpUser,
+      pass: smtpPass,
     },
   });
 
@@ -140,7 +144,7 @@ export async function POST(request: Request) {
       // display name identifies the employer in the recipient's inbox.
       from: {
         name: `${details.companyName.trim()} via Taoohan`,
-        address: process.env.SMTP_USER!.trim(),
+        address: smtpUser,
       },
       to: recipient(),
       // Replies go straight back to the employer rather than to the site's
@@ -149,9 +153,19 @@ export async function POST(request: Request) {
       subject: buildEmployerSubject(details),
       text: buildEmployerEmailBody(details, categoryLabel(details.category)),
     });
-  } catch {
-    // Deliberately not logging the error object: it can contain credentials
-    // and employer details.
+  } catch (error) {
+    // Keep diagnostics useful in Vercel without logging credentials or form
+    // contents. Nodemailer exposes these non-sensitive classification fields.
+    const smtpError = error as {
+      code?: string;
+      command?: string;
+      responseCode?: number;
+    };
+    console.error("Hiring request SMTP failure", {
+      code: smtpError.code ?? "UNKNOWN",
+      command: smtpError.command ?? "UNKNOWN",
+      responseCode: smtpError.responseCode ?? null,
+    });
     return NextResponse.json(
       {
         ok: false,
