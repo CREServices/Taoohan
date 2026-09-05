@@ -288,6 +288,7 @@ export function PartnerModal({
   const errorText = "mt-1 text-xs text-brand-800";
   /** Marks a required field's label — every field without "(optional)" in it. */
   const required = "text-brand-700";
+  const employerSent = path === "employer" && step === "sent";
 
   return createPortal(
     <div
@@ -309,19 +310,25 @@ export function PartnerModal({
         aria-labelledby={headingId}
         tabIndex={-1}
         data-testid="partner-modal"
-        className="my-auto w-full max-w-2xl rounded-card border border-hairline bg-surface p-6 shadow-xl outline-none sm:p-8"
+        className={
+          "my-auto w-full max-w-2xl outline-none " +
+          (employerSent
+            ? "relative bg-transparent p-0"
+            : "rounded-card border border-hairline bg-surface p-6 shadow-xl sm:p-8")
+        }
       >
-        {/* On the reminder step the title and lead are dropped — that step
-            speaks for itself and the pitch is behind them by then. The
-            dialog still needs an accessible name, so `headingId` moves onto
-            the reminder's own heading rather than being left dangling. */}
+        {/* The reminder and employer-success states speak for themselves, so
+            the generic title and lead are hidden. `headingId` moves to each
+            state's own message to keep the dialog accessibly named. */}
         <div
           className={
-            "flex items-start gap-4 " +
-            (step === "reminder" ? "justify-end" : "justify-between")
+            employerSent
+              ? "absolute right-4 top-4 z-10 flex"
+              : "flex items-start gap-4 " +
+                (step === "reminder" ? "justify-end" : "justify-between")
           }
         >
-          {step !== "reminder" && (
+          {step !== "reminder" && !employerSent && (
             <h2 id={headingId} className="text-2xl font-semibold tracking-tight">
               {copy.heading}
             </h2>
@@ -339,7 +346,7 @@ export function PartnerModal({
           </button>
         </div>
 
-        {step !== "reminder" && (
+        {step !== "reminder" && !employerSent && (
           <p className="mt-2 text-sm text-ink-muted">{copy.lead}</p>
         )}
 
@@ -734,8 +741,28 @@ export function PartnerModal({
 
         {/* ---- Hand-off complete --------------------------------------- */}
         {step === "sent" && (
-          <div className="mt-4 space-y-4">
-            <p role="status" data-testid="partner-sent" className="text-sm font-medium text-brand-700">
+          <div className={employerSent ? "flex flex-col items-center gap-5 rounded-card border border-brand-200/80 bg-brand-50/95 px-6 py-10 text-center shadow-xl sm:px-12 sm:py-12" : "mt-4 space-y-4"}>
+            {employerSent && (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-700 text-white shadow-[0_10px_24px_-14px_rgba(61,122,79,0.8)] ring-8 ring-brand-100"
+                >
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m5 12 4 4L19 6" />
+                  </svg>
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">
+                  Request received
+                </span>
+              </>
+            )}
+            <p
+              id={employerSent ? headingId : undefined}
+              role="status"
+              data-testid="partner-sent"
+              className={employerSent ? "max-w-lg text-2xl font-semibold leading-snug text-ink sm:text-3xl" : "text-sm font-medium text-brand-700"}
+            >
               {path === "job-seeker" ? copy.jobSeeker.successNote : copy.employer.successNote}
             </p>
 

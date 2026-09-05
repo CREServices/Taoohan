@@ -98,7 +98,7 @@ export const taoohanContent: SiteContent = {
         tabLabel: "Employers",
         formHeading: "I'm Hiring Staff",
         ctaLabel: "Submit Hiring Request",
-        successNote: "Thank you. Your hiring request has been sent to our team.",
+        successNote: "Someone from our team will be in touch with you shortly.",
       },
     },
   },

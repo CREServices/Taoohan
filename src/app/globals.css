@@ -490,6 +490,161 @@
   opacity: 0.5;
 }
 
+/* ===========================================================================
+   PARTNERS & CLIENTS — logo and company-name link cards
+   =========================================================================== */
+
+.partner-client-shell {
+  position: relative;
+  overflow: visible;
+  background: transparent;
+}
+
+.partner-client-heading {
+  display: grid;
+  gap: 1.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-hairline) 72%, white);
+}
+
+.partner-marquee {
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  overflow: hidden;
+  padding-block: 0.35rem;
+  mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
+}
+
+.partner-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  animation: partner-marquee-scroll 72s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.partner-marquee-list {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1.1rem;
+}
+
+.partner-client-card {
+  position: relative;
+  display: flex;
+  width: 16rem;
+  min-height: 6.25rem;
+  align-items: center;
+  gap: 0.9rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: var(--radius-card);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.78),
+    rgba(255, 255, 255, 0.46)
+  );
+  padding: 0.75rem 0.9rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.76),
+    0 12px 30px -24px rgba(38, 51, 42, 0.5);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease,
+    background-color 220ms ease;
+}
+
+a.partner-client-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-brand-300);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.94),
+    rgba(255, 255, 255, 0.66)
+  );
+  box-shadow: 0 16px 32px -24px rgba(38, 51, 42, 0.38);
+}
+
+a.partner-client-card:focus-visible {
+  outline: 3px solid var(--color-brand-400);
+  outline-offset: 3px;
+}
+
+.partner-client-logo {
+  position: relative;
+  display: grid;
+  height: 4.5rem;
+  width: 4.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-brand-200) 68%, white);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 0.45rem;
+  box-shadow: 0 8px 20px -17px rgba(38, 51, 42, 0.35);
+}
+
+.partner-client-logo img {
+  padding: 0.4rem;
+}
+
+.partner-client-arrow {
+  color: var(--color-brand-700);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 220ms ease;
+}
+
+a.partner-client-card:hover .partner-client-arrow {
+  transform: translate(2px, -2px);
+}
+
+@keyframes partner-marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(-50% - 0.5rem), 0, 0);
+  }
+}
+
+@media (min-width: 640px) {
+  .partner-client-heading {
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.7fr);
+    align-items: end;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .partner-client-card {
+    width: 14rem;
+  }
+
+  .partner-client-logo {
+    height: 4rem;
+    width: 4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partner-marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .partner-marquee-track {
+    animation: none;
+  }
+
+  a.partner-client-card,
+  .partner-client-arrow {
+    transition: none;
+  }
+}
+
 /* ==========================================================================
    BRAND WATERMARK
    ==========================================================================

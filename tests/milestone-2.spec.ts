@@ -391,7 +391,7 @@ test.describe("data-driven blocks and empty slots", () => {
   test("contact details are centralised; confirmed fields render, blocked fields stay empty", async ({
     page,
   }) => {
-    expect(CONTACT.email).toBe("info@cresvcs.com");
+    expect(CONTACT.email).toBe("manpower@cresvcs.com");
     expect(CONTACT.phone).toBe("+971 54 466 1984");
     expect(CONTACT.whatsapp).toBe("+971 50 863 4011");
     expect(SOCIALS.every((social) => social.href === "")).toBe(true);

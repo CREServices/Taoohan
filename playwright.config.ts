@@ -68,5 +68,21 @@ export default defineConfig({
     timeout: 120_000,
     stdout: "pipe",
     stderr: "pipe",
+    // The employer-flow tests assert the "not configured yet" 503 that the
+    // route returns when SMTP env vars are absent — real, expected behaviour
+    // for a deployment that has not been given credentials yet. A developer's
+    // own .env.local can carry working credentials for manual testing, which
+    // would otherwise leak into this server and send a real email mid-suite.
+    // Clearing them here, for this process only, keeps the suite's result
+    // the same on every machine regardless of what that file holds.
+    env: {
+      SMTP_HOST: "",
+      SMTP_PORT: "",
+      SMTP_USER: "",
+      SMTP_PASS: "",
+      SMTP_FROM: "",
+      REQUEST_TO_EMAIL: "",
+      APPLY_TO_EMAIL: "",
+    },
   },
 });

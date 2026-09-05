@@ -107,7 +107,7 @@ export const isValidEmployerRequest = (request: EmployerRequest): boolean =>
 
 /** The subject line, pre-filled and identifying the submission type. */
 export function buildEmployerSubject(request: EmployerRequest): string {
-  return `Employer Hiring Request — ${request.companyName.trim()}`;
+  return `Employer Hiring Request — ${request.companyName.trim()} — ${request.businessEmail.trim()}`;
 }
 
 /**

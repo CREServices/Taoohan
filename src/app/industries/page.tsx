@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { content } from "@/content";
 import { NAV_BY_HREF } from "@/config/site.config";
 import { Section } from "@/components/ui/Section";
@@ -9,25 +10,28 @@ import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/industries"].label };
 
-/**
- * TEMPORARY letter placeholders for the Partners & Clients logo row — the one
- * exception the client explicitly authorised to the "no invented names/logos"
- * rule ("please use A, B, C, X, Y, and Z as temporary placeholder logos ...
- * these will be replaced with the confirmed company names and approved logos
- * once provided"). This is decorative UI, not client-supplied data, so it is
- * a local constant rather than a `content.partners` entry — `content.partners`
- * stays a real empty slot like every other blocked field until real logos
- * are supplied.
- */
-const PARTNER_PLACEHOLDER_LABELS = ["A", "B", "C", "X", "Y", "Z"] as const;
+const PARTNERS = [
+  { name: "CarvibeDubai", logo: "/logo/carvibedubai.jpg", href: "https://carvibedubai.com" },
+  { name: "Zero Sixty Three", logo: "/logo/zero60.jpg", href: "https://zerosixtythree.com" },
+  { name: "The Startup Zone", logo: "/logo/startup.jpg", href: "https://thestartupzone.ae" },
+  { name: "Defendoor", logo: "/logo/defendoor.jpg", href: "https://www.defendoor.ae" },
+  { name: "FOSS Consultancy", logo: "/logo/fossconsultancy.jpg", href: "https://fossconsultancy.com" },
+  { name: "Matech Payment", logo: "/logo/matech.jpg", href: "https://matechpayment.com" },
+  { name: "BioTech", logo: "/logo/biotech.jpg", href: "https://biotechae.com" },
+  { name: "Get Rome AI", logo: "/logo/ROME AI.jpg", href: "https://getromeai.com" },
+  { name: "JDC Prints & Beyond", logo: "/logo/JDC.jpg", href: "https://jdcprintsandbeyond.com" },
+  { name: "DP Navigator", logo: "/logo/DP NAVIGATOR.jpg", href: "https://dpnavigator.ae" },
+  { name: "Arbab Consultancy", logo: "/logo/ARBAB.jpg", href: "https://arbabconsultancy.com" },
+  { name: "Scaform Engineering Services", logo: "/logo/SCAFORM.jpg", href: "https://www.facebook.com/ScaformEngineeringServices/" },
+  { name: "Oncall Roadside Assistance", logo: "/logo/Oncall.jpg", href: "https://oncallrsa.com" },
+  { name: "Axle Group", logo: "/logo/AXLE.jpg", href: "https://axlegroup.ae" },
+] as const;
 
 /**
  * Industries We Serve page.
  *
- * Partners & Clients uses TEMPORARY letter placeholders (A, B, C, X, Y, Z)
- * for logos — the one exception the client explicitly authorised to the
- * "no invented names/logos" rule. Real company names and logos stay on hold
- * until supplied.
+ * Partners & Clients uses the client-supplied company names, logos, and
+ * approved destinations.
  */
 export default function IndustriesPage() {
   return (
@@ -114,31 +118,60 @@ export default function IndustriesPage() {
         ))}
       </Section>
 
-      <Section tone="muted" spacing="tight">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-700">
-          {content.industries.partners.eyebrow}
-        </h2>
-        <h3 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-          {content.industries.partners.heading}
-        </h3>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-muted">
-          {content.industries.partners.body}
-        </p>
+      <Section tone="muted" spacing="tight" containerSize="wide">
+        <div className="partner-client-shell">
+        <div className="partner-client-heading">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-700">
+              {content.industries.partners.eyebrow}
+            </h2>
+            <h3 className="mt-3 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              {content.industries.partners.heading}
+            </h3>
+          </div>
+          <p className="max-w-md text-base leading-relaxed text-ink-muted">
+            {content.industries.partners.body}
+          </p>
+        </div>
 
-        {/* Temporary placeholder logos — client-authorised A, B, C, X, Y, Z,
-            clearly marked as temporary. Swapped for real logos once approved. */}
-        <ul className="mt-8 flex flex-wrap justify-center gap-4" aria-label="Temporary placeholder partner logos">
-          {PARTNER_PLACEHOLDER_LABELS.map((label) => (
-            <li
-              key={label}
-              data-placeholder-logo={label}
-              className="flex h-16 w-16 items-center justify-center rounded-card border border-dashed border-hairline bg-surface text-xl font-semibold text-ink-muted"
-              title="Temporary placeholder — real logo to be supplied"
-            >
-              {label}
-            </li>
-          ))}
-        </ul>
+        <div className="partner-marquee mt-9">
+          <div className="partner-marquee-track">
+            <ul className="partner-marquee-list" aria-label="Partners and clients">
+              {PARTNERS.map((partner) => (
+                <li key={partner.name}>
+                  <a href={partner.href} target="_blank" rel="noreferrer" className="partner-client-card" aria-label={`Visit ${partner.name}`}>
+                    <span className="partner-client-logo" aria-hidden="true">
+                      <Image src={partner.logo} alt="" fill sizes="80px" className="object-contain" />
+                    </span>
+                    <span className="min-w-0 flex-1 text-left text-sm font-semibold leading-snug text-ink sm:text-[0.95rem]">{partner.name}</span>
+                    <span className="partner-client-arrow" aria-hidden="true">↗</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {/* A keyboard-hidden duplicate gives the strip its seamless loop. */}
+            <ul className="partner-marquee-list" aria-hidden="true">
+              {PARTNERS.map((partner) => (
+                <li key={`duplicate-${partner.name}`}>
+                  <a
+                    href={partner.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    tabIndex={-1}
+                    className="partner-client-card"
+                  >
+                    <span className="partner-client-logo">
+                      <Image src={partner.logo} alt="" fill sizes="80px" className="object-contain" />
+                    </span>
+                    <span className="min-w-0 flex-1 text-left text-sm font-semibold leading-snug text-ink sm:text-[0.95rem]">{partner.name}</span>
+                    <span className="partner-client-arrow">↗</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        </div>
       </Section>
 
       <CtaBand

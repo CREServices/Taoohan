@@ -3,7 +3,7 @@
  *
  * ⚠️ email and whatsapp WERE empty typed slots pending explicit client
  * sign-off; the client has now confirmed all three values, matching the
- * approved content document (info@cresvcs.com, +971 54 466 1984,
+ * approved content document (manpower@cresvcs.com, +971 54 466 1984,
  * +971 50 863 4011). The Milestone 2 gate's contact-slot rule
  * (.claude/gate.mjs) was updated in the same change so it does not flag
  * these as unconfirmed.
@@ -25,7 +25,7 @@ export type ContactDetails = {
 
 /** Client-confirmed contact details. */
 export const CONTACT: ContactDetails = {
-  email: "info@cresvcs.com",
+  email: "manpower@cresvcs.com",
   phone: "+971 54 466 1984",
   whatsapp: "+971 50 863 4011",
 };

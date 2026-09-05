@@ -136,7 +136,12 @@ export async function POST(request: Request) {
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM,
+      // Keep the authenticated address fixed for deliverability, while the
+      // display name identifies the employer in the recipient's inbox.
+      from: {
+        name: `${details.companyName.trim()} via Taoohan`,
+        address: process.env.SMTP_USER!.trim(),
+      },
       to: recipient(),
       // Replies go straight back to the employer rather than to the site's
       // no-reply sender.
