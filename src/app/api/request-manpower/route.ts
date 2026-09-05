@@ -171,6 +171,11 @@ export async function POST(request: Request) {
         ok: false,
         error:
           "We could not send your hiring request just now. Please try again shortly or contact us directly.",
+        diagnostic: {
+          code: smtpError.code ?? "UNKNOWN",
+          command: smtpError.command ?? "UNKNOWN",
+          responseCode: smtpError.responseCode ?? null,
+        },
       },
       { status: 502 },
     );
