@@ -10,6 +10,10 @@ import { TestimonialsBand } from "@/components/sections/TestimonialsBand";
 
 export const metadata: Metadata = { title: NAV_BY_HREF["/about"].label };
 
+// TEMPORARILY HIDDEN: Change this to `true` to show the
+// "What Our Partners Say" section again.
+const SHOW_PARTNER_TESTIMONIALS = false;
+
 /**
  * About Us page.
  *
@@ -86,7 +90,12 @@ export default function AboutPage() {
         rather than trailing off. Drop `preview` (or just populate
         content.testimonials) and the real quotes take over.
       */}
-      <TestimonialsBand heading={content.about.testimonialsHeading} preview />
+      {SHOW_PARTNER_TESTIMONIALS && (
+        <TestimonialsBand
+          heading={content.about.testimonialsHeading}
+          preview
+        />
+      )}
 
       <CtaBand
         heading={content.home.intro.heading}
